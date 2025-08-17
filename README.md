@@ -1,4 +1,6 @@
-# [Nama Proyek Anda]
+# Lean Coffe Roastery
+
+![Lean Coffe Roastery Logo](</public/img_asset/Lean Logo White.png>)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -19,8 +21,8 @@ Fitur utama yang sudah ada:
 
 Teknologi utama yang digunakan dalam proyek ini:
 
-- **Backend:** [Laravel 11](https://laravel.com/)
-- **Frontend:** [React 18](https://reactjs.org/) (dengan TypeScript)
+- **Backend:** [Laravel 12](https://laravel.com/)
+- **Frontend:** [React 19.1](https://reactjs.org/) (dengan TypeScript)
 - **Jembatan Backend-Frontend:** [Inertia.js](https://inertiajs.com/)
 - **Build Tool:** [Vite](https://vitejs.dev/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
@@ -40,15 +42,22 @@ Pastikan Anda sudah menginstal perangkat lunak berikut:
 - Composer 2.8.6
 - Node.js >= 20.18.0 & NPM
 - Git
-- Database SQlite
+- Database SQlite (sementara)
+
+### Konfigurasi SQlite sementara
+
+1. Pastikan instalasi versi core (node, php, dll) sama dengan spesifikasi [di atas](#prasyarat).
+2. hidupkan server local laragon.
+3. klik kanan di laragon, arahkan ke `php > Extensions`.
+4. di `Extensions`, centang `pdo_sqlite` dan `sqlite`.
 
 ### Instalasi
 
 1.  **Clone repositori:**
 
     ```sh
-    git clone https://github.com/[your-github-username]/[nama-repo].git
-    cd [nama-repo]
+    git clone https://github.com/M-Ridho-Fauzan/LeanCaffeRoastery.git
+    cd LeanCaffeRoastery
     ```
 
 2.  **Install dependensi Backend (PHP):**
@@ -70,6 +79,7 @@ Pastikan Anda sudah menginstal perangkat lunak berikut:
     cp .env.example .env
     ```
 
+    \***Skip dulu ini (Karena pakai sqlite):**
     Setelah itu, buka file `.env` dan isi `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD`.
 
 5.  **Generate kunci aplikasi Laravel:**
@@ -107,11 +117,18 @@ Aplikasi Anda sekarang berjalan di `http://127.0.0.1:8000`.
 
 ---
 
-## Lisensi
+## Akun Dev
 
-Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
+> **Peringatan**: Gunakan akun ini hanya untuk tujuan pengembangan, karena bisa berpotensi pemakaiaan berkepanjangan
+
+- **Email**: `leancofferoastery.service@gmail.com`
+- **Pass**: `akunlean123`
 
 ## Kontributor
 
-- [M. Ridho Fauzan] - [ridhofauzan275@gmail.com]
-- [Adam Maulana] - [adammaulana0905@gmail.com]
+- **Front-End**: Adam Maulana - adammaulana0905@gmail.com
+- **Back-End**: M. Ridho Fauzan - ridhofauzan275@gmail.com
+
+## Lisensi
+
+Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
