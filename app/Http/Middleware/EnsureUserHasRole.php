@@ -13,6 +13,7 @@ class EnsureUserHasRole
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  ...$roles
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
@@ -23,7 +24,9 @@ class EnsureUserHasRole
         }
 
         foreach ($roles as $role) {
-            if ($user->role === $role) return $next($request);
+            if ($user->role === $role) {
+                return $next($request);
+            }
         }
 
         abort(403, 'forbiden brader!');

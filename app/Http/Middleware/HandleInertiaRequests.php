@@ -44,9 +44,18 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'can_be_admin' => $request->user()->can('is-admin'),
+                    'can_be_author' => $request->user()->can('is-author'),
+                    'role' => $request->user()->role,
+                    'avatar_path' => $request->user()->avatar_path, // dari kolom DB
+                    'avatar_url' => $request->user()->avatar_url,   // dari accessor model
+                ] : null,
             ],
-            'ziggy' => fn (): array => [
+            'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],

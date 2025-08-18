@@ -1,17 +1,43 @@
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 18/08/2025 - 15:48:36
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 18/08/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, Home, LayoutGrid, User } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+const platformItems: NavItem[] = [
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home,
+    },
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        roles: ['admin', 'author'],
+    },
+];
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Manage Users',
+        href: '/admin/users',
+        icon: User,
     },
 ];
 
@@ -44,7 +70,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain platformItems={platformItems} adminItems={adminNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
