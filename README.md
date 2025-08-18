@@ -44,6 +44,8 @@ Pastikan Anda sudah menginstal perangkat lunak berikut:
 - Git
 - Database SQlite (sementara)
 
+Alat ada di `alat-wajib/` project atau di sini jika di repo: [Klik Ini](https://github.com/M-Ridho-Fauzan/LeanCaffeRoastery/tree/main/alat-wajib)
+
 ### 📢 Konfigurasi SQlite sementara
 
 1. Pastikan instalasi versi core (node, php, dll) sama dengan spesifikasi [di atas](#prasyarat).
