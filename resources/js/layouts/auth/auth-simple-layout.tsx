@@ -1,3 +1,15 @@
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 20/08/2025 - 00:41:19
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 20/08/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
@@ -15,8 +27,8 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
                         <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
+                            <div className="mb-1 flex h-24 w-24 items-center justify-center rounded-md">
+                                <AppLogoIcon className="fill-current text-[var(--foreground)] dark:text-white" />
                             </div>
                             <span className="sr-only">{title}</span>
                         </Link>

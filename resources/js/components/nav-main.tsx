@@ -10,32 +10,17 @@
  * - Author          : Ridho Fauzan
  * - Modification    :
  **/
-import { PageProps, type NavItem } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { useNavigation } from '@/hooks/use-navigation';
 import NavMainGroup from './nav-main-group';
 
-export function NavMain({ platformItems = [], adminItems = [] }: { platformItems: NavItem[]; adminItems: NavItem[] }) {
-    const { auth } = usePage<PageProps>().props;
-
-    const visibleUserRule = useMemo(() => {
-        if (!auth.user) return [];
-
-        return platformItems.filter((item) => {
-            if (!item.roles) return true;
-
-            return item.roles.includes(auth.user.role as string);
-        });
-    }, [auth.user, platformItems]);
+export function NavMain() {
+    const { visiblePlatformItems, visibleAdminItems, visibleAuthorItems } = useNavigation();
 
     return (
         <>
-            <NavMainGroup title="Platform" items={visibleUserRule} />
-
-            {auth.user && auth.user.can_be_admin && <NavMainGroup title="Admin Tools" items={adminItems} className="pt-4" />}
-            {auth.user && auth.user.can_be_admin && auth.user.can_be_author && (
-                <NavMainGroup title="Author Tools" items={adminItems} className="pt-4" />
-            )}
+            <NavMainGroup title="Platform" items={visiblePlatformItems} />
+            <NavMainGroup title="Admin Tools" items={visibleAdminItems} className="pt-4" />
+            <NavMainGroup title="Author Tools" items={visibleAuthorItems} className="pt-4" />
         </>
     );
 }

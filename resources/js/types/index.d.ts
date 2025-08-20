@@ -32,7 +32,14 @@ export interface NavItem {
     href: string;
     icon?: LucideIcon | null;
     isActive?: boolean;
-    roles?: string[];
+    roles: 'public' | string[];
+}
+
+export interface LinkItem {
+    title: string;
+    href: string;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
 }
 
 export interface SharedData {

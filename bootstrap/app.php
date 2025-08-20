@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsurePasswordIsSet;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,10 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            EnsurePasswordIsSet::class,
         ]);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            // 'password.set' => EnsurePasswordIsSet::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

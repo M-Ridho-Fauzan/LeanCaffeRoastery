@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -24,6 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_oauth',
+        'email_verified_at',
+        'must_set_password',
     ];
 
     /**
@@ -35,6 +39,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'role',
+        'is_oauth',
     ];
 
     /**
@@ -62,5 +67,15 @@ class User extends Authenticatable
                 ? Storage::url($this->avatar_path)
                 : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&color=fff',
         );
+    }
+
+    /**
+     * Summary of socialite
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<Socialite, User>
+     */
+    public function socialite()
+    {
+        return $this->hasOne(Socialite::class);
     }
 }

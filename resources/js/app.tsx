@@ -1,3 +1,15 @@
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 20/08/2025 - 11:52:49
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 20/08/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
@@ -8,7 +20,7 @@ import { initializeTheme } from './hooks/use-appearance';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => title ? `${title} - ${appName}` : appName,
+    title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);

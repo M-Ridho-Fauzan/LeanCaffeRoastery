@@ -44,7 +44,7 @@ Pastikan Anda sudah menginstal perangkat lunak berikut:
 - Git
 - Database SQlite (sementara)
 
-Alat ada di `alat-wajib/` project atau di sini jika di repo: [Klik Ini](https://github.com/M-Ridho-Fauzan/LeanCaffeRoastery/tree/main/alat-wajib)
+Alat ada di `alat-wajib/` di project, atau di sini jika di repo: [Klik Ini](https://github.com/M-Ridho-Fauzan/LeanCaffeRoastery/tree/main/alat-wajib)
 
 ### 📢 Konfigurasi SQlite sementara
 
@@ -116,6 +116,8 @@ Alat ada di `alat-wajib/` project atau di sini jika di repo: [Klik Ini](https://
     ```
 
 Aplikasi Anda sekarang berjalan di `http://127.0.0.1:8000`.
+
+> cara pull ada di [contribution](CONTRIBUTING.md).
 
 ---
 

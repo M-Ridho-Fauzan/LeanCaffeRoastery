@@ -9,10 +9,11 @@ Semua kontribusi untuk proyek ini dirilis di bawah [Kode Etik](#kode-etik) proye
 Kami menggunakan alur kerja _Feature Branch_. Aturan utamanya adalah **branch `main` harus selalu stabil dan siap untuk di-deploy.** Semua pekerjaan harus dilakukan di branch terpisah.
 
 1.  **Buat Branch Baru:**
-    Sebelum memulai pekerjaan, pastikan branch `main` lokal Anda sudah yang terbaru.
+    **🚧 Sebelum memulai pekerjaan 🚧**, pastikan branch `main` lokal Anda sudah yang terbaru.
 
     ```sh
     git checkout main
+
     git pull origin main
     ```
 
@@ -25,6 +26,14 @@ Kami menggunakan alur kerja _Feature Branch_. Aturan utamanya adalah **branch `m
     # Untuk perbaikan bug
     git checkout -b bugfix/perbaikan-masalah-login
     ```
+
+    Jika habis coba-coba dan banyak error, cara reset ketik ini:
+
+    ```sh
+    git reset --hard origin/main
+    ```
+
+    atau perintah lebih jelas tentang git reset, coba baca dari ai ini: [klik saya :)](https://www.google.com/search?q=git+hard+reset+command&oq=git+hard+reset&gs_lcrp=EgZjaHJvbWUqBwgBEAAYgAQyCQgAEEUYORiABDIHCAEQABiABDIHCAIQABiABDIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABDIHCAkQABiABNIBCDUxNDNqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8)
 
 2.  **Lakukan Perubahan & Commit:**
     Lakukan perubahan kode Anda di branch baru ini. Buat commit secara berkala dengan pesan yang jelas dan informatif. Kami menganjurkan penggunaan [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
