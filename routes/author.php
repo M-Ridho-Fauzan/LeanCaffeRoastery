@@ -8,8 +8,8 @@ Route::middleware(['auth', 'verified', 'role:admin,author'])
     ->name('author.')
     ->group(
         function () {
-            Route::get('/posts', function () {
-                return Inertia::render('author/posts/index');
-            })->name('posts.index');
+            Route::get('/articles', function () {
+                return Inertia::render('author/index');
+            })->name('articles.index');
         }
     );

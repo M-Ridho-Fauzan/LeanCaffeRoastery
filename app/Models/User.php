@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -77,5 +78,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function socialite()
     {
         return $this->hasOne(Socialite::class);
+    }
+
+    /**
+     * Summary of addresses
+     * @return HasMany<UserAddress, User>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(UserAddress::class);
     }
 }

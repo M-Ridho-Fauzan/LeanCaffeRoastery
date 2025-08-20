@@ -9,7 +9,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(
         function () {
             Route::get('/users', function () {
-                return Inertia::render('admin/users/index');
+                return Inertia::render('admin/index');
             })->name('users.index');
         }
     );

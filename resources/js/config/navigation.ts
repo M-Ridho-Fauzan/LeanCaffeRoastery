@@ -13,7 +13,7 @@
 import { LinkItem, NavItem } from '@/types';
 import { BookOpen, Building2, Captions, Folder, Home, LayoutGrid, MapPinned, Newspaper, ScrollText, User } from 'lucide-react';
 
-export const platformItems: NavItem[] = [
+export const platformItems: LinkItem[] = [
     {
         title: 'Home',
         href: '/',
@@ -52,7 +52,7 @@ export const platformItems: NavItem[] = [
     },
 ];
 
-export const adminNavItems: NavItem[] = [
+export const orderingItems: LinkItem[] = [
     {
         title: 'Manage Users',
         href: '/admin/users',
@@ -61,7 +61,16 @@ export const adminNavItems: NavItem[] = [
     },
 ];
 
-export const authorNavItems: NavItem[] = [
+export const adminNavItems: LinkItem[] = [
+    {
+        title: 'Manage Users',
+        href: '/admin/users',
+        icon: User,
+        roles: ['admin', 'author'], // Hanya untuk role 'admin' dan 'author'
+    },
+];
+
+export const authorNavItems: LinkItem[] = [
     {
         title: 'Manage Blogs',
         href: '/author/posts',
@@ -70,7 +79,7 @@ export const authorNavItems: NavItem[] = [
     },
 ];
 
-export const footerNavItems: LinkItem[] = [
+export const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
         href: 'https://github.com/laravel/react-starter-kit',
