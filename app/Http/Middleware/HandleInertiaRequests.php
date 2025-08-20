@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'can_be_admin' => $request->user()->can('is-admin'),
                     'can_be_author' => $request->user()->can('is-author'),
+                    'can_be_super' => $request->user()->can('is-content-manager'),
                     'role' => $request->user()->role,
                     'avatar_path' => $request->user()->avatar_path, // dari kolom DB
                     'avatar_url' => $request->user()->avatar_url,   // dari accessor model

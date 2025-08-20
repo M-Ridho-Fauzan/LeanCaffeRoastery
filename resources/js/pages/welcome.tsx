@@ -11,9 +11,11 @@
  * - Modification    :
  **/
 import AppLogoIcon from '@/components/app-logo-icon';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 // import { type SharedData } from '@/types';
 import { Head } from '@inertiajs/react';
+import { TriangleAlert } from 'lucide-react';
 
 export default function Welcome() {
     return (
@@ -23,6 +25,19 @@ export default function Welcome() {
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
             <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
+                {/* SEMENTARA */}
+                <Alert variant="destructive" className="w-1/2">
+                    <TriangleAlert />
+                    <AlertTitle>Kahade Dams</AlertTitle>
+                    <AlertDescription className="">
+                        <p className="*:b-3 *:bg-green-700 *:text-white">
+                            Link na ulah <b>http://127.0.0.1:8000/</b> tapi <b>http://localhost:8000/</b>
+                            mun teu kitu bakal loba nu error engke na.
+                        </p>
+                    </AlertDescription>
+                </Alert>
+                {/* SEMENTARA */}
+
                 <div className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
                     <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
                         <div className="flex-1 content-center items-center rounded-br-lg rounded-bl-lg bg-white p-3 pb-9 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-14 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">

@@ -46,7 +46,7 @@ export function useNavigation() {
 
     // 3. Logika untuk 'authorItems'. Mengembalikan data atau array kosong.
     const visibleAuthorItems = useMemo(() => {
-        return user?.can_be_author ? authorNavItems : [];
+        return user?.can_be_super ? authorNavItems : [];
     }, [user]);
 
     // 4. Kembalikan semua data yang sudah siap pakai.

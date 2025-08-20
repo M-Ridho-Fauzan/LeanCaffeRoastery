@@ -17,6 +17,22 @@ Kami menggunakan alur kerja _Feature Branch_. Aturan utamanya adalah **branch `m
     git pull origin main
     ```
 
+    Lalu update terlebih dahulu npm & composer agar singkron
+
+    ```sh
+    # 1. Untuk update npm
+    npm update
+
+    # 1.2. atau dengan di timpa (saran: hapus node_modules dulu)
+    npm install
+
+    # 2. Untuk update composer
+    composer update
+
+    # 2.1 atau dengan di timpa (saran: hapus vendor dulu)
+    composer install
+    ```
+
     Kemudian buat branch baru yang deskriptif dari `main`.
 
     ```sh
