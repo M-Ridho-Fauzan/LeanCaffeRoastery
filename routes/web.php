@@ -7,6 +7,22 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('/about', function () {
+    return Inertia::render('about');
+})->name('about');
+
+Route::get('/menu', function () {
+    return Inertia::render('menu');
+})->name('menu');
+
+Route::get('/articles', function () {
+    return Inertia::render('articles');
+})->name('articles');
+
+Route::get('/location', function () {
+    return Inertia::render('location');
+})->name('location');
+
 Route::middleware(['auth', 'verified', 'role:admin,author'])
     ->group(function () {
         Route::get('dashboard', function () {
