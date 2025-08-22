@@ -33,6 +33,12 @@ Kami menggunakan alur kerja _Feature Branch_. Aturan utamanya adalah **branch `m
     composer install
     ```
 
+    Dan selanjut nya lagi, update dulu database dengan perintah ini:
+
+    ```sh
+    php artisan migrate:fresh --seed
+    ```
+
     Kemudian buat branch baru yang deskriptif dari `main`.
 
     ```sh

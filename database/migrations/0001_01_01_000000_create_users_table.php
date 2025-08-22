@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('avatar_path')->nullable();
             $table->string('name');
             $table->string('email')->unique();
+            $table->enum('gender', ['pria', 'wanita', 'lainnya'])->nullable();
+            $table->date('birthday')->nullable();
+            $table->string('phone')->nullable();
+            $table->timestamp('phone_verified_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('is_oauth')->default(false);

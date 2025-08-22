@@ -23,6 +23,10 @@ Route::get('/location', function () {
     return Inertia::render('location');
 })->name('location');
 
+Route::get('/kebijakan-privasi', function () {
+    return Inertia::render('legal_authority/privacy');
+})->name('privacy_policy');
+
 Route::middleware(['auth', 'verified', 'role:admin,author'])
     ->group(function () {
         Route::get('dashboard', function () {
