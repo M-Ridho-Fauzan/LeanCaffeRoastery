@@ -3,8 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
+use Database\Seeders\MenuSeed\MenuTagSeeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\MenuSeed\MenuItemSeeder;
+use Database\Seeders\MenuSeed\MenuRoastLevelSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,5 +41,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@gmail.com',
             'role' => 'user',
         ]);
+
+        $this->call([
+            MenuRoastLevelSeeder::class,      // Harus pertama
+            MenuTagSeeder::class,              // Harus kedua
+            MenuItemSeeder::class,         // Terakhir, karena butuh data dari atas
+        ]);
+
+        MenuItem::factory()->count(20)->create();
     }
 }
