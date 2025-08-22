@@ -73,3 +73,37 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         user: User;
     };
 };
+
+// ========= Menu Interfaces
+
+export interface RoastLevel {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface MenuTag {
+    id: number;
+    name: string;
+    type: 'flavor_note' | 'brewing_method';
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface MenuItem {
+    id: number;
+    name: string;
+    description: string;
+    price: string;
+    category: string;
+    origin: string;
+    image_url: string | null;
+    roast_level: RoastLevel | null; // <-- Relasi one-to-one
+    tags: Tag[]; // <-- Relasi many-to-many (array)
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown; // This allows for additional properties...
+}

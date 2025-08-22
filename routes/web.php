@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Menu\MenuItemController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -11,9 +12,8 @@ Route::get('/about', function () {
     return Inertia::render('about');
 })->name('about');
 
-Route::get('/menu', function () {
-    return Inertia::render('menu');
-})->name('menu');
+Route::get('/menu2', [MenuItemController::class, 'index'])
+    ->name('menu2.index');
 
 Route::get('/articles', function () {
     return Inertia::render('articles');
