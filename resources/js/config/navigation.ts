@@ -11,7 +11,7 @@
  * - Modification    :
  **/
 import { LinkItem, NavItem } from '@/types';
-import { BookOpen, Building2, Captions, Folder, Home, LayoutGrid, MapPinned, Newspaper, ScrollText, User } from 'lucide-react';
+import { BookOpen, Building2, Captions, Home, LayoutGrid, MapPinned, Newspaper, ScrollText, ShieldAlert, User } from 'lucide-react';
 
 export const platformItems: LinkItem[] = [
     {
@@ -81,9 +81,9 @@ export const authorNavItems: LinkItem[] = [
 
 export const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Kebijakan Privasi',
+        href: '/kebijakan-privasi',
+        icon: ShieldAlert,
     },
     {
         title: 'Documentation',
