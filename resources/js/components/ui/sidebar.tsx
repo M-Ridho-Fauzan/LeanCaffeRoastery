@@ -1,9 +1,21 @@
+/**
+    * @description      :
+    * @author           : Ridho Fauzan
+    * @group            :
+    * @created          : 23/08/2025 - 21:23:53
+    *
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 23/08/2025
+    * - Author          : Ridho Fauzan
+    * - Modification    :
+**/
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useResponsive } from '@/hooks/use-responsive';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -64,7 +76,7 @@ function SidebarProvider({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
-  const isMobile = useIsMobile()
+  const { isMobile } = useResponsive();
   const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
