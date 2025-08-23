@@ -43,11 +43,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            MenuRoastLevelSeeder::class,      // Harus pertama
-            MenuTagSeeder::class,              // Harus kedua
-            MenuItemSeeder::class,         // Terakhir, karena butuh data dari atas
+            ProductSeeder::class,
+            // Anda bisa menambahkan seeder lain di sini
         ]);
-
-        MenuItem::factory()->count(20)->create();
     }
 }
