@@ -1,171 +1,169 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 17/08/2025 - 18:59:30
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 17/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
-import AppLogoIcon from '@/components/app-logo-icon';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
-// import { type SharedData } from '@/types';
 import { Head } from '@inertiajs/react';
-import { TriangleAlert } from 'lucide-react';
+import { Award, Coffee, Star, Users } from 'lucide-react';
 
-export default function Welcome() {
+export default function LandingPage() {
     return (
         <AppHeaderLayout>
             <Head title="Welcome">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
-            <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-                {/* SEMENTARA */}
-                <Alert variant="destructive" className="w-1/2">
-                    <TriangleAlert />
-                    <AlertTitle>Kahade Dams</AlertTitle>
-                    <AlertDescription className="">
-                        <p className="*:b-3 *:bg-green-700 *:text-white">
-                            Link na ulah <b>http://127.0.0.1:8000/</b> tapi <b>http://localhost:8000/</b>
-                            mun teu kitu bakal loba nu error engke na.
+
+            <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 py-20 text-white">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10 container mx-auto px-4">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="grid items-center gap-12 lg:grid-cols-2">
+                            <div>
+                                <h1 className="mb-6 text-4xl leading-tight font-bold lg:text-5xl">Balance & Brightness Cup</h1>
+                                <p className="mb-8 text-lg leading-relaxed text-slate-200 lg:text-xl">
+                                    Welcome to Learn Coffee Roasting. Discover a new way to explore and enjoy coffee right from the comfort of your
+                                    home. Master the art of brewing with our expert guidance.
+                                </p>
+                                <Button size="lg" className="rounded-lg bg-indigo-600 px-8 py-3 font-medium text-white hover:bg-indigo-700">
+                                    Learn More
+                                </Button>
+                            </div>
+                            <div className="relative">
+                                <div className="relative mx-auto h-80 w-80">
+                                    <img
+                                        src="/elegant-coffee-cup.png"
+                                        alt="Coffee Cup"
+                                        className="h-full w-full rounded-full object-cover shadow-2xl"
+                                    />
+                                    <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/30 to-transparent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="bg-background py-16">
+                <div className="container mx-auto px-4">
+                    <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 lg:grid-cols-4">
+                        <div className="text-center">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                <Coffee className="h-8 w-8 text-slate-700" />
+                            </div>
+                            <h3 className="mb-2 text-3xl font-bold text-foreground">50+</h3>
+                            <p className="text-muted-foreground">Coffee Varieties</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                <Users className="h-8 w-8 text-slate-700" />
+                            </div>
+                            <h3 className="mb-2 text-3xl font-bold text-foreground">200+</h3>
+                            <p className="text-muted-foreground">Happy Customers</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                <Award className="h-8 w-8 text-slate-700" />
+                            </div>
+                            <h3 className="mb-2 text-3xl font-bold text-foreground">5</h3>
+                            <p className="text-muted-foreground">Years Experience</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                                <Star className="h-8 w-8 text-slate-700" />
+                            </div>
+                            <h3 className="mb-2 text-3xl font-bold text-foreground">4,5</h3>
+                            <p className="text-muted-foreground">Rating</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="bg-muted/30 py-16">
+                <div className="container mx-auto px-4">
+                    <div className="mb-12 text-center">
+                        <h2 className="mb-4 text-3xl font-bold text-foreground lg:text-4xl">Latest Coffee Articles</h2>
+                        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                            Discover the world of coffee through our expert insights and brewing guides
                         </p>
-                    </AlertDescription>
-                </Alert>
-                {/* SEMENTARA */}
+                    </div>
 
-                <div className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
-                    <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
-                        <div className="flex-1 content-center items-center rounded-br-lg rounded-bl-lg bg-white p-3 pb-9 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-14 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
-                            <AppLogoIcon className="size-24 fill-current text-black dark:text-white" />
+                    <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                            <div className="aspect-video overflow-hidden">
+                                <img
+                                    src="/placeholder-bxlwd.png"
+                                    alt="Brewing the Perfect Cup"
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
+                            </div>
+                            <CardContent className="p-6">
+                                <div className="mb-2 text-sm text-muted-foreground">
+                                    <span className="rounded bg-slate-100 px-2 py-1 text-xs">TUTORIAL</span>
+                                    <span className="ml-2">Sep 15, 2024</span>
+                                </div>
+                                <h3 className="mb-3 text-xl font-semibold text-foreground">Brewing the Perfect Cup</h3>
+                                <p className="mb-4 leading-relaxed text-muted-foreground">
+                                    Master the essential tips and techniques to brew your perfect cup of coffee every time.
+                                </p>
+                                <Button variant="outline" size="sm" className="border-indigo-600 bg-transparent text-indigo-600 hover:bg-indigo-50">
+                                    Read More
+                                </Button>
+                            </CardContent>
+                        </Card>
 
-                            <h1 className="mb-1 font-medium">Lean Coffe Roastery</h1>
-                            <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-                                Laravel has an incredibly rich ecosystem.
-                                <br />
-                                We suggest starting with the following.
-                            </p>
-                            <ul className="mb-4 flex flex-col lg:mb-6">
-                                <li className="relative flex items-center gap-4 py-2 before:absolute before:top-1/2 before:bottom-0 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]">
-                                    <span className="relative bg-white py-1 dark:bg-[#161615]">
-                                        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
-                                        </span>
-                                    </span>
-                                    <span>
-                                        Tempo the
-                                        <a
-                                            href="https://www.youtube.com/watch?v=kcnwI_5nKyA&list=PLFIM0718LjIUu3X2zYNqomEWs3sYd-fV1"
-                                            target="_blank"
-                                            className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
-                                        >
-                                            <span>Sanshika Galih Tutorial</span>
-                                            <svg
-                                                width={10}
-                                                height={11}
-                                                viewBox="0 0 10 11"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-2.5 w-2.5"
-                                            >
-                                                <path
-                                                    d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                                    stroke="currentColor"
-                                                    strokeLinecap="square"
-                                                />
-                                            </svg>
-                                        </a>
-                                    </span>
-                                </li>
-                                <li className="relative flex items-center gap-4 py-2 before:absolute before:top-1/2 before:bottom-0 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]">
-                                    <span className="relative bg-white py-1 dark:bg-[#161615]">
-                                        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
-                                        </span>
-                                    </span>
-                                    <span>
-                                        Read the
-                                        <a
-                                            href="https://laravel.com/docs"
-                                            target="_blank"
-                                            className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
-                                        >
-                                            <span>Documentation</span>
-                                            <svg
-                                                width={10}
-                                                height={11}
-                                                viewBox="0 0 10 11"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-2.5 w-2.5"
-                                            >
-                                                <path
-                                                    d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                                    stroke="currentColor"
-                                                    strokeLinecap="square"
-                                                />
-                                            </svg>
-                                        </a>
-                                    </span>
-                                </li>
-                                <li className="relative flex items-center gap-4 py-2 before:absolute before:top-0 before:bottom-1/2 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]">
-                                    <span className="relative bg-white py-1 dark:bg-[#161615]">
-                                        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
-                                        </span>
-                                    </span>
-                                    <span>
-                                        Watch video tutorials at
-                                        <a
-                                            href="https://laracasts.com"
-                                            target="_blank"
-                                            className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
-                                        >
-                                            <span>Laracasts</span>
-                                            <svg
-                                                width={10}
-                                                height={11}
-                                                viewBox="0 0 10 11"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-2.5 w-2.5"
-                                            >
-                                                <path
-                                                    d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                                    stroke="currentColor"
-                                                    strokeLinecap="square"
-                                                />
-                                            </svg>
-                                        </a>
-                                    </span>
-                                </li>
-                            </ul>
-                            <ul className="flex gap-3 text-sm leading-normal">
-                                <li>
-                                    <a
-                                        href="https://cloud.laravel.com"
-                                        target="_blank"
-                                        className="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
-                                    >
-                                        Deploy now
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#fff2f2] lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[480px] lg:rounded-t-none lg:rounded-r-lg dark:bg-[#1D0002]">
-                            <img src="/img_asset/asd.webp" alt="Hitlers" />
-                            <div className="absolute inset-0 rounded-t-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-t-none lg:rounded-r-lg dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]" />
-                        </div>
-                    </main>
+                        <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                            <div className="aspect-video overflow-hidden">
+                                <img
+                                    src="/placeholder-ahhua.png"
+                                    alt="Coffee Origins Around the World"
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
+                            </div>
+                            <CardContent className="p-6">
+                                <div className="mb-2 text-sm text-muted-foreground">
+                                    <span className="rounded bg-slate-100 px-2 py-1 text-xs">GUIDE</span>
+                                    <span className="ml-2">Sep 10, 2024</span>
+                                </div>
+                                <h3 className="mb-3 text-xl font-semibold text-foreground">Coffee Origins Around the World</h3>
+                                <p className="mb-4 leading-relaxed text-muted-foreground">
+                                    Explore the fascinating journey of coffee and how different regions create unique flavors.
+                                </p>
+                                <Button variant="outline" size="sm" className="border-indigo-600 bg-transparent text-indigo-600 hover:bg-indigo-50">
+                                    Read More
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                            <div className="aspect-video overflow-hidden">
+                                <img
+                                    src="/placeholder-uiurx.png"
+                                    alt="The Art of Coffee Roasting"
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
+                            </div>
+                            <CardContent className="p-6">
+                                <div className="mb-2 text-sm text-muted-foreground">
+                                    <span className="rounded bg-slate-100 px-2 py-1 text-xs">TECHNIQUE</span>
+                                    <span className="ml-2">Sep 05, 2024</span>
+                                </div>
+                                <h3 className="mb-3 text-xl font-semibold text-foreground">The Art of Coffee Roasting</h3>
+                                <p className="mb-4 leading-relaxed text-muted-foreground">
+                                    Learn about the intricate process of coffee roasting and how it transforms flavor profiles.
+                                </p>
+                                <Button variant="outline" size="sm" className="border-indigo-600 bg-transparent text-indigo-600 hover:bg-indigo-50">
+                                    Read More
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="mt-12 text-center">
+                        <Button variant="outline" size="lg" className="bg-transparent px-8">
+                            View All Articles
+                        </Button>
+                    </div>
                 </div>
-                <div className="hidden h-14.5 text-gray-700 lg:block">
-                    <p>© 2024 Powered by Lean Coffee Roastery</p>
-                </div>
-            </div>
+            </section>
         </AppHeaderLayout>
     );
 }
