@@ -3,9 +3,13 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Origin;
+use App\Models\Process;
+use App\Models\BrewMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use App\Observers\FilterOptionsObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -43,5 +47,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        Origin::observe(FilterOptionsObserver::class);
+        Process::observe(FilterOptionsObserver::class);
+        BrewMethod::observe(FilterOptionsObserver::class);
     }
 }

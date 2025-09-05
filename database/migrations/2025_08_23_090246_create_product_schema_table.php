@@ -8,19 +8,14 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * Urutan pembuatan:
-     * 1. Tabel master (products, origins, processes, brew_methods)
-     * 2. Tabel pivot (yang memiliki foreign key)
      */
     public function up(): void
     {
         // 1. Tabel Master
-        Schema::create('products', callback: function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('product_name');
-            $table->string('slug')->unique()->nullable();
-            $table->string('image_url')->nullable();
+            $table->string('slug')->unique(); // DIBUAT TIDAK NULLABLE, KARENA WAJIB ADA
             $table->enum('type', ['Single Origin', 'House Blend', 'Microlot', 'Commercial']);
             $table->unsignedInteger('price');
             $table->text('flavor_notes');
@@ -50,25 +45,35 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Tabel yang memiliki foreign key ke tabel master
+        Schema::create('product_images', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->string('image_url');
+            $table->string('alt_text')->nullable();
+            $table->boolean('is_primary')->default(false);
+            $table->timestamps();
+        });
+
         // 2. Tabel Pivot
-        Schema::create('product_origins', function (Blueprint $table) {
+        Schema::create('product_origin', function (Blueprint $table) { // PENYESUAIAN NAMA: singular_singular
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('origin_id')->constrained()->onDelete('cascade');
-            $table->unique(['product_id', 'origin_id']); // Opsional: mencegah duplikasi
+            $table->unique(['product_id', 'origin_id']);
         });
 
-        Schema::create('product_processes', function (Blueprint $table) {
+        Schema::create('product_process', function (Blueprint $table) { // PENYESUAIAN NAMA: singular_singular
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('process_id')->constrained()->onDelete('cascade');
             $table->unique(['product_id', 'process_id']);
         });
 
-        Schema::create('product_brew_method', function (Blueprint $table) {
+        Schema::create('brew_method_product', function (Blueprint $table) { // PENYESUAIAN NAMA: singular_singular alphabetical
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('brew_method_id')->constrained('brew_methods')->onDelete('cascade');
+            $table->foreignId('brew_method_id')->constrained()->onDelete('cascade'); // Tidak perlu nama tabel jika mengikuti konvensi
             $table->unique(['product_id', 'brew_method_id']);
         });
     }
@@ -80,9 +85,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_brew_method');
-        Schema::dropIfExists('product_processes');
-        Schema::dropIfExists('product_origins');
+        // DIBENARKAN: Urutan dibalik persis dari method up()
+        Schema::dropIfExists('brew_method_product');
+        Schema::dropIfExists('product_process');
+        Schema::dropIfExists('product_origin');
+        Schema::dropIfExists('product_images');
         Schema::dropIfExists('brew_methods');
         Schema::dropIfExists('processes');
         Schema::dropIfExists('origins');
