@@ -2,40 +2,32 @@
  * @description      :
  * @author           : Ridho Fauzan
  * @group            :
- * @created          : 23/08/2025 - 21:19:53
+ * @created          : 05/09/2025 - 00:27:20
  *
  * MODIFICATION LOG
  * - Version         : 1.0.0
- * - Date            : 23/08/2025
+ * - Date            : 05/09/2025
  * - Author          : Ridho Fauzan
  * - Modification    :
  **/
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useResponsive } from '@/hooks/use-responsive';
-import { Filter } from 'lucide-react';
+import { Filter, RefreshCcw } from 'lucide-react';
 import React from 'react';
 
-// --- DEFINISI TIPE YANG SPESIFIK (MENGGANTIKAN 'any') ---
+// --- DEFINISI TIPE YANG SPESIFIK ---
 
-/** Bentuk state filter yang sedang aktif */
+/** PERUBAHAN 1: Sesuaikan ActiveFilters agar match dengan query parameter backend */
 interface ActiveFilters {
-    origin: string;
-    process: string;
+    origin_id: string;
+    process_id: string;
     type: string;
+    brew_method_id: string; // Tambahkan ini agar semua filter ada di sini
 }
 
 /** Tipe data untuk opsi Origin dari API */
@@ -54,6 +46,7 @@ interface ProcessOption {
 interface FilterOptionsProp {
     origins: OriginOption[];
     processes: ProcessOption[];
+    // brewMethods tidak perlu di sini karena sudah dihandle di tabs
     types: string[];
 }
 
@@ -79,13 +72,13 @@ interface FilterRadioGroupProps {
 /** Props untuk komponen utama ProductFilters */
 interface ProductFiltersProps {
     filterOptions: FilterOptionsProp;
-    filters: ActiveFilters;
-    setFilters: React.Dispatch<React.SetStateAction<ActiveFilters>>;
+    filters: ActiveFilters; // Filter yang sedang aktif dari parent
+    setFilters: (newFilters: ActiveFilters) => void; // Callback untuk update filter di parent
     onReset: () => void;
     resultCount: number;
 }
 
-// --- Komponen RadioGroup Helper (Sekarang Type-Safe) ---
+// --- Komponen RadioGroup Helper (Tidak berubah) ---
 const FilterRadioGroup: React.FC<FilterRadioGroupProps> = ({ title, options, nameKey, value, onValueChange }) => (
     <div>
         <Label className="text-base font-semibold">{title}</Label>
@@ -100,7 +93,7 @@ const FilterRadioGroup: React.FC<FilterRadioGroupProps> = ({ title, options, nam
                 <div className="flex items-center space-x-2" key={option.id}>
                     <RadioGroupItem value={String(option.id)} id={`${title}-${option.id}`} />
                     <Label htmlFor={`${title}-${option.id}`} className="cursor-pointer font-normal">
-                        {option[nameKey]} {/* TypeScript sekarang tahu ini valid */}
+                        {option[nameKey]}
                     </Label>
                 </div>
             ))}
@@ -108,54 +101,89 @@ const FilterRadioGroup: React.FC<FilterRadioGroupProps> = ({ title, options, nam
     </div>
 );
 
-// --- KOMPONEN FILTER UTAMA (Sekarang Type-Safe) ---
+// --- KOMPONEN FILTER UTAMA ---
 export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, filters, setFilters, onReset, resultCount }) => {
     const { isMobile } = useResponsive();
+
+    // PERUBAHAN 2: State internal untuk menampung perubahan sementara
+    const [localFilters, setLocalFilters] = React.useState<ActiveFilters>(filters);
+    const [isOpen, setIsOpen] = React.useState(false); // State untuk mengontrol buka/tutup Dialog/Sheet
+
+    // PERUBAHAN 3: Sinkronkan localFilters dengan filters dari props
+    // Ini penting agar saat `onReset` dipanggil dari parent, filter di dialog juga ikut reset
+    React.useEffect(() => {
+        setLocalFilters(filters);
+    }, [filters]);
+
+    // PERUBAHAN 4: Handler untuk menerapkan filter
+    const handleApplyFilters = () => {
+        setFilters(localFilters); // Kirim localFilters ke parent
+        setIsOpen(false); // Tutup dialog/sheet
+    };
+
+    // PERUBAHAN 5: Handler untuk mereset filter
+    const handleReset = () => {
+        onReset(); // Panggil onReset dari parent
+        setIsOpen(false); // Tutup dialog/sheet
+    };
 
     const FilterContent = (
         <div className="flex-grow space-y-6 overflow-y-auto p-6">
             <FilterRadioGroup
                 title="Asal Biji (Origin)"
-                options={filterOptions.origins} // Tipe OriginOption kompatibel dengan RadioOption
-                nameKey="origin_name"
-                value={filters.origin}
-                onValueChange={(val) => setFilters((prev) => ({ ...prev, origin: val }))}
+                options={filterOptions.origins.map((origin) => ({ id: origin.id, name: origin.origin_name }))}
+                nameKey="name"
+                value={localFilters.origin_id} // Gunakan localFilters
+                onValueChange={(val) => setLocalFilters((prev) => ({ ...prev, origin_id: val }))} // Update localFilters
             />
             <Separator />
             <FilterRadioGroup
                 title="Proses Pasca Panen"
-                options={filterOptions.processes} // Tipe ProcessOption kompatibel dengan RadioOption
-                nameKey="process_name"
-                value={filters.process}
-                onValueChange={(val) => setFilters((prev) => ({ ...prev, process: val }))}
+                options={filterOptions.processes.map((p) => ({ id: p.id, name: p.process_name }))}
+                nameKey="name"
+                value={localFilters.process_id} // Gunakan localFilters
+                onValueChange={(val) => setLocalFilters((prev) => ({ ...prev, process_id: val }))} // Update localFilters
             />
             <Separator />
             <FilterRadioGroup
                 title="Jenis Biji"
-                // Kita transform array string menjadi array objek yang sesuai dengan RadioOption
                 options={filterOptions.types.map((t) => ({ id: t, name: t }))}
                 nameKey="name"
-                value={filters.type}
-                onValueChange={(val) => setFilters((prev) => ({ ...prev, type: val }))}
+                value={localFilters.type} // Gunakan localFilters
+                onValueChange={(val) => setLocalFilters((prev) => ({ ...prev, type: val }))} // Update localFilters
             />
         </div>
     );
 
-    const isFilterActive = filters.origin !== 'all' || filters.process !== 'all' || filters.type !== 'all';
+    // PERUBAHAN 6: Periksa filter aktif berdasarkan localFilters
+    const isFilterActive =
+        localFilters.origin_id !== 'all' || localFilters.process_id !== 'all' || localFilters.type !== 'all' || localFilters.brew_method_id !== 'all';
 
     const TriggerButton = (
         <Button variant="outline" size="sm">
             <Filter className="mr-2 h-4 w-4" />
             Filter Lanjutan
-            {isFilterActive && <span className="ml-2 flex h-2 w-2 rounded-full bg-primary" />}
+            {isFilterActive && <span className="ml-2 flex h-2 w-2 rounded-full bg-green-700" />}
+        </Button>
+    );
+
+    const ResetButton = (
+        <Button variant="outline" size="sm" onClick={handleReset} className="mt-4 w-full sm:mt-0 sm:w-auto">
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Atur Ulang
         </Button>
     );
 
     // Tampilan Mobile: Gunakan Dialog
     if (isMobile) {
         return (
-            <Dialog>
-                <DialogTrigger asChild>{TriggerButton}</DialogTrigger>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                {' '}
+                {/* Kontrol buka/tutup dengan state `isOpen` */}
+                <div className="flex *:mx-1">
+                    {isFilterActive && ResetButton}
+                    <DialogTrigger asChild>{TriggerButton}</DialogTrigger>
+                </div>
                 <DialogContent className="flex h-[85%] flex-col sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Filter Lanjutan</DialogTitle>
@@ -163,12 +191,13 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, f
                     </DialogHeader>
                     {FilterContent}
                     <DialogFooter className="mt-auto flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                        <Button variant="ghost" onClick={onReset} className="w-full sm:w-auto">
+                        <Button variant="ghost" onClick={handleReset} className="w-full sm:w-auto">
                             Atur Ulang
                         </Button>
-                        <DialogClose asChild>
-                            <Button className="w-full sm:w-auto">Lihat {resultCount} Produk</Button>
-                        </DialogClose>
+                        {/* Tombol ini akan menerapkan filter dan menutup dialog */}
+                        <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
+                            Lihat {resultCount} Produk
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -177,8 +206,14 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, f
 
     // Tampilan Desktop & Tablet: Gunakan Sheet
     return (
-        <Sheet>
-            <SheetTrigger asChild>{TriggerButton}</SheetTrigger>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            {' '}
+            {/* Kontrol buka/tutup dengan state `isOpen` */}
+            <div className="flex *:mx-1">
+                {isFilterActive && ResetButton}
+                {/* {ResetButton} */}
+                <SheetTrigger asChild>{TriggerButton}</SheetTrigger>
+            </div>
             <SheetContent className="flex flex-col">
                 <SheetHeader>
                     <SheetTitle>Filter Lanjutan</SheetTitle>
@@ -186,12 +221,13 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, f
                 </SheetHeader>
                 {FilterContent}
                 <SheetFooter className="mt-auto flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-between">
-                    <Button variant="ghost" onClick={onReset} className="w-full sm:w-auto">
+                    <Button variant="ghost" onClick={handleReset} className="w-full sm:w-auto">
                         Atur Ulang
                     </Button>
-                    <SheetClose asChild>
-                        <Button className="w-full sm:w-auto">Terapkan</Button>
-                    </SheetClose>
+                    {/* Tombol ini akan menerapkan filter dan menutup sheet */}
+                    <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
+                        Terapkan
+                    </Button>
                 </SheetFooter>
             </SheetContent>
         </Sheet>

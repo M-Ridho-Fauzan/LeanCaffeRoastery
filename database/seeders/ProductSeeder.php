@@ -7,6 +7,7 @@ use App\Models\Origin;
 use App\Models\Process;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str; // DITAMBAHKAN: Untuk membuat slug
 
 class ProductSeeder extends Seeder
 {
@@ -60,6 +61,10 @@ class ProductSeeder extends Seeder
         $processes = Process::all();
         $brewMethods = BrewMethod::all();
 
+        $image1 = 'preview 1';
+        $image2 = 'preview 2';
+        $image3 = 'preview 3';
+
         // --- 3. DEKLARASI DATA PRODUK ---
         $productsData = [
             [
@@ -68,7 +73,11 @@ class ProductSeeder extends Seeder
                 'price' => 120000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Fruity, Winey, Chocolate, Brown Sugar',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Gayo'],
                 'processes' => ['Natural'],
                 'brew_methods' => ['V60', 'Aeropress', 'Kalita Wave'],
@@ -79,7 +88,11 @@ class ProductSeeder extends Seeder
                 'price' => 150000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Floral, Lemon, Black Tea, Jasmine',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Sidamo'],
                 'processes' => ['Full Washed'],
                 'brew_methods' => ['V60', 'Espresso'],
@@ -90,7 +103,11 @@ class ProductSeeder extends Seeder
                 'price' => 95000,
                 'is_specialty' => false,
                 'flavor_notes' => 'Balanced, Nutty, Caramel, Low Acidity',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Gayo', 'Brazil Cerrado'],
                 'processes' => ['Full Washed'],
                 'brew_methods' => ['Espresso', 'French Press', 'Cold Brew'],
@@ -101,7 +118,11 @@ class ProductSeeder extends Seeder
                 'price' => 135000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Sweet, Orange Peel, Maple Syrup, Clean Finish',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Antigua'],
                 'processes' => ['Honey'],
                 'brew_methods' => ['V60', 'French Press'],
@@ -112,7 +133,11 @@ class ProductSeeder extends Seeder
                 'price' => 115000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Citrus, Orange, Tamarind, Herbal',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Kintamani'],
                 'processes' => ['Natural'],
                 'brew_methods' => ['V60', 'Aeropress'],
@@ -123,7 +148,11 @@ class ProductSeeder extends Seeder
                 'price' => 165000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Blackcurrant, Tomato, Bright Acidity, Juicy',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Kenya AA'],
                 'processes' => ['Full Washed'],
                 'brew_methods' => ['V60', 'Kalita Wave'],
@@ -134,7 +163,11 @@ class ProductSeeder extends Seeder
                 'price' => 180000,
                 'is_specialty' => true,
                 'flavor_notes' => 'Cinnamon, Tropical Fruit, Winey, Complex',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Colombia Supremo'],
                 'processes' => ['Anaerobic'],
                 'brew_methods' => ['V60', 'Aeropress'],
@@ -145,7 +178,11 @@ class ProductSeeder extends Seeder
                 'price' => 85000,
                 'is_specialty' => false,
                 'flavor_notes' => 'Dark Chocolate, Roasted Nuts, Full Body',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Brazil Cerrado'],
                 'processes' => ['Natural'],
                 'brew_methods' => ['Espresso', 'French Press'],
@@ -156,7 +193,11 @@ class ProductSeeder extends Seeder
                 'price' => 110000,
                 'is_specialty' => false,
                 'flavor_notes' => 'Earthy, Spicy, Cedar, Bold Body',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Toraja'],
                 'processes' => ['Giling Basah'],
                 'brew_methods' => ['French Press', 'V60'],
@@ -167,30 +208,49 @@ class ProductSeeder extends Seeder
                 'price' => 105000,
                 'is_specialty' => false,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'image_url' => '',
+                'images' => [
+                    ['image_url' => $image1, 'is_primary' => true],
+                    ['image_url' => $image2],
+                    ['image_url' => $image3],
+                ],
                 'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
                 'processes' => ['Natural'],
                 'brew_methods' => ['Cold Brew'],
             ],
         ];
 
+
         // --- 4. LOOP DAN BUAT PRODUK BESERTA RELASINYA ---
         foreach ($productsData as $productData) {
+            // DIBENARKAN: Tambahkan pembuatan slug secara otomatis
             $product = Product::create([
                 'product_name' => $productData['product_name'],
+                'slug' => Str::slug($productData['product_name']), // INI YANG DITAMBAHKAN
                 'type' => $productData['type'],
                 'price' => $productData['price'],
                 'flavor_notes' => $productData['flavor_notes'],
                 'is_specialty' => $productData['is_specialty'],
-                'image_url' => $productData['image_url'],
             ]);
+
+            // Buat relasi gambar
+            if (!empty($productData['images'])) {
+                foreach ($productData['images'] as $imageData) {
+                    $product->images()->create([
+                        'image_url' => $imageData['image_url'],
+                        // DIBENARKAN: Hapus key 'product' yang tidak perlu
+                        'alt_text' => 'Image of ' . $productData['product_name'],
+                        'is_primary' => $imageData['is_primary'] ?? false,
+                    ]);
+                }
+            }
+
 
             // Ambil ID dari relasi berdasarkan nama
             $originIds = $origins->whereIn('origin_name', $productData['origins'])->pluck('id');
             $processIds = $processes->whereIn('process_name', $productData['processes'])->pluck('id');
             $brewMethodIds = $brewMethods->whereIn('brew_name', $productData['brew_methods'])->pluck('id');
 
-            // Hubungkan relasi
+            // Hubungkan relasi many-to-many
             $product->origins()->attach($originIds);
             $product->processes()->attach($processIds);
             $product->brewMethods()->attach($brewMethodIds);
