@@ -170,7 +170,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, f
     const ResetButton = (
         <Button variant="outline" size="sm" onClick={handleReset} className="mt-4 w-full sm:mt-0 sm:w-auto">
             <RefreshCcw className="mr-2 h-4 w-4" />
-            Atur Ulang
+            Reset Filter
         </Button>
     );
 

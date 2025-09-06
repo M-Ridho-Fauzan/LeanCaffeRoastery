@@ -2,55 +2,19 @@
  * @description      :
  * @author           : Ridho Fauzan
  * @group            :
- * @created          : 05/09/2025 - 00:20:58
+ * @created          : 06/09/2025 - 23:38:20
  *
  * MODIFICATION LOG
  * - Version         : 1.0.0
- * - Date            : 05/09/2025
+ * - Date            : 06/09/2025
  * - Author          : Ridho Fauzan
  * - Modification    :
- *
- * @Note
- *
-### Daftar URL API yang Dapat Diakses
-
-#### 1. `GET /api/products`
-
-*   **Tujuan**: Mengambil daftar produk yang sudah dipaginasi dan difilter.
-*   **Dipanggil oleh**: `ProductIndex.tsx` (saat halaman dimuat, filter berubah, atau halaman paginasi berubah).
-*   **Controller yang menangani**: `App\Http\Controllers\Api\ProductController@index`
-*   **Parameter Query yang Diterima**:
-    *   `page`: (wajib) Nomor halaman yang ingin diambil (misalnya, `?page=2`).
-    *   `type`: (opsional) Filter berdasarkan jenis produk (misalnya, `?type=Single+Origin`).
-    *   `origin_id`: (opsional) Filter berdasarkan ID asal biji (misalnya, `?origin_id=5`).
-    *   `process_id`: (opsional) Filter berdasarkan ID proses pasca panen (misalnya, `?process_id=3`).
-    *   `brew_method_id`: (opsional) Filter berdasarkan ID metode seduh (misalnya, `?brew_method_id=2`).
-*   **Contoh Panggilan**:
-    *   `GET /api/products?page=1`
-    *   `GET /api/products?page=2&type=House+Blend`
-    *   `GET /api/products?page=1&origin_id=10&process_id=2&brew_method_id=4`
-
-#### 2. `GET /api/filter-options`
-
-*   **Tujuan**: Mengambil daftar opsi-opsi yang tersedia untuk filter produk (seperti daftar asal biji, proses, metode seduh, dan jenis produk).
-*   **Dipanggil oleh**: `ProductIndex.tsx` (saat komponen `ProductIndex` pertama kali dimuat).
-*   **Controller yang menangani**: `App\Http\Controllers\Api\FilterOptionsController@__invoke`
-*   **Parameter Query yang Diterima**: Tidak ada parameter query spesifik yang digunakan oleh controller ini.
-*   **Contoh Panggilan**: `GET /api/filter-options`
-
-#### 3. `GET /products/{slug}`
-
-*   **Tujuan**: Menampilkan halaman detail untuk produk tertentu. Ini adalah rute InertiaJS, bukan API murni yang mengembalikan JSON, melainkan HTML yang di-hydrate oleh React. Namun, InertiaJS secara internal akan membuat permintaan ke backend untuk mendapatkan data produk yang relevan untuk halaman tersebut.
-*   **Dipanggil oleh**: Komponen `<Link>` di `ProductCard.tsx` (saat pengguna mengklik kartu produk).
-*   **Controller yang menangani**: `App\Http\Controllers\Api\ProductController@show` (Asumsi ini adalah controller yang sama yang melayani rute web Inertia untuk detail produk).
-*   **Parameter Path**: `{slug}` adalah slug unik dari produk (misalnya, `/products/kopi-arabika-gayo`).
-*   **Contoh Panggilan**: `GET /products/kopi-arabika-gayo`
  **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react'; // Tambahkan 'router' untuk pushState URL
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react'; // useMemo tidak lagi diperlukan untuk filtering
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Komponen UI dari shadcn/ui
 import { Badge } from '@/components/ui/badge';
@@ -59,13 +23,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Ikon dari lucide-react
-import { MapPin, Recycle, Wheat } from 'lucide-react'; // Tambahkan ChevronLeft, ChevronRight
+import { MapPin, Recycle, Wheat } from 'lucide-react';
 
 // Komponen Filter Kustom
-import { PaginationControls } from '@/components/pagination-controls'; // Import komponen paginasi
 import { ProductFilters } from '@/components/product-filters';
 
-// --- Definisi Tipe Data ---
+// --- Definisi Tipe Data (Pastikan ini sesuai dengan ProductResource Anda) ---
 interface BrewMethod {
     id: number;
     brew_name: string;
@@ -81,12 +44,11 @@ interface Process {
 
 interface ProductImage {
     id: number;
-    url: string; // Properti ini dari ProductImageResource, sesuaikan jika Anda menggunakan 'image_url'
+    url: string;
     alt_text: string | null;
     is_primary: boolean;
 }
 
-// PERUBAHAN 1: Sesuaikan interface Product dengan respons API yang baru
 interface Product {
     id: number;
     slug: string;
@@ -95,42 +57,35 @@ interface Product {
     flavor_notes: string;
     type: string;
     is_specialty: boolean;
-    primary_image_url: string | null; // Ganti dari thumbnail_url
+    primary_image_url: string | null;
     origins: Origin[];
     processes: Process[];
     brew_methods: BrewMethod[];
-    images: ProductImage[]; // Relasi images penuh
+    images: ProductImage[];
 }
 
-// PERUBAHAN 2: Tambahkan tipe untuk objek paginasi dari Laravel
-// interface PaginatedResponse<T> {
-//     data: T[];
-//     current_page: number;
-//     first_page_url: string | null;
-//     from: number | null;
-//     last_page: number;
-//     last_page_url: string | null;
-//     links: { url: string | null; label: string; active: boolean }[];
-//     next_page_url: string | null;
-//     path: string;
-//     per_page: number;
-//     prev_page_url: string | null;
-//     to: number | null;
-//     total: number;
-// }
+interface PaginationLinks {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+}
+
 interface PaginationMeta {
     current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
     from: number | null;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+    path: string;
+    per_page: number;
     to: number | null;
+    total: number;
 }
+
 interface PaginatedResponse<T> {
     data: T[];
-    meta?: PaginationMeta; // untuk Resource Collection
-    current_page?: number; // untuk Paginator default
-    last_page?: number; // untuk Paginator default
+    links: PaginationLinks;
+    meta: PaginationMeta;
 }
 
 interface FilterOptions {
@@ -140,43 +95,38 @@ interface FilterOptions {
     types: string[];
 }
 
-// PERUBAHAN 3: Sesuaikan tipe ActiveFilters agar match dengan query parameter backend
 interface ActiveFilters {
     type: string;
     origin_id: string;
-    process_id: string; // Tambahkan ini jika Anda akan mengimplementasikan filter proses di backend
-    brew_method_id: string; // Tambahkan ini jika Anda ingin filter brew method juga server-side
+    process_id: string;
+    brew_method_id: string;
 }
 
 interface ZiggyProps {
-    query?: { [key: string]: string | string[] }; // 'query' bisa saja undefined
-    // Anda bisa tambahkan properti Ziggy lainnya di sini jika diperlukan, seperti 'url', 'routes'
+    query?: { [key: string]: string | string[] };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Menu', href: route('products.index') }];
 
-// --- Komponen Halaman Utama ---
 export default function ProductIndex() {
-    // const { ziggy } = usePage().props as { ziggy: { query: { [key: string]: string | string[] } } };
-    // const ziggy = (usePage().props as any).ziggy as { query: { [key: string]: string | string[] } };
     const { ziggy } = usePage().props as { ziggy?: ZiggyProps };
     const currentQuery = ziggy?.query || {};
 
-    // PERUBAHAN 4: State management dirombak total
-    // `products` sekarang menampung seluruh objek paginasi dari Laravel.
-    const [products, setProducts] = useState<PaginatedResponse<Product> | null>(null);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [pageToFetch, setPageToFetch] = useState<number>(Number(currentQuery.page || 1));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingInitial, setIsLoadingInitial] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [totalResults, setTotalResults] = useState(0);
+
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         brewMethods: [],
         origins: [],
         processes: [],
         types: [],
     });
-
-    // const [page, setPage] = useState(1);
-    // PERBAIKAN 1: Inisialisasi state `page` dari URL query
-    const [page, setPage] = useState<number>(Number(currentQuery.page || 1));
-
-    // PERBAIKAN 2: Inisialisasi state `filters` dari URL query
     const [filters, setFilters] = useState<ActiveFilters>(() => {
         const initialFilters: ActiveFilters = {
             type: 'all',
@@ -184,92 +134,214 @@ export default function ProductIndex() {
             process_id: 'all',
             brew_method_id: 'all',
         };
-        if (currentQuery.type) initialFilters.type = String(currentQuery.type);
-        if (currentQuery.origin_id) initialFilters.origin_id = String(currentQuery.origin_id);
-        if (currentQuery.process_id) initialFilters.process_id = String(currentQuery.process_id);
-        if (currentQuery.brew_method_id) initialFilters.brew_method_id = String(currentQuery.brew_method_id);
+        if (currentQuery.type && currentQuery.type !== 'all') initialFilters.type = String(currentQuery.type);
+        if (currentQuery.origin_id && currentQuery.origin_id !== 'all') initialFilters.origin_id = String(currentQuery.origin_id);
+        if (currentQuery.process_id && currentQuery.process_id !== 'all') initialFilters.process_id = String(currentQuery.process_id);
+        if (currentQuery.brew_method_id && currentQuery.brew_method_id !== 'all') initialFilters.brew_method_id = String(currentQuery.brew_method_id);
         return initialFilters;
     });
 
-    const [loading, setLoading] = useState(true);
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+    const isFiltersChanged = useRef(false);
+    const hasFetchedInitialData = useRef(false);
 
-    // Gunakan useRef untuk melacak apakah ini render pertama atau tidak
-    // Ini membantu mencegah router.visit pada mount awal jika URL sudah cocok
-    const isInitialMount = useRef(true);
+    // --- Efek untuk Mengambil Produk ---
+    const fetchProducts = useCallback(async () => {
+        // Tambahkan parameter untuk membedakan pemicu
+        // Guard untuk mencegah request ganda
+        if (isLoadingInitial || isLoadingMore) {
+            // console.log("Guard: Already loading.");
+            return;
+        }
+        if (!hasMore && pageToFetch > 1 && !isFiltersChanged.current) {
+            // Pastikan tidak ada halaman lagi untuk load more, kecuali filter baru diubah
+            // console.log("Guard: No more pages.");
+            return;
+        }
 
-    // PERUBAHAN 6: `useEffect` utama untuk fetching produk
-    // Efek ini akan berjalan ulang setiap kali `filters` atau `page` berubah
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
+        const isFilterOrInitialLoad = pageToFetch === 1 || isFiltersChanged.current;
 
-            // Bangun query object sekali saja
-            const query: Record<string, string | number> = { page };
-            if (filters.type !== 'all') query.type = filters.type;
-            if (filters.origin_id !== 'all') query.origin_id = filters.origin_id;
-            if (filters.process_id !== 'all') query.process_id = filters.process_id;
-            if (filters.brew_method_id !== 'all') query.brew_method_id = filters.brew_method_id;
+        // console.log("Fetching products...", { pageToFetch, isFilterOrInitialLoad, isTriggeredByObserver });
 
-            try {
-                // 1. Fetch API dengan query lengkap
-                const res = await axios.get<PaginatedResponse<Product>>(route('products.index.api'), {
-                    params: query,
-                });
-                setProducts(res.data);
+        if (isFilterOrInitialLoad) {
+            setIsLoadingInitial(true);
+            setAllProducts([]); // Kosongkan produk saat filter/inisial load
+            setHasMore(true); // Asumsikan ada halaman berikutnya untuk halaman 1
+            // console.log("Set isLoadingInitial true, products cleared.");
+        } else {
+            setIsLoadingMore(true);
+            // console.log("Set isLoadingMore true.");
+        }
 
-                // 2. Update URL browser tanpa reload
-                router.visit(route('products.index', query), {
-                    preserveScroll: true,
-                    replace: true,
-                    preserveState: true,
-                });
-            } catch (error) {
-                console.error('Gagal mengambil data produk:', error);
-            } finally {
-                setLoading(false);
-                isInitialMount.current = false;
+        const queryParams: Record<string, string | number> = { page: pageToFetch };
+        if (filters.type !== 'all') queryParams.type = filters.type;
+        if (filters.origin_id !== 'all') queryParams.origin_id = filters.origin_id;
+        if (filters.process_id !== 'all') queryParams.process_id = filters.process_id;
+        if (filters.brew_method_id !== 'all') queryParams.brew_method_id = filters.brew_method_id;
+
+        try {
+            const res = await axios.get<PaginatedResponse<Product>>(route('products.index.api'), {
+                params: queryParams,
+            });
+
+            setAllProducts((prevProducts) => (isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data]));
+
+            setNextPageUrl(res.data.links.next);
+            setHasMore(!!res.data.links.next);
+            setTotalResults(res.data.meta.total);
+
+            if (res.data.links.next) {
+                const url = new URL(res.data.links.next);
+                setPageToFetch(Number(url.searchParams.get('page')));
+            } else {
+                setPageToFetch(res.data.meta.last_page + 1);
             }
-        };
 
-        fetchProducts();
-    }, [filters, page]);
+            if (isFilterOrInitialLoad) {
+                // Hanya update URL jika ini perubahan filter/initial load
+                const currentBrowserParams = new URLSearchParams(window.location.search);
+                const newParams = new URLSearchParams(queryParams as Record<string, string>);
 
-    // PERUBAHAN 7: `useEffect` terpisah untuk mengambil opsi filter (hanya sekali)
+                let paramsChanged = false;
+                for (const [key, value] of newParams.entries()) {
+                    if (currentBrowserParams.get(key) !== value) {
+                        paramsChanged = true;
+                        break;
+                    }
+                }
+                if (!paramsChanged) {
+                    for (const [key, value] of currentBrowserParams.entries()) {
+                        if (newParams.get(key) !== value) {
+                            paramsChanged = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (paramsChanged || (window.location.search === '' && Object.keys(queryParams).length > 0)) {
+                    router.visit(route('products.index', queryParams), {
+                        preserveScroll: true,
+                        replace: true,
+                        preserveState: true,
+                    });
+                }
+            }
+
+            if (isFilterOrInitialLoad) {
+                // Set ini hanya untuk load awal atau filter baru
+                hasFetchedInitialData.current = true;
+            }
+        } catch (error) {
+            console.error('Gagal mengambil data produk:', error);
+        } finally {
+            setIsLoadingInitial(false);
+            setIsLoadingMore(false);
+            isFiltersChanged.current = false; // Reset flag setelah fetch selesai
+            // console.log("Loading finished.", { isLoadingInitial, isLoadingMore, isFiltersChanged: isFiltersChanged.current });
+        }
+    }, [filters, pageToFetch, hasMore, isLoadingInitial, isLoadingMore]);
+
+    // --- Efek untuk memicu fetchProducts saat `filters` atau `pageToFetch` berubah (BUKAN DARI SCROLL) ---
+    useEffect(() => {
+        // PERBAIKAN 4: Guard yang lebih spesifik untuk pemicu awal/filter
+        // Panggil fetchProducts hanya jika:
+        // 1. Ini adalah perubahan filter/tab (isFiltersChanged.current true)
+        // 2. Ini adalah load awal halaman 1 DAN belum pernah fetch data awal
+        // (Scroll akan ditangani oleh IntersectionObserver secara terpisah)
+
+        if (isFiltersChanged.current) {
+            // console.log("useEffect: Filters changed, triggering fetch.");
+            fetchProducts(); // Ini akan fetch page 1 dengan filter baru
+        } else if (pageToFetch === 1 && !hasFetchedInitialData.current && !isLoadingInitial && !isLoadingMore) {
+            // console.log("useEffect: Initial page 1 load, triggering fetch.");
+            fetchProducts(); // Ini akan fetch page 1 pertama kali
+        }
+        // Jangan panggil fetchProducts di sini untuk pageToFetch > 1, itu urusan observer
+    }, [filters, pageToFetch, fetchProducts, hasFetchedInitialData, isLoadingInitial, isLoadingMore]);
+
+    // --- Efek untuk Mengambil Opsi Filter (hanya sekali saat mount) ---
     useEffect(() => {
         const fetchFilterOptions = async () => {
             try {
-                const res = await axios.get(route('filters.options.api'));
+                const res = await axios.get<FilterOptions>(route('filters.options.api'));
                 setFilterOptions(res.data);
             } catch (error) {
                 console.error('Gagal mengambil opsi filter:', error);
             }
         };
         fetchFilterOptions();
-    }, []); // Dependencies kosong, dijalankan sekali saat mount
+    }, []);
 
-    // Data yang akan ditampilkan adalah dari objek paginasi
-    const displayedProducts = products?.data || [];
+    // --- Efek untuk Deteksi Scroll (IntersectionObserver) ---
+    useEffect(() => {
+        if (!loadMoreRef.current) return;
 
-    // PERUBAHAN 8: Handler untuk perubahan filter dari ProductFilters
+        const node = loadMoreRef.current; // Copy ref value to a variable
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                // PERBAIKAN 5: Logic IntersectionObserver yang lebih ketat
+                // Panggil fetchProducts HANYA jika:
+                // 1. Elemen terlihat (entries[0].isIntersecting)
+                // 2. Masih ada halaman berikutnya (hasMore)
+                // 3. Tidak sedang dalam proses loading (baik initial maupun more)
+                // 4. Data awal sudah berhasil diambil (hasFetchedInitialData.current)
+                // 5. Bukan karena filter/tab baru saja diubah (agar tidak konflik dengan pemicu fetchProducts lainnya)
+                if (
+                    entries[0].isIntersecting &&
+                    hasMore &&
+                    !isLoadingInitial &&
+                    !isLoadingMore &&
+                    hasFetchedInitialData.current &&
+                    !isFiltersChanged.current // Tambahkan ini
+                ) {
+                    // console.log("Observer: Triggering fetch for next page.");
+                    fetchProducts(); // Panggil tanpa argumen
+                }
+            },
+            {
+                root: null,
+                // PERBAIKAN 6: Sesuaikan rootMargin. Misalnya, picu 200px sebelum mencapai bagian bawah.
+                rootMargin: '0px 0px 200px 0px', // Top, Right, Bottom, Left. Bottom 200px berarti trigger lebih awal.
+                // threshold: 0.1, // Mungkin perlu diatur lebih rendah jika observer tidak terpicu sama sekali
+            },
+        );
+
+        observer.observe(node);
+
+        return () => {
+            if (node) {
+                observer.unobserve(node);
+            }
+        };
+    }, [hasMore, isLoadingInitial, isLoadingMore, fetchProducts, hasFetchedInitialData]); // Tambahkan fetchProducts & hasFetchedInitialData
+
+    // --- Handler untuk Perubahan Filter ---
     const handleFilterChange = (newFilters: ActiveFilters) => {
-        setPage(1); // Setiap kali filter diubah, kembali ke halaman 1
         setFilters(newFilters);
+        setPageToFetch(1);
+        isFiltersChanged.current = true; // Set flag
+        hasFetchedInitialData.current = false; // Reset flag agar data pertama di-fetch ulang
+        // console.log("Filters changed, pageToFetch reset to 1.");
     };
 
-    // PERUBAHAN 9: Handler untuk perubahan tab (brew method)
+    // --- Handler untuk Perubahan Tab (Brew Method) ---
     const handleTabChange = (brewMethodId: string | 'all') => {
-        setPage(1); // Reset halaman saat tab berubah
         setFilters((prev) => ({ ...prev, brew_method_id: String(brewMethodId) }));
-        // setFilters((prev) => ({ ...prev, brew_method_id: brewMethodId === 'all' ? 'all' : String(brewMethodId) }));
+        setPageToFetch(1);
+        isFiltersChanged.current = true; // Set flag
+        hasFetchedInitialData.current = false; // Reset flag
+        // console.log("Tab changed, pageToFetch reset to 1.");
     };
 
+    // --- Handler untuk Reset Semua Filter ---
     const resetAdvancedFilters = () => {
-        setPage(1); // Reset halaman juga
-        setFilters({ type: 'all', origin_id: 'all', process_id: 'all', brew_method_id: 'all' }); // Reset semua filter
+        setFilters({ type: 'all', origin_id: 'all', process_id: 'all', brew_method_id: 'all' });
+        setPageToFetch(1);
+        isFiltersChanged.current = true; // Set flag
+        hasFetchedInitialData.current = false; // Reset flag
+        // console.log("Filters reset, pageToFetch reset to 1.");
     };
-
-    const lastPage = products?.meta?.last_page ?? products?.last_page ?? 1;
-    const currentPage = products?.meta?.current_page ?? products?.current_page ?? page;
 
     return (
         <AppHeaderLayout breadcrumbs={breadcrumbs}>
@@ -282,26 +354,22 @@ export default function ProductIndex() {
                     <ProductFilters
                         filterOptions={filterOptions}
                         filters={filters}
-                        setFilters={handleFilterChange} // Kirim handler yang baru
+                        setFilters={handleFilterChange}
                         onReset={resetAdvancedFilters}
-                        resultCount={products?.meta?.total || 0} // Tampilkan total hasil dari server
+                        resultCount={totalResults}
                     />
                 </div>
 
                 {/* --- TABS METODE PENYAJIAN --- */}
                 <div className="relative mb-8 border-b border-gray-200">
                     <div className="scrollbar-hide -mb-px flex space-x-4 overflow-x-auto sm:space-x-8">
-                        <TabButton
-                            label="Semua"
-                            isActive={filters.brew_method_id === 'all'} // Cek dari filters.brew_method_id
-                            onClick={() => handleTabChange('all')}
-                        />
+                        <TabButton label="Semua" isActive={filters.brew_method_id === 'all'} onClick={() => handleTabChange('all')} />
                         {filterOptions.brewMethods.map((bm) => (
                             <TabButton
                                 key={bm.id}
                                 label={bm.brew_name}
-                                isActive={String(bm.id) === filters.brew_method_id} // Cek dari filters.brew_method_id
-                                onClick={() => handleTabChange(bm.id as unknown as string)} // Cast ke string
+                                isActive={String(bm.id) === filters.brew_method_id}
+                                onClick={() => handleTabChange(bm.id as unknown as string)}
                             />
                         ))}
                     </div>
@@ -309,30 +377,35 @@ export default function ProductIndex() {
 
                 {/* --- DAFTAR PRODUK --- */}
                 <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
-                    {loading ? (
-                        Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)
-                    ) : displayedProducts.length > 0 ? (
-                        displayedProducts.map((product) => <ProductCard key={product.id} product={product} />)
+                    {isLoadingInitial && allProducts.length === 0 ? (
+                        Array.from({ length: 9 }).map((_, index) => <ProductCardSkeleton key={index} />)
+                    ) : allProducts.length > 0 ? (
+                        allProducts.map((product) => <ProductCard key={product.id} product={product} />)
                     ) : (
                         <div className="col-span-full mt-16 text-center">
                             <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Kopi yang Ditemukan</h3>
                             <p className="mt-2 text-gray-500">Coba atur ulang atau ubah filter Anda untuk hasil yang lebih baik.</p>
-                            <Button
-                                onClick={() => {
-                                    resetAdvancedFilters();
-                                }}
-                                className="mt-4"
-                            >
+                            <Button onClick={resetAdvancedFilters} className="mt-4">
                                 Atur Ulang Semua Filter
                             </Button>
                         </div>
                     )}
                 </div>
 
-                {/* PERUBAHAN 10: Tambahkan komponen UI untuk Paginasi */}
-                {!loading && products && lastPage > 1 && (
-                    <div className="mt-12 flex items-center justify-center">
-                        <PaginationControls currentPage={currentPage} lastPage={lastPage} onPageChange={setPage} />
+                {/* --- LOADING INDICATOR / END OF LIST --- */}
+                {/* Pastikan div `loadMoreRef` hanya dirender jika ada potensi data lain */}
+                {hasMore && (
+                    <div ref={loadMoreRef} className="mt-12 flex justify-center py-4">
+                        {(isLoadingMore || (isLoadingInitial && allProducts.length > 0)) && <p className="text-gray-600">Loading more products...</p>}
+                        {/* Jika observer tidak pernah memicu, tapi hasMore masih true, ini akan tampil */}
+                        {!isLoadingMore && !isLoadingInitial && allProducts.length > 0 && (
+                            <p className="text-gray-500">Scroll down to load more...</p>
+                        )}
+                    </div>
+                )}
+                {!hasMore && allProducts.length > 0 && !isLoadingInitial && !isLoadingMore && (
+                    <div className="mt-12 flex justify-center py-4">
+                        <p className="text-gray-500">Anda telah mencapai akhir daftar.</p>
                     </div>
                 )}
             </div>
@@ -340,12 +413,14 @@ export default function ProductIndex() {
     );
 }
 
-// --- Komponen Pembantu (Tidak berubah signifikan kecuali image src) ---
+// ... (Komponen pembantu ProductCard, ProductCardSkeleton, InfoLine, TabButton)
+
+// --- Komponen Pembantu (Tidak berubah signifikan) ---
 
 const TabButton = ({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 focus:outline-none ${
+        className={`cursor-pointer border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 hover:underline focus:outline-none ${
             isActive ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
         }`}
     >
@@ -354,14 +429,9 @@ const TabButton = ({ label, isActive, onClick }: { label: string; isActive: bool
 );
 
 const truncateText = (text: string, maxLength: number) => {
-    // Pastikan kita memotong teks terlebih dahulu
-    const display_text = text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-
-    // Ini langkah KRUSIAL: Encode teks untuk URL
-    return encodeURIComponent(display_text);
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// PERUBAHAN 11: Sesuaikan ProductCard untuk menggunakan primary_image_url
 const ProductCard = ({ product }: { product: Product }) => (
     <Link href={route('products.show', { product: product.slug })} className="group">
         <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-200 hover:shadow-lg">
@@ -371,9 +441,8 @@ const ProductCard = ({ product }: { product: Product }) => (
                         src={
                             product.primary_image_url
                                 ? // ? product.primary_image_url
-                                  `https://placehold.co/600x400/EEE/31343C?text=${truncateText(product.product_name, 20)}`
-                                : // Ini adalah baris di mana URL placeholder dibuat
-                                  `https://placehold.co/600x400/EEE/31343C?text=${truncateText(product.product_name, 20)}`
+                                  `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(truncateText(product.product_name, 20))}`
+                                : `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(truncateText(product.product_name, 20))}`
                         }
                         alt={product.product_name}
                         className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
