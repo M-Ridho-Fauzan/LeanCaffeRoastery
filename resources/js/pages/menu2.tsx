@@ -147,44 +147,73 @@ export default function ProductIndex() {
 
     // --- Efek untuk Mengambil Produk ---
     const fetchProducts = useCallback(async () => {
-        // Tambahkan parameter untuk membedakan pemicu
-        // Guard untuk mencegah request ganda
         if (isLoadingInitial || isLoadingMore) {
-            // console.log("Guard: Already loading.");
             return;
         }
         if (!hasMore && pageToFetch > 1 && !isFiltersChanged.current) {
-            // Pastikan tidak ada halaman lagi untuk load more, kecuali filter baru diubah
-            // console.log("Guard: No more pages.");
             return;
         }
 
         const isFilterOrInitialLoad = pageToFetch === 1 || isFiltersChanged.current;
 
-        // console.log("Fetching products...", { pageToFetch, isFilterOrInitialLoad, isTriggeredByObserver });
-
         if (isFilterOrInitialLoad) {
             setIsLoadingInitial(true);
-            setAllProducts([]); // Kosongkan produk saat filter/inisial load
-            setHasMore(true); // Asumsikan ada halaman berikutnya untuk halaman 1
-            // console.log("Set isLoadingInitial true, products cleared.");
+            setAllProducts([]);
+            setHasMore(true);
         } else {
             setIsLoadingMore(true);
-            // console.log("Set isLoadingMore true.");
         }
 
-        const queryParams: Record<string, string | number> = { page: pageToFetch };
-        if (filters.type !== 'all') queryParams.type = filters.type;
-        if (filters.origin_id !== 'all') queryParams.origin_id = filters.origin_id;
-        if (filters.process_id !== 'all') queryParams.process_id = filters.process_id;
-        if (filters.brew_method_id !== 'all') queryParams.brew_method_id = filters.brew_method_id;
+        // --- Perbedaan utama di sini: Dua set queryParams ---
+        // 1. queryParams untuk permintaan API (selalu sertakan `page`)
+        const apiQueryParams: Record<string, string | number> = { page: pageToFetch };
+        if (filters.type !== 'all') apiQueryParams.type = filters.type;
+        if (filters.origin_id !== 'all') apiQueryParams.origin_id = filters.origin_id;
+        if (filters.process_id !== 'all') apiQueryParams.process_id = filters.process_id;
+        if (filters.brew_method_id !== 'all') apiQueryParams.brew_method_id = filters.brew_method_id;
+
+        // 2. browserUrlParams untuk URL di browser (hilangkan `page=1` jika pageToFetch adalah 1)
+        const browserUrlParams: Record<string, string | number> = {};
+        if (filters.type !== 'all') browserUrlParams.type = filters.type;
+        if (filters.origin_id !== 'all') browserUrlParams.origin_id = filters.origin_id;
+        if (filters.process_id !== 'all') browserUrlParams.process_id = filters.process_id;
+        if (filters.brew_method_id !== 'all') browserUrlParams.brew_method_id = filters.brew_method_id;
+        // Hanya tambahkan `page` ke URL browser jika pageToFetch > 1
+        if (pageToFetch > 1) {
+            browserUrlParams.page = pageToFetch;
+        }
+        // --- Akhir perbedaan ---
 
         try {
             const res = await axios.get<PaginatedResponse<Product>>(route('products.index.api'), {
-                params: queryParams,
+                params: apiQueryParams, // Gunakan apiQueryParams untuk permintaan API
             });
 
-            setAllProducts((prevProducts) => (isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data]));
+            // setAllProducts((prevProducts) => {
+            //     const newProducts = isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data];
+            //     console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
+            //     console.log(`[Total Produk Dimuat] ${newProducts.length} produk.`);
+            //     return newProducts;
+            // });
+
+            // --- setAllProducts dengan pengecekan duplikat ---
+            setAllProducts((prevProducts) => {
+                let updatedProducts: Product[];
+
+                if (isFilterOrInitialLoad) {
+                    updatedProducts = res.data.data; // Jika ini load awal/filter, mulai dari nol
+                } else {
+                    // Jika ini load more, gabungkan dan pastikan unik
+                    const existingProductIds = new Set(prevProducts.map((p) => p.id));
+                    const newUniqueProducts = res.data.data.filter((p) => !existingProductIds.has(p.id));
+                    updatedProducts = [...prevProducts, ...newUniqueProducts];
+                }
+
+                console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
+                console.log(`[Total Produk Dimuat] ${updatedProducts.length} produk.`);
+
+                return updatedProducts;
+            });
 
             setNextPageUrl(res.data.links.next);
             setHasMore(!!res.data.links.next);
@@ -197,29 +226,36 @@ export default function ProductIndex() {
                 setPageToFetch(res.data.meta.last_page + 1);
             }
 
+            // --- Inertia router.visit Logic (menggunakan browserUrlParams) ---
             if (isFilterOrInitialLoad) {
-                // Hanya update URL jika ini perubahan filter/initial load
                 const currentBrowserParams = new URLSearchParams(window.location.search);
-                const newParams = new URLSearchParams(queryParams as Record<string, string>);
+                const newBrowserUrlParams = new URLSearchParams(browserUrlParams as Record<string, string>);
 
                 let paramsChanged = false;
-                for (const [key, value] of newParams.entries()) {
-                    if (currentBrowserParams.get(key) !== value) {
+                // Cek apakah ada parameter di currentBrowserParams yang tidak ada di newBrowserUrlParams
+                for (const [key, value] of currentBrowserParams.entries()) {
+                    if (newBrowserUrlParams.get(key) !== value) {
                         paramsChanged = true;
                         break;
                     }
                 }
+                // Cek apakah ada parameter di newBrowserUrlParams yang tidak ada di currentBrowserParams
                 if (!paramsChanged) {
-                    for (const [key, value] of currentBrowserParams.entries()) {
-                        if (newParams.get(key) !== value) {
+                    for (const [key, value] of newBrowserUrlParams.entries()) {
+                        if (currentBrowserParams.get(key) !== value) {
                             paramsChanged = true;
                             break;
                         }
                     }
                 }
+                // Kondisi tambahan: Jika URL saat ini punya `?page=1` tapi kita mau menghilangkannya
+                if (!paramsChanged && currentBrowserParams.has('page') && currentBrowserParams.get('page') === '1' && pageToFetch === 1) {
+                    paramsChanged = true;
+                }
 
-                if (paramsChanged || (window.location.search === '' && Object.keys(queryParams).length > 0)) {
-                    router.visit(route('products.index', queryParams), {
+                if (paramsChanged) {
+                    router.visit(route('products.index', browserUrlParams), {
+                        // Gunakan browserUrlParams di sini
                         preserveScroll: true,
                         replace: true,
                         preserveState: true,
@@ -228,7 +264,6 @@ export default function ProductIndex() {
             }
 
             if (isFilterOrInitialLoad) {
-                // Set ini hanya untuk load awal atau filter baru
                 hasFetchedInitialData.current = true;
             }
         } catch (error) {
@@ -236,8 +271,7 @@ export default function ProductIndex() {
         } finally {
             setIsLoadingInitial(false);
             setIsLoadingMore(false);
-            isFiltersChanged.current = false; // Reset flag setelah fetch selesai
-            // console.log("Loading finished.", { isLoadingInitial, isLoadingMore, isFiltersChanged: isFiltersChanged.current });
+            isFiltersChanged.current = false;
         }
     }, [filters, pageToFetch, hasMore, isLoadingInitial, isLoadingMore]);
 
