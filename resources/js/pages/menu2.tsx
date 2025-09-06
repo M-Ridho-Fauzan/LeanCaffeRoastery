@@ -16,6 +16,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 // Komponen UI dari shadcn/ui
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -145,46 +147,89 @@ export default function ProductIndex() {
     const isFiltersChanged = useRef(false);
     const hasFetchedInitialData = useRef(false);
 
+    // --- Virtualization Setup ---
+    // const parentRef = useRef<HTMLDivElement>(null); // TIDAK LAGI DIGUNAKAN
+
+    const itemsPerRow = 3;
+    const rowCount = Math.ceil(allProducts.length / itemsPerRow);
+
+    const rowVirtualizer = useVirtualizer({
+        count: rowCount,
+        getScrollElement: () => document.documentElement, // <<< PENTING: Gunakan window sebagai scroll parent
+        estimateSize: useCallback(() => 650, []), // Estimasi tinggi rata-rata satu BARIS dari 3 produk + gap
+        overscan: 3,
+    });
+    // =======================================
+
     // --- Efek untuk Mengambil Produk ---
     const fetchProducts = useCallback(async () => {
-        // Tambahkan parameter untuk membedakan pemicu
-        // Guard untuk mencegah request ganda
         if (isLoadingInitial || isLoadingMore) {
-            // console.log("Guard: Already loading.");
             return;
         }
         if (!hasMore && pageToFetch > 1 && !isFiltersChanged.current) {
-            // Pastikan tidak ada halaman lagi untuk load more, kecuali filter baru diubah
-            // console.log("Guard: No more pages.");
             return;
         }
 
         const isFilterOrInitialLoad = pageToFetch === 1 || isFiltersChanged.current;
 
-        // console.log("Fetching products...", { pageToFetch, isFilterOrInitialLoad, isTriggeredByObserver });
-
         if (isFilterOrInitialLoad) {
             setIsLoadingInitial(true);
-            setAllProducts([]); // Kosongkan produk saat filter/inisial load
-            setHasMore(true); // Asumsikan ada halaman berikutnya untuk halaman 1
-            // console.log("Set isLoadingInitial true, products cleared.");
+            setAllProducts([]);
+            setHasMore(true);
         } else {
             setIsLoadingMore(true);
-            // console.log("Set isLoadingMore true.");
         }
 
-        const queryParams: Record<string, string | number> = { page: pageToFetch };
-        if (filters.type !== 'all') queryParams.type = filters.type;
-        if (filters.origin_id !== 'all') queryParams.origin_id = filters.origin_id;
-        if (filters.process_id !== 'all') queryParams.process_id = filters.process_id;
-        if (filters.brew_method_id !== 'all') queryParams.brew_method_id = filters.brew_method_id;
+        // --- Perbedaan utama di sini: Dua set queryParams ---
+        // 1. queryParams untuk permintaan API (selalu sertakan `page`)
+        const apiQueryParams: Record<string, string | number> = { page: pageToFetch };
+        if (filters.type !== 'all') apiQueryParams.type = filters.type;
+        if (filters.origin_id !== 'all') apiQueryParams.origin_id = filters.origin_id;
+        if (filters.process_id !== 'all') apiQueryParams.process_id = filters.process_id;
+        if (filters.brew_method_id !== 'all') apiQueryParams.brew_method_id = filters.brew_method_id;
+
+        // 2. browserUrlParams untuk URL di browser (hilangkan `page=1` jika pageToFetch adalah 1)
+        const browserUrlParams: Record<string, string | number> = {};
+        if (filters.type !== 'all') browserUrlParams.type = filters.type;
+        if (filters.origin_id !== 'all') browserUrlParams.origin_id = filters.origin_id;
+        if (filters.process_id !== 'all') browserUrlParams.process_id = filters.process_id;
+        if (filters.brew_method_id !== 'all') browserUrlParams.brew_method_id = filters.brew_method_id;
+        // Hanya tambahkan `page` ke URL browser jika pageToFetch > 1
+        if (pageToFetch > 1) {
+            browserUrlParams.page = pageToFetch;
+        }
+        // --- Akhir perbedaan ---
 
         try {
             const res = await axios.get<PaginatedResponse<Product>>(route('products.index.api'), {
-                params: queryParams,
+                params: apiQueryParams, // Gunakan apiQueryParams untuk permintaan API
             });
 
-            setAllProducts((prevProducts) => (isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data]));
+            // setAllProducts((prevProducts) => {
+            //     const newProducts = isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data];
+            //     console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
+            //     console.log(`[Total Produk Dimuat] ${newProducts.length} produk.`);
+            //     return newProducts;
+            // });
+
+            // --- setAllProducts dengan pengecekan duplikat ---
+            setAllProducts((prevProducts) => {
+                let updatedProducts: Product[];
+
+                if (isFilterOrInitialLoad) {
+                    updatedProducts = res.data.data; // Jika ini load awal/filter, mulai dari nol
+                } else {
+                    // Jika ini load more, gabungkan dan pastikan unik
+                    const existingProductIds = new Set(prevProducts.map((p) => p.id));
+                    const newUniqueProducts = res.data.data.filter((p) => !existingProductIds.has(p.id));
+                    updatedProducts = [...prevProducts, ...newUniqueProducts];
+                }
+
+                console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
+                console.log(`[Total Produk Dimuat] ${updatedProducts.length} produk.`);
+
+                return updatedProducts;
+            });
 
             setNextPageUrl(res.data.links.next);
             setHasMore(!!res.data.links.next);
@@ -197,29 +242,36 @@ export default function ProductIndex() {
                 setPageToFetch(res.data.meta.last_page + 1);
             }
 
+            // --- Inertia router.visit Logic (menggunakan browserUrlParams) ---
             if (isFilterOrInitialLoad) {
-                // Hanya update URL jika ini perubahan filter/initial load
                 const currentBrowserParams = new URLSearchParams(window.location.search);
-                const newParams = new URLSearchParams(queryParams as Record<string, string>);
+                const newBrowserUrlParams = new URLSearchParams(browserUrlParams as Record<string, string>);
 
                 let paramsChanged = false;
-                for (const [key, value] of newParams.entries()) {
-                    if (currentBrowserParams.get(key) !== value) {
+                // Cek apakah ada parameter di currentBrowserParams yang tidak ada di newBrowserUrlParams
+                for (const [key, value] of currentBrowserParams.entries()) {
+                    if (newBrowserUrlParams.get(key) !== value) {
                         paramsChanged = true;
                         break;
                     }
                 }
+                // Cek apakah ada parameter di newBrowserUrlParams yang tidak ada di currentBrowserParams
                 if (!paramsChanged) {
-                    for (const [key, value] of currentBrowserParams.entries()) {
-                        if (newParams.get(key) !== value) {
+                    for (const [key, value] of newBrowserUrlParams.entries()) {
+                        if (currentBrowserParams.get(key) !== value) {
                             paramsChanged = true;
                             break;
                         }
                     }
                 }
+                // Kondisi tambahan: Jika URL saat ini punya `?page=1` tapi kita mau menghilangkannya
+                if (!paramsChanged && currentBrowserParams.has('page') && currentBrowserParams.get('page') === '1' && pageToFetch === 1) {
+                    paramsChanged = true;
+                }
 
-                if (paramsChanged || (window.location.search === '' && Object.keys(queryParams).length > 0)) {
-                    router.visit(route('products.index', queryParams), {
+                if (paramsChanged) {
+                    router.visit(route('products.index', browserUrlParams), {
+                        // Gunakan browserUrlParams di sini
                         preserveScroll: true,
                         replace: true,
                         preserveState: true,
@@ -228,7 +280,6 @@ export default function ProductIndex() {
             }
 
             if (isFilterOrInitialLoad) {
-                // Set ini hanya untuk load awal atau filter baru
                 hasFetchedInitialData.current = true;
             }
         } catch (error) {
@@ -236,8 +287,7 @@ export default function ProductIndex() {
         } finally {
             setIsLoadingInitial(false);
             setIsLoadingMore(false);
-            isFiltersChanged.current = false; // Reset flag setelah fetch selesai
-            // console.log("Loading finished.", { isLoadingInitial, isLoadingMore, isFiltersChanged: isFiltersChanged.current });
+            isFiltersChanged.current = false;
         }
     }, [filters, pageToFetch, hasMore, isLoadingInitial, isLoadingMore]);
 
@@ -323,6 +373,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag agar data pertama di-fetch ulang
         // console.log("Filters changed, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat filter berubah
     };
 
     // --- Handler untuk Perubahan Tab (Brew Method) ---
@@ -332,6 +383,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag
         // console.log("Tab changed, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat tab berubah
     };
 
     // --- Handler untuk Reset Semua Filter ---
@@ -341,6 +393,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag
         // console.log("Filters reset, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat reset filter
     };
 
     return (
@@ -376,11 +429,59 @@ export default function ProductIndex() {
                 </div>
 
                 {/* --- DAFTAR PRODUK --- */}
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                {/* === BAGIAN INI UNTUK VIRTUALISASI === */}
+                {/* Inner container yang akan menampung item virtual.
+                    Ini adalah div yang akan membuat tinggi scrollbar halaman utama. */}
+                <div
+                    // Hapus `ref={parentRef}` dan styling `height`, `overflowY` dari sini
+                    // karena window adalah scroll parent sekarang.
+                    style={{
+                        height: `${rowVirtualizer.getTotalSize()}px`, // Tinggi total sesuai virtualizer
+                        position: 'relative', // Penting untuk posisi absolut item
+                        width: '100%',
+                    }}
+                >
                     {isLoadingInitial && allProducts.length === 0 ? (
-                        Array.from({ length: 9 }).map((_, index) => <ProductCardSkeleton key={index} />)
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                            {Array.from({ length: 9 }).map((_, index) => (
+                                <ProductCardSkeleton key={index} />
+                            ))}
+                        </div>
                     ) : allProducts.length > 0 ? (
-                        allProducts.map((product) => <ProductCard key={product.id} product={product} />)
+                        rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const startIndex = virtualRow.index * itemsPerRow;
+                            const endIndex = Math.min(startIndex + itemsPerRow, allProducts.length);
+                            const productsInRow = allProducts.slice(startIndex, endIndex);
+
+                            return (
+                                <div
+                                    key={virtualRow.key}
+                                    data-index={virtualRow.index}
+                                    ref={rowVirtualizer.measureElement}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(${itemsPerRow}, minmax(0, 1fr))`,
+                                        gap: '24px',
+                                    }}
+                                    className="py-4"
+                                >
+                                    {productsInRow.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                    {productsInRow.length < itemsPerRow &&
+                                        productsInRow.length == itemsPerRow &&
+                                        Array.from({ length: itemsPerRow - productsInRow.length }).map((_, idx) => (
+                                            <ProductCardSkeleton key={`skeleton-${virtualRow.index}-${idx}`} />
+                                        ))}
+                                </div>
+                            );
+                        })
                     ) : (
                         <div className="col-span-full mt-16 text-center">
                             <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Kopi yang Ditemukan</h3>
@@ -391,6 +492,7 @@ export default function ProductIndex() {
                         </div>
                     )}
                 </div>
+                {/* === AKHIR PERUBAHAN VIRTUALISASI === */}
 
                 {/* --- LOADING INDICATOR / END OF LIST --- */}
                 {/* Pastikan div `loadMoreRef` hanya dirender jika ada potensi data lain */}

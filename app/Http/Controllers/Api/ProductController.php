@@ -20,7 +20,8 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->with(['origins', 'processes', 'brewMethods', 'images', 'primaryImage']) // Pastikan primaryImage juga dimuat
-            ->latest()
+            // ->latest()
+            ->orderByRaw('is_specialty DESC, product_name ASC')
             ->when($request->type, function (Builder $query, string $type) {
                 $query->where('type', $type);
             })

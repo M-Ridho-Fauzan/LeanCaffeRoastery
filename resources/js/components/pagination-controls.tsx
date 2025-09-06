@@ -3,6 +3,7 @@
  * @author           : Ridho Fauzan
  * @group            :
  * @created          : 05/09/2025 - 00:29:42
+ * @status           : Tidak di gunakan
  *
  * MODIFICATION LOG
  * - Version         : 1.0.0
