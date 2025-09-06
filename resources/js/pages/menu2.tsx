@@ -16,6 +16,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 // Komponen UI dari shadcn/ui
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -144,6 +146,20 @@ export default function ProductIndex() {
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const isFiltersChanged = useRef(false);
     const hasFetchedInitialData = useRef(false);
+
+    // --- Virtualization Setup ---
+    // const parentRef = useRef<HTMLDivElement>(null); // TIDAK LAGI DIGUNAKAN
+
+    const itemsPerRow = 3;
+    const rowCount = Math.ceil(allProducts.length / itemsPerRow);
+
+    const rowVirtualizer = useVirtualizer({
+        count: rowCount,
+        getScrollElement: () => document.documentElement, // <<< PENTING: Gunakan window sebagai scroll parent
+        estimateSize: useCallback(() => 650, []), // Estimasi tinggi rata-rata satu BARIS dari 3 produk + gap
+        overscan: 3,
+    });
+    // =======================================
 
     // --- Efek untuk Mengambil Produk ---
     const fetchProducts = useCallback(async () => {
@@ -357,6 +373,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag agar data pertama di-fetch ulang
         // console.log("Filters changed, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat filter berubah
     };
 
     // --- Handler untuk Perubahan Tab (Brew Method) ---
@@ -366,6 +383,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag
         // console.log("Tab changed, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat tab berubah
     };
 
     // --- Handler untuk Reset Semua Filter ---
@@ -375,6 +393,7 @@ export default function ProductIndex() {
         isFiltersChanged.current = true; // Set flag
         hasFetchedInitialData.current = false; // Reset flag
         // console.log("Filters reset, pageToFetch reset to 1.");
+        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat reset filter
     };
 
     return (
@@ -410,11 +429,59 @@ export default function ProductIndex() {
                 </div>
 
                 {/* --- DAFTAR PRODUK --- */}
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                {/* === BAGIAN INI UNTUK VIRTUALISASI === */}
+                {/* Inner container yang akan menampung item virtual.
+                    Ini adalah div yang akan membuat tinggi scrollbar halaman utama. */}
+                <div
+                    // Hapus `ref={parentRef}` dan styling `height`, `overflowY` dari sini
+                    // karena window adalah scroll parent sekarang.
+                    style={{
+                        height: `${rowVirtualizer.getTotalSize()}px`, // Tinggi total sesuai virtualizer
+                        position: 'relative', // Penting untuk posisi absolut item
+                        width: '100%',
+                    }}
+                >
                     {isLoadingInitial && allProducts.length === 0 ? (
-                        Array.from({ length: 9 }).map((_, index) => <ProductCardSkeleton key={index} />)
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+                            {Array.from({ length: 9 }).map((_, index) => (
+                                <ProductCardSkeleton key={index} />
+                            ))}
+                        </div>
                     ) : allProducts.length > 0 ? (
-                        allProducts.map((product) => <ProductCard key={product.id} product={product} />)
+                        rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const startIndex = virtualRow.index * itemsPerRow;
+                            const endIndex = Math.min(startIndex + itemsPerRow, allProducts.length);
+                            const productsInRow = allProducts.slice(startIndex, endIndex);
+
+                            return (
+                                <div
+                                    key={virtualRow.key}
+                                    data-index={virtualRow.index}
+                                    ref={rowVirtualizer.measureElement}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(${itemsPerRow}, minmax(0, 1fr))`,
+                                        gap: '24px',
+                                    }}
+                                    className="py-4"
+                                >
+                                    {productsInRow.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                    {productsInRow.length < itemsPerRow &&
+                                        productsInRow.length == itemsPerRow &&
+                                        Array.from({ length: itemsPerRow - productsInRow.length }).map((_, idx) => (
+                                            <ProductCardSkeleton key={`skeleton-${virtualRow.index}-${idx}`} />
+                                        ))}
+                                </div>
+                            );
+                        })
                     ) : (
                         <div className="col-span-full mt-16 text-center">
                             <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Kopi yang Ditemukan</h3>
@@ -425,6 +492,7 @@ export default function ProductIndex() {
                         </div>
                     )}
                 </div>
+                {/* === AKHIR PERUBAHAN VIRTUALISASI === */}
 
                 {/* --- LOADING INDICATOR / END OF LIST --- */}
                 {/* Pastikan div `loadMoreRef` hanya dirender jika ada potensi data lain */}
