@@ -61,9 +61,9 @@ class ProductSeeder extends Seeder
         $processes = Process::all();
         $brewMethods = BrewMethod::all();
 
-        $image1 = 'preview 1';
-        $image2 = 'preview 2';
-        $image3 = 'preview 3';
+        $image1 = '';
+        $image2 = '';
+        $image3 = '';
 
         // --- 3. DEKLARASI DATA PRODUK ---
         $productsData = [

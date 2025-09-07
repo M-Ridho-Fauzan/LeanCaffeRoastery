@@ -89,7 +89,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         // DIBENARKAN: Load semua relasi yang dibutuhkan oleh resource, termasuk images
-        $product->load(['origins', 'processes', 'brewMethods', 'images']);
+        $product->load(['origins', 'processes', 'brewMethods', 'images', 'primaryImage']);
 
         return new ProductResource($product);
     }

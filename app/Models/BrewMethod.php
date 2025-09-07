@@ -14,6 +14,6 @@ class BrewMethod extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_brew_method');
+        return $this->belongsToMany(Product::class, 'brew_method_product');
     }
 }
