@@ -18,6 +18,6 @@ class Process extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_processes');
+        return $this->belongsToMany(Product::class, 'product_process');
     }
 }

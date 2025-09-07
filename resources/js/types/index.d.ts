@@ -76,34 +76,87 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 
 // ========= Menu Interfaces
 
-export interface RoastLevel {
+interface BrewMethod {
     id: number;
-    name: string;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    brew_name: string;
+    description?: string; // Tambahkan deskripsi jika ada
+}
+interface Origin {
+    id: number;
+    origin_name: string;
+    country?: string;
+    region?: string;
+}
+interface Process {
+    id: number;
+    process_name: string;
+    description?: string; // Tambahkan deskripsi jika ada
 }
 
-export interface MenuTag {
+interface ProductImage {
     id: number;
-    name: string;
-    type: 'flavor_note' | 'brewing_method';
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    url: string;
+    alt_text: string | null;
+    is_primary: boolean;
 }
 
-export interface MenuItem {
+interface Product {
     id: number;
-    name: string;
-    description: string;
-    price: string;
-    category: string;
-    origin: string;
-    image_url: string | null;
-    roast_level: RoastLevel | null; // <-- Relasi one-to-one
-    tags: Tag[]; // <-- Relasi many-to-many (array)
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    slug: string;
+    product_name: string;
+    price: number;
+    flavor_notes: string;
+    type: string;
+    is_specialty: boolean;
+    primary_image_url: string | null;
+    origins: Origin[];
+    processes: Process[];
+    brew_methods: BrewMethod[];
+    images?: ProductImage[];
+}
+
+interface ProductResourceWrapper {
+    data: Product;
+}
+
+interface PaginationLinks {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+}
+
+interface PaginationMeta {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: { url: string | null; label: string; active: boolean }[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+}
+
+interface PaginatedResponse<T> {
+    data: T[];
+    links: PaginationLinks;
+    meta: PaginationMeta;
+}
+
+interface FilterOptions {
+    brewMethods: BrewMethod[];
+    origins: Origin[];
+    processes: Process[];
+    types: string[];
+}
+
+interface ActiveFilters {
+    type: string;
+    origin_id: string;
+    process_id: string;
+    brew_method_id: string;
+}
+
+interface ZiggyProps {
+    query?: { [key: string]: string | string[] };
 }

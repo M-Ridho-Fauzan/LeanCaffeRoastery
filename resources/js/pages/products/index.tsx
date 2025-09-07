@@ -11,7 +11,7 @@
  * - Modification    :
  **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
-import { BreadcrumbItem } from '@/types';
+import { ActiveFilters, BreadcrumbItem, FilterOptions, PaginatedResponse, Product, ZiggyProps } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -31,82 +31,6 @@ import { MapPin, Recycle, Wheat } from 'lucide-react';
 import { ProductFilters } from '@/components/product-filters';
 
 // --- Definisi Tipe Data (Pastikan ini sesuai dengan ProductResource Anda) ---
-interface BrewMethod {
-    id: number;
-    brew_name: string;
-}
-interface Origin {
-    id: number;
-    origin_name: string;
-}
-interface Process {
-    id: number;
-    process_name: string;
-}
-
-interface ProductImage {
-    id: number;
-    url: string;
-    alt_text: string | null;
-    is_primary: boolean;
-}
-
-interface Product {
-    id: number;
-    slug: string;
-    product_name: string;
-    price: number;
-    flavor_notes: string;
-    type: string;
-    is_specialty: boolean;
-    primary_image_url: string | null;
-    origins: Origin[];
-    processes: Process[];
-    brew_methods: BrewMethod[];
-    images: ProductImage[];
-}
-
-interface PaginationLinks {
-    first: string;
-    last: string;
-    prev: string | null;
-    next: string | null;
-}
-
-interface PaginationMeta {
-    current_page: number;
-    from: number | null;
-    last_page: number;
-    links: { url: string | null; label: string; active: boolean }[];
-    path: string;
-    per_page: number;
-    to: number | null;
-    total: number;
-}
-
-interface PaginatedResponse<T> {
-    data: T[];
-    links: PaginationLinks;
-    meta: PaginationMeta;
-}
-
-interface FilterOptions {
-    brewMethods: BrewMethod[];
-    origins: Origin[];
-    processes: Process[];
-    types: string[];
-}
-
-interface ActiveFilters {
-    type: string;
-    origin_id: string;
-    process_id: string;
-    brew_method_id: string;
-}
-
-interface ZiggyProps {
-    query?: { [key: string]: string | string[] };
-}
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Menu', href: route('products.index') }];
 

@@ -14,6 +14,6 @@ class Origin extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_origins');
+        return $this->belongsToMany(Product::class, 'product_origin');
     }
 }

@@ -27,8 +27,8 @@ export const platformItems: LinkItem[] = [
         roles: 'public',
     },
     {
-        title: 'Menu2',
-        href: '/menu2',
+        title: 'Menu',
+        href: '/products',
         icon: ScrollText,
         roles: 'public',
     },
