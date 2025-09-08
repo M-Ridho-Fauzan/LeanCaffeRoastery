@@ -1,47 +1,5 @@
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { Head } from '@inertiajs/react';
-import React from 'react';
-// Define a simple Breadcrumb component for demonstration
-// This mimics the functionality of the BreadcrumbItem from your original setup
-const Breadcrumb = ({ items }) => (
-    <nav className="mb-4 text-sm text-gray-600">
-        {items.map((item, index) => (
-            <React.Fragment key={item.title}>
-                <a href={item.href} className="hover:underline">
-                    {item.title}
-                </a>
-                {index < items.length - 1 && <span className="mx-2">/</span>}
-            </React.Fragment>
-        ))}
-    </nav>
-);
-
-// Define a simple Header component to mimic AppHeaderLayout
-// This component replaces the external AppHeaderLayout import
-const AppHeader = ({ breadcrumbs, title }) => (
-    <header className="bg-gray-50 py-4 shadow-sm">
-        <div className="container mx-auto px-4">
-            {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumb items={breadcrumbs} />}
-            {/* The title prop here can be used to display a page-specific title in the header */}
-            {title && <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>}
-        </div>
-    </header>
-);
-
-// Define a simple Head component to mimic @inertiajs/react Head
-// This replaces the external Head import for setting document title and linking fonts
-const CustomHead = ({ title, children }) => {
-    React.useEffect(() => {
-        if (title) {
-            document.title = title;
-        }
-        // In a real browser environment, you might append child <link> elements here,
-        // but for a self-contained React component, external CSS is usually handled by a build tool.
-        // We will include the link tags directly in the JSX for demonstration.
-    }, [title]);
-
-    return null; // This component does not render anything itself
-};
 
 const breadcrumbs = [
     {

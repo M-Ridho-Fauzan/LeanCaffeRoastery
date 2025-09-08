@@ -1,22 +1,8 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 20/08/2025 - 00:43:55
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 20/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle, TriangleAlert } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 
-import GoogleIcon from '@/components/google-icon';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,37 +10,25 @@ import AuthLayout from '@/layouts/auth-layout';
 
 export default function Register() {
     return (
-        <AuthLayout title="Create an account" description="Enter your details below to create your account">
+        <AuthLayout title="Register" description="Create your account and start your premium coffee experience">
             <Head title="Register" />
 
-            <Alert variant="destructive">
-                <TriangleAlert />
-                <AlertTitle>Peringatan (sementara)</AlertTitle>
-                <AlertDescription>
-                    Untuk login menggunakan google Oauth2, hanya bisa menggunakan email ini:
-                    <ul className="text-white">
-                        <li>
-                            <b className="text-md font-extrabold text-red-600">Id: </b>leancofferoastery.service@gmail.com
-                        </li>
-                        <li>
-                            <b className="text-md font-extrabold text-red-600">Pw: </b>akunlean123
-                        </li>
-                    </ul>
-                </AlertDescription>
-            </Alert>
-
-            <Form
-                method="post"
-                action={route('register')}
-                resetOnSuccess={['password', 'password_confirmation']}
-                disableWhileProcessing
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
+            {/* Card Register */}
+            <div className="mx-auto w-full max-w-md rounded-2xl border border-indigo-200 bg-white p-8 shadow-sm">
+                <Form
+                    method="post"
+                    action={route('register')}
+                    resetOnSuccess={['password', 'password_confirmation']}
+                    disableWhileProcessing
+                    className="flex flex-col gap-6"
+                >
+                    {({ processing, errors }) => (
+                        <>
+                            {/* Full Name */}
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name" className="text-sm font-medium text-indigo-900">
+                                    Full Name
+                                </Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -63,13 +37,17 @@ export default function Register() {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    placeholder="Full name"
+                                    placeholder="Enter Your Full Name"
+                                    className="rounded-full text-sm"
                                 />
-                                <InputError message={errors.name} className="mt-2" />
+                                <InputError message={errors.name} className="mt-1" />
                             </div>
 
+                            {/* Email */}
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email" className="text-sm font-medium text-indigo-900">
+                                    Email Address
+                                </Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -77,13 +55,17 @@ export default function Register() {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    placeholder="email@example.com"
+                                    placeholder="Your@email.com"
+                                    className="rounded-full text-sm"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
+                            {/* Password */}
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password" className="text-sm font-medium text-indigo-900">
+                                    Password
+                                </Label>
                                 <Input
                                     id="password"
                                     type="password"
@@ -91,13 +73,17 @@ export default function Register() {
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="Create Strong Password"
+                                    className="rounded-full text-sm"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
+                            {/* Confirm Password */}
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">Confirm password</Label>
+                                <Label htmlFor="password_confirmation" className="text-sm font-medium text-indigo-900">
+                                    Confirm Password
+                                </Label>
                                 <Input
                                     id="password_confirmation"
                                     type="password"
@@ -105,44 +91,33 @@ export default function Register() {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    placeholder="Confirm Your Password"
+                                    className="rounded-full text-sm"
                                 />
                                 <InputError message={errors.password_confirmation} />
                             </div>
 
-                            <Button type="submit" className="mt-2 w-full" tabIndex={5}>
-                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                Create account
+                            {/* Submit */}
+                            <Button
+                                type="submit"
+                                className="mt-2 w-full rounded-full bg-indigo-900 py-2 text-sm font-medium text-white hover:bg-indigo-800"
+                                tabIndex={5}
+                                disabled={processing}
+                            >
+                                {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                Get Started
                             </Button>
-                        </div>
-                    </>
-                )}
-            </Form>
+                        </>
+                    )}
+                </Form>
 
-            <div className="relative my-1 flex items-center">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="mx-4 flex-shrink text-sm text-gray-500">Or continue with</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            {/* BTN GOOGLE */}
-            <TextLink
-                href={route('auth.redirect', 'google')}
-                tabIndex={6}
-                className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-25"
-            >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
-                    <GoogleIcon className="mr-2 h-7 w-7" />
-                </svg>
-                Sign in with Google
-            </TextLink>
-            {/* AKHIR BTN GOOGLE*/}
-
-            <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <TextLink href={route('login')} tabIndex={7}>
-                    Log in
-                </TextLink>
+                {/* Link Sign In */}
+                <div className="mt-6 text-center text-xs text-gray-500">
+                    Already have an account?{' '}
+                    <TextLink href={route('login')} className="font-semibold text-indigo-700 hover:underline" tabIndex={6}>
+                        Sign In
+                    </TextLink>
+                </div>
             </div>
         </AuthLayout>
     );

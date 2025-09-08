@@ -1,9 +1,25 @@
+import { AppHeader } from '@/components/app-header';
 import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
+import { BreadcrumbItem } from '@/types';
 
-export default function AuthLayout({ children, title, description, ...props }: { children: React.ReactNode; title: string; description: string }) {
+export default function AuthLayout({
+    children,
+    title,
+    description,
+    breadcrumbs,
+    ...props
+}: {
+    children: React.ReactNode;
+    title: string;
+    description: string;
+    breadcrumbs?: BreadcrumbItem[];
+}) {
     return (
-        <AuthLayoutTemplate title={title} description={description} {...props}>
-            {children}
-        </AuthLayoutTemplate>
+        <>
+            <AppHeader breadcrumbs={breadcrumbs} />
+            <AuthLayoutTemplate title={title} description={description} {...props}>
+                {children}
+            </AuthLayoutTemplate>
+        </>
     );
 }
