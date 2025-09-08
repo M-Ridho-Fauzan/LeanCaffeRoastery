@@ -180,7 +180,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({ filterOptions, f
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 {' '}
                 {/* Kontrol buka/tutup dengan state `isOpen` */}
-                <div className="flex *:mx-1">
+                <div className="m-auto flex flex-col *:my-1">
                     {isFilterActive && ResetButton}
                     <DialogTrigger asChild>{TriggerButton}</DialogTrigger>
                 </div>
