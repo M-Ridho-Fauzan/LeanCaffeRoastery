@@ -22,6 +22,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { footerNavItems as rightNavItems } from '@/config/navigation';
 import { useInitials } from '@/hooks/use-initials';
 import { useNavigation } from '@/hooks/use-navigation';
+import { useScrollDirection } from '@/hooks/use-scroll-direction';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -37,14 +38,50 @@ interface AppHeaderProps {
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
+
+    // Gunakan custom hook untuk mendeteksi arah scroll
+    const { scrollDirection, isAtTop } = useScrollDirection();
+
     const { auth } = page.props;
     const getInitials = useInitials();
     const user = auth.user; // Ini akan menjadi objek user atau null
     const { visiblePlatformItems } = useNavigation();
 
+    // Hitung tinggi total header untuk spacer
+    // h-16 = 64px, h-12 = 48px. Total 112px jika ada breadcrumbs.
+    const totalHeaderHeightClass = breadcrumbs.length > 1 ? 'h-[112px]' : 'h-16';
+
     return (
         <>
-            <div className="border-b border-sidebar-border/80">
+            {/*
+              Spacer Div:
+              Ini adalah elemen tak terlihat yang tingginya sama dengan header fixed.
+              Tujuannya adalah untuk mendorong konten utama di bawahnya agar tidak tersembunyi
+              oleh header yang telah dikeluarkan dari document flow.
+            */}
+            <div className={totalHeaderHeightClass}></div>
+
+            {/*
+              Container untuk Header Fixed:
+              - `fixed top-0 w-full z-50`: Membuat header tetap di atas viewport.
+              - `bg-background`: Memberikan latar belakang solid agar konten di bawah tidak terlihat.
+              - `border-b border-sidebar-border/80`: Menambahkan border bawah untuk seluruh header block.
+              - `transition-transform duration-300 ease-in-out`: Untuk animasi halus.
+              - `translate-y-0` / `-translate-y-full`: Mengontrol visibilitas header berdasarkan arah scroll.
+                - Header akan terlihat (`translate-y-0`) jika di paling atas (`isAtTop`) atau scroll ke atas (`scrollDirection === 'up'`).
+                - Header akan tersembunyi (`-translate-y-full`) jika scroll ke bawah (`scrollDirection === 'down'`)
+                  DAN tidak di paling atas halaman (`!isAtTop`).
+            */}
+            <div
+                className={cn(
+                    'fixed top-0 z-50 w-full border-b border-sidebar-border/80 bg-background transition-transform duration-300 ease-in-out',
+                    {
+                        'translate-y-0': isAtTop || scrollDirection === 'up',
+                        '-translate-y-full': scrollDirection === 'down' && !isAtTop,
+                    },
+                )}
+            >
+                {/* Bagian utama header (sebelumnya div dengan h-16) */}
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
@@ -179,15 +216,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         )}
                     </div>
                 </div>
-            </div>
-            {/* Breadcrumbs */}
-            {breadcrumbs.length > 1 && (
-                <div className="flex w-full border-b border-sidebar-border/70">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+
+                {/* Breadcrumbs - dipindahkan ke dalam container fixed */}
+                {breadcrumbs.length > 1 && (
+                    <div className="flex w-full">
+                        {' '}
+                        {/* Border bawah sudah ada di parent div fixed */}
+                        <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                            <Breadcrumbs breadcrumbs={breadcrumbs} />
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </>
     );
 }
