@@ -113,8 +113,12 @@ export default function Articles() {
                             // Card
                             <div key={index} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
                                 {/* Image placeholder with rounded top corners */}
-                                <div className="aspect-video overflow-hidden rounded-t-xl">
-                                    <img src={article.image} alt={article.title} className="h-full w-full object-cover" />
+                                <div className="group aspect-video overflow-hidden rounded-t-xl">
+                                    <img
+                                        src={article.image}
+                                        alt={article.title}
+                                        className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                    />
                                 </div>
                                 {/* Card Content */}
                                 <div className="p-6 text-gray-800">

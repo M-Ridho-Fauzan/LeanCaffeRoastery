@@ -1,3 +1,4 @@
+import AppLogoIcon from '@/components/app-logo-icon';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { Head } from '@inertiajs/react';
 
@@ -40,21 +41,21 @@ export default function Locatiom() {
 
                     <div className="container mx-auto flex flex-col items-center px-4 py-16">
                         {/* Logo Roastery Kopi Lean - Dikembalikan sesuai permintaan */}
-                        <img
-                            src="https://placehold.co/150x50/343a40/ffffff?text=Lean+Logo" // Placeholder untuk logo Roastery Kopi Lean
-                            alt="Lean Coffee Roastery Logo"
-                            className="mb-12"
-                        />
+                        <AppLogoIcon width="150" className="my-5" />
 
                         {/* Kartu Lokasi - ini adalah konten utama sekarang */}
                         <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-lg">
                             {/* Gambar Lokasi */}
                             <div className="mb-6 overflow-hidden rounded-lg">
-                                <img
-                                    src="https://placehold.co/400x250/EFEFEF/AAAAAA?text=Location+Image" // Placeholder untuk gambar lokasi
-                                    alt="Location Front"
-                                    className="h-auto w-full object-cover"
-                                />
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3959.22290541031!2d107.12641637483716!3d-7.100144092903152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e685d18924e497f%3A0xc29e3d35903e0822!2sLean%20Coffee%20Roastery!5e0!3m2!1sid!2sid!4v1757356676265!5m2!1sid!2sid"
+                                    width="600"
+                                    height="450"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                ></iframe>
                             </div>
 
                             {/* Alamat */}
