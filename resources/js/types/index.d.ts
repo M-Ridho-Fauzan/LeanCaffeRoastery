@@ -29,17 +29,12 @@ export interface NavGroup {
 
 export interface NavItem {
     title: string;
-    href: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-}
-
-export interface LinkItem {
-    title: string;
-    href: string;
+    href?: string;
+    description?: string;
     icon?: LucideIcon | null;
     isActive?: boolean;
     roles: 'public' | string[];
+    children?: NavItem[];
 }
 
 export interface SharedData {

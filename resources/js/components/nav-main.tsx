@@ -10,17 +10,34 @@
  * - Author          : Ridho Fauzan
  * - Modification    :
  **/
-import { useNavigation } from '@/hooks/use-navigation';
-import NavMainGroup from './nav-main-group';
+import { useNavigation } from '@/hooks/use-navigation'; // Pastikan path ini benar
+import { usePage } from '@inertiajs/react';
+import CollapsibleSidebarMenuItem from './collap-sidebar-menu-item';
+import { SidebarGroup, SidebarMenu } from './ui/sidebar';
 
 export function NavMain() {
-    const { visiblePlatformItems, visibleAdminItems, visibleAuthorItems } = useNavigation();
+    const { visibleNavItems } = useNavigation();
+    const { url } = usePage(); // Dapatkan URL saat ini dari usePage
+
+    if (visibleNavItems.length === 0) {
+        return null; // Jangan render apa-apa jika tidak ada item yang terlihat
+    }
 
     return (
-        <>
-            <NavMainGroup title="Platform" items={visiblePlatformItems} />
-            <NavMainGroup title="Admin Tools" items={visibleAdminItems} className="pt-4" />
-            <NavMainGroup title="Author Tools" items={visibleAuthorItems} className="pt-4" />
-        </>
+        // SidebarGroup (opsional): Anda bisa membungkus semua menu dalam satu grup
+        // atau langsung merender SidebarMenu
+        <SidebarGroup className="px-2 py-0">
+            {/* Jika Anda ingin label umum seperti "Main Navigation" */}
+            {/* <SidebarGroupLabel>Main Navigation</SidebarGroupLabel> */}
+            <SidebarMenu>
+                {visibleNavItems.map((item) => (
+                    <CollapsibleSidebarMenuItem
+                        key={item.href || item.title} // Key unik untuk setiap item
+                        item={item}
+                        currentUrl={url} // Teruskan URL saat ini ke komponen anak
+                    />
+                ))}
+            </SidebarMenu>
+        </SidebarGroup>
     );
 }

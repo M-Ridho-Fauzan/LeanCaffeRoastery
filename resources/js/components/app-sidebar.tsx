@@ -11,12 +11,12 @@
  * - Modification    :
  **/
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { footerNavItems } from '@/config/navigation';
 import { Link } from '@inertiajs/react';
 import AppLogo from './app-logo';
+import { NavMain } from './nav-main';
 
 export function AppSidebar() {
     return (
@@ -25,7 +25,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href="/" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
