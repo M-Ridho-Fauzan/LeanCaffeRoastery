@@ -50,10 +50,6 @@ export function DesktopNavMenu() {
                                     {/* ICON UNTUK MENU UTAMA DI HEADER TIDAK DIGUNAKAN */}
                                     {/* {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />} */}
                                     {item.title}
-                                    {/* <ChevronDown
-                                        className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180"
-                                        aria-hidden="true"
-                                    /> */}
                                 </NavigationMenuTrigger>
                                 <NavigationMenuContent>
                                     <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
@@ -70,7 +66,6 @@ export function DesktopNavMenu() {
                                                     >
                                                         <div className="flex items-center text-sm leading-none font-medium">
                                                             {childItem.icon && <Icon iconNode={childItem.icon} className="mr-2 h-4 w-4" />}{' '}
-                                                            {/* ICON UNTUK SUB-MENU TETAP DIGUNAKAN */}
                                                             {childItem.title}
                                                         </div>
                                                         {childItem.description && ( // Tampilkan deskripsi jika ada
@@ -86,7 +81,6 @@ export function DesktopNavMenu() {
                                 </NavigationMenuContent>
                             </>
                         ) : (
-                            // Item tanpa sub-menu (link biasa)
                             <NavigationMenuLink asChild>
                                 <Link
                                     href={item.href}
