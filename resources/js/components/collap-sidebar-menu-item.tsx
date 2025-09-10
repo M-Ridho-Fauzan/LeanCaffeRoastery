@@ -62,7 +62,7 @@ export default function CollapsibleSidebarMenuItem({ item, currentUrl, level = 0
                             className={cn('group flex w-full items-center justify-between', indentClass)}
                             tooltip={{ children: item.title }}
                         >
-                            <Link href={item.href} prefetch={false} className="flex flex-grow items-center space-x-2">
+                            <Link href={item.href} prefetch={false} className="flex flex-grow items-center space-x-4">
                                 {item.icon && <item.icon className="h-4 w-4" />}
                                 <span>{item.title}</span>
                             </Link>

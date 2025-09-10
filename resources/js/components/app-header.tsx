@@ -10,13 +10,13 @@
  * - Author          : Ridho Fauzan
  * - Modification    :
  **/
-import { Breadcrumbs } from '@/components/breadcrumbs'; // Sesuaikan path
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem } from '@/types'; // Sesuaikan path
+import { type BreadcrumbItem } from '@/types';
 import { Link } from '@inertiajs/react';
 
-import { useScrollDirection } from '@/hooks/use-scroll-direction'; // Sesuaikan path
-import AppLogo from './app-logo'; // Sesuaikan path
+import { useScrollDirection } from '@/hooks/use-scroll-direction';
+import AppLogo from './app-logo';
 import { DesktopNavMenu } from './desktop-nav-menu';
 import { HeaderActions } from './header-actions';
 import { MobileNavSheet } from './mobile-nav-sheet';
