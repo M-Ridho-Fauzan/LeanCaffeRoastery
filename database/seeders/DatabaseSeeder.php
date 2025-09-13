@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ProductSeeder::class,
+            ArticleSeeder::class,
             // Anda bisa menambahkan seeder lain di sini
         ]);
     }

@@ -2,14 +2,20 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\User;
 use App\Models\Origin;
 use App\Models\Process;
 use App\Models\BrewMethod;
+use App\Models\Category;
+use App\Models\Tag;
+use App\Policies\Blogs\TagPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use App\Observers\FilterOptionsObserver;
+use App\Policies\Blogs\ArticlePolicy;
+use App\Policies\Blogs\CategoryPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -51,5 +57,10 @@ class AppServiceProvider extends ServiceProvider
         Origin::observe(FilterOptionsObserver::class);
         Process::observe(FilterOptionsObserver::class);
         BrewMethod::observe(FilterOptionsObserver::class);
+
+        // === Policies ===
+        Gate::policy(Article::class, ArticlePolicy::class);
+        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(Tag::class, TagPolicy::class);
     }
 }

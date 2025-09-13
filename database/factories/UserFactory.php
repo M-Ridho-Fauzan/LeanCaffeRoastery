@@ -28,6 +28,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'gender' => fake()->randomElement(['pria', 'wanita', 'lainnya']),
+            'role' => 'user',
+            'is_oauth' => false,
             'birthday' => fake()->date(),
             'phone' => fake()->phoneNumber(),
             'phone_verified_at' => now(),
@@ -45,5 +47,31 @@ class UserFactory extends Factory
         return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the user has a specific role.
+     */
+    public function withRole(string $role): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an author.
+     */
+    public function author(): static
+    {
+        return $this->withRole('author');
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->withRole('admin');
     }
 }

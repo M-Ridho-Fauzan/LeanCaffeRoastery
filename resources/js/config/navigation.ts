@@ -12,10 +12,9 @@
  **/
 // data/navItems.ts
 
-import { NavItem } from '@/types'; // Pastikan path ini benar
+import { NavItem } from '@/types';
 import {
     BarChart,
-    BookOpen,
     Building2,
     CornerDownRight,
     FileEdit,
@@ -24,6 +23,7 @@ import {
     LayoutGrid,
     MapPinned,
     Newspaper,
+    PackagePlus,
     ScrollText,
     Settings,
     ShieldAlert,
@@ -49,15 +49,15 @@ export const platformItems: NavItem[] = [
     {
         title: 'Menu',
         href: '/products',
-        icon: ScrollText, // Icon ini tetap ada untuk sidebar, tapi di header tidak digunakan untuk menu utama
+        icon: ScrollText,
         roles: 'public',
-        description: 'Explore our delicious food and beverage options.', // Deskripsi untuk menu utama
+        description: 'Explore our delicious food and beverage options.',
         children: [
             {
                 title: 'All Products',
                 href: '/products',
                 icon: CornerDownRight,
-                description: 'Browse all available items in our menu.', // Deskripsi untuk sub-menu
+                description: 'Browse all available items in our menu.',
                 roles: 'public',
             },
             {
@@ -85,7 +85,7 @@ export const platformItems: NavItem[] = [
     },
     {
         title: 'Articles',
-        href: '/articles',
+        href: '/blog',
         icon: Newspaper,
         roles: 'public',
         description: 'Read our latest news and blog posts.',
@@ -100,9 +100,9 @@ export const platformItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
-        icon: LayoutGrid, // Icon ini tetap ada untuk sidebar
+        icon: LayoutGrid,
         roles: ['admin', 'author'],
-        description: 'Access your administrative and author tools.', // Deskripsi untuk menu utama
+        description: 'Access your administrative and author tools.',
         children: [
             {
                 title: 'Overview',
@@ -119,14 +119,21 @@ export const platformItems: NavItem[] = [
                 roles: ['admin'],
             },
             {
+                title: 'Manage Product',
+                href: '/admin/Product',
+                icon: PackagePlus,
+                description: 'Create, publish, and manage your articles.',
+                roles: ['admin'],
+            },
+            {
                 title: 'Manage Posts',
-                href: '/author/posts',
+                href: '/editor/articles',
                 icon: FileEdit,
                 description: 'Create, publish, and manage your articles.',
                 roles: ['admin', 'author'],
             },
             {
-                title: 'Settings',
+                title: 'Advanced Settings',
                 href: '/admin/settings',
                 icon: Settings,
                 description: 'Configure application settings and preferences.',
@@ -136,20 +143,11 @@ export const platformItems: NavItem[] = [
     },
 ];
 
-// orderingItems, adminNavItems, authorNavItems Dihapus dari sini
-// Karena sudah digabungkan ke dalam platformItems
-
 export const footerNavItems: NavItem[] = [
     {
         title: 'Kebijakan Privasi',
         href: '/kebijakan-privasi',
         icon: ShieldAlert,
-        roles: 'public',
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
         roles: 'public',
     },
 ];
