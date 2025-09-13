@@ -1,5 +1,18 @@
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 13/09/2025 - 17:51:37
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 13/09/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
 import GoogleIcon from '@/components/google-icon';
 import InputError from '@/components/input-error';
+import { PasswordInput } from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { BreadcrumbItem } from '@/types';
 import { Form, Head } from '@inertiajs/react';
+import { useState } from 'react';
 
 interface LoginProps {
     status?: string;
@@ -21,7 +35,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Login({ status, canResetPassword }: LoginProps) {
+export default function Login({ canResetPassword }: LoginProps) {
+    const [password, setPassword] = useState('');
+
     return (
         <AuthLayout title="Login" description="Sign in to your account to continue your coffee journey" breadcrumbs={breadcrumbs}>
             <Head title="Login" />
@@ -62,10 +78,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                         </TextLink>
                                     )}
                                 </div>
-                                <Input
+                                <PasswordInput
                                     id="password"
-                                    type="password"
+                                    // type="password" -- di handel di password-input.tsx
                                     name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"

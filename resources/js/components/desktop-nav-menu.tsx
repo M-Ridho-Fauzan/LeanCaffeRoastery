@@ -59,7 +59,7 @@ export function DesktopNavMenu() {
                                                     <Link
                                                         href={childItem.href}
                                                         className={cn(
-                                                            'flex h-full w-full flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none select-none focus:shadow-md',
+                                                            'flex h-full w-full flex-col justify-end rounded-md from-muted/50 to-muted px-4 py-2 no-underline outline-none select-none focus:shadow-md',
                                                             isItemActive(childItem, url) && activeItemStyles,
                                                             'hover:bg-accent hover:text-accent-foreground',
                                                         )}
@@ -68,11 +68,12 @@ export function DesktopNavMenu() {
                                                             {childItem.icon && <Icon iconNode={childItem.icon} className="mr-2 h-4 w-4" />}{' '}
                                                             {childItem.title}
                                                         </div>
-                                                        {childItem.description && ( // Tampilkan deskripsi jika ada
+                                                        {childItem.description && (
                                                             <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted-foreground">
                                                                 {childItem.description}
                                                             </p>
                                                         )}
+                                                        <hr />
                                                     </Link>
                                                 </NavigationMenuLink>
                                             </li>

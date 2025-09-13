@@ -70,7 +70,7 @@ class BlogController extends Controller
         // Opsional: Tingkatkan view count
         $article->increment('views_count');
 
-        return Inertia::render('Blog/Show', [
+        return Inertia::render('articles/show', [
             'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource
         ]);
     }

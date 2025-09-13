@@ -1,4 +1,16 @@
-import AppHeaderLayout from '@/layouts/app/app-header-layout'; // Mengembalikan impor AppHeaderLayout
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 13/09/2025 - 16:52:39
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 13/09/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
+import AppHeaderLayout from '@/layouts/app/app-header-layout';
 
 export default function LandingPage() {
     // Dummy data for coffee products

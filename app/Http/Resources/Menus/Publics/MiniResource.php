@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Publics;
+namespace App\Http\Resources\Menus\Publics;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;

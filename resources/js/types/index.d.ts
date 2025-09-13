@@ -19,7 +19,7 @@ export interface Auth {
 
 export interface BreadcrumbItem {
     title: string;
-    href: string;
+    url?: string;
 }
 
 export interface NavGroup {
@@ -67,6 +67,15 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     auth: {
         user: User;
     };
+    ziggy: Config & { location: string };
+    flash: FlashMessages;
+    name: string;
+    quote: {
+        message: string;
+        author: string;
+    };
+    sidebarOpen: boolean;
+    breadcrumbs: BreadcrumbItem[];
 };
 
 // ========= Menu Interfaces

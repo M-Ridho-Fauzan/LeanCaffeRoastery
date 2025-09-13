@@ -1,18 +1,30 @@
+/**
+ * @description      :
+ * @author           : Ridho Fauzan
+ * @group            :
+ * @created          : 14/09/2025 - 01:13:59
+ *
+ * MODIFICATION LOG
+ * - Version         : 1.0.0
+ * - Date            : 14/09/2025
+ * - Author          : Ridho Fauzan
+ * - Modification    :
+ **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'About Us',
-        href: '/about',
-    },
-];
+// const breadcrumbs: BreadcrumbItem[] = [
+//     {
+//         title: 'About Us',
+//         url: '/about',
+//     },
+// ];
 
-export default function About() {
+export default function About({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }) {
     return (
         <AppHeaderLayout breadcrumbs={breadcrumbs}>
-            <Head title="">
+            <Head title={breadcrumbs[breadcrumbs.length - 1].title}>
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
