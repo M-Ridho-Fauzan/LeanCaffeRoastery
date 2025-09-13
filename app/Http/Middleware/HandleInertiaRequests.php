@@ -56,6 +56,12 @@ class HandleInertiaRequests extends Middleware
                     'avatar_url' => $request->user()->avatar_url,   // dari accessor model
                 ] : null,
             ],
+            'flash' => [
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'warning' => fn() => $request->session()->get('warning'),
+                'info' => fn() => $request->session()->get('info'),
+            ],
             'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

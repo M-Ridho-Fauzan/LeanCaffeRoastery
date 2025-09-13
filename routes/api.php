@@ -2,9 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\FilterOptionsController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Contens\Menus\Publics\ProductController;
+use App\Http\Controllers\Contens\Menus\Publics\FilterOptionsController;
 
 /*
 |--------------------------------------------------------------------------
