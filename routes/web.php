@@ -4,16 +4,18 @@
 use Inertia\Inertia;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
-use App\Http\Resources\Publics\ProductResource;
+use Diglactic\Breadcrumbs\Breadcrumbs;
 
-use App\Http\Controllers\Contens\Blogs\Publics\BlogController;
+use App\Http\Resources\Menus\Publics\ProductResource;
 
 use App\Http\Controllers\Contens\Blogs\Editors\TagController;
+use App\Http\Controllers\Contens\Blogs\Publics\BlogController;
 use App\Http\Controllers\Contens\Blogs\Editors\ArticleController;
 use App\Http\Controllers\Contens\Blogs\Editors\CategoryController;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    Breadcrumbs::render('home');
+    return Inertia::render('home');
 })->name('home');
 
 Route::get('/about', function () {
@@ -55,6 +57,8 @@ Route::get('/kebijakan-privasi', function () {
 Route::middleware(['auth', 'verified', 'role:admin,author'])
     ->group(function () {
         Route::get('dashboard', function () {
+            Breadcrumbs::render('dashboard');
+
             return Inertia::render('dashboard');
         })->name('dashboard');
 
@@ -74,6 +78,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(
         function () {
             Route::get('/users', function () {
+                Breadcrumbs::render('admin.users.index');
+
+                // $fullBreadcrumbTrail = \Diglactic\Breadcrumbs\Breadcrumbs::generate('admin.users.index')->toArray();
+                // dd($fullBreadcrumbTrail);
+
                 return Inertia::render('editors/authority/user/index');
             })->name('users.index');
         }
