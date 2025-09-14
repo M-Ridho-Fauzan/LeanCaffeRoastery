@@ -120,7 +120,7 @@ export const platformItems: NavItem[] = [
             },
             {
                 title: 'Manage Product',
-                href: '/admin/Product',
+                href: '/admin/products',
                 icon: PackagePlus,
                 description: 'Create, publish, and manage your articles.',
                 roles: ['admin'],

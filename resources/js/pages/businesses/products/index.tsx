@@ -32,9 +32,9 @@ import { ProductFilters } from '@/components/product-filters';
 
 // --- Definisi Tipe Data (Pastikan ini sesuai dengan ProductResource Anda) ---
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Menu', href: route('products.index') }];
+// const breadcrumbs: BreadcrumbItem[] = [{ title: 'Menu', href: route('products.index') }];
 
-export default function ProductIndex() {
+export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }) {
     const { ziggy } = usePage().props as { ziggy?: ZiggyProps };
     const currentQuery = ziggy?.query || {};
 

@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Resources\Publics\ProductResource;
 use App\Http\Requests\Product\StoreProductRequest;
+use App\Http\Resources\Menus\Publics\ProductResource;
 
 class ProductController extends Controller
 {

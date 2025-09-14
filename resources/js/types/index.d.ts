@@ -19,7 +19,7 @@ export interface Auth {
 
 export interface BreadcrumbItem {
     title: string;
-    url?: string;
+    href?: string;
 }
 
 export interface NavGroup {

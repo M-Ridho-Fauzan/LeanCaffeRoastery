@@ -36,8 +36,8 @@ return [
      * A classifier to determine if the breadcrumbs should be added to the Inertia response
      * This can be useful if you have defined a breadcrumb route which other routes can extend, but you don't want to show single breadcrumbs
      */
-    'classifier' => AppendAllBreadcrumbs::class,
-    // 'classifier' => IgnoreSingleBreadcrumbs::class,
+    // 'classifier' => AppendAllBreadcrumbs::class,
+    'classifier' => IgnoreSingleBreadcrumbs::class,
 
     /**
      * Whether the query string should be ignored when determining the current route

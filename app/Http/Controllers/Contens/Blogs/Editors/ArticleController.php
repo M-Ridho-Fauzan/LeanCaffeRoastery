@@ -74,9 +74,7 @@ class ArticleController extends Controller
      */
     public function store(StoreArticleRequest $request)
     {
-        $validatedData = $request->validated(); // Ambil data yang sudah divalidasi
-
-        Gate::authorize('create', Article::class);
+        $validatedData = $request->validated();
 
         $imagePath = null;
         if ($request->hasFile('featured_image')) {
@@ -139,8 +137,6 @@ class ArticleController extends Controller
      */
     public function update(UpdateArticleRequest $request, Article $article)
     {
-        Gate::authorize('update', $article);
-
         $validatedData = $request->validated(); // Ambil data yang sudah divalidasi
 
         $imagePath = $article->featured_image_url;
@@ -182,7 +178,7 @@ class ArticleController extends Controller
     public function destroy(Article $article)
     {
         Gate::authorize('delete', $article);
-        // Hapus gambar terkait jika ada
+
         if ($article->featured_image_url && Storage::disk('public')->exists($article->featured_image_url)) {
             Storage::disk('public')->delete($article->featured_image_url);
         }

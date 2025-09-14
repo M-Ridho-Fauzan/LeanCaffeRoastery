@@ -50,7 +50,7 @@ class BlogController extends Controller
             ->paginate(10) // Paginasi 10 artikel per halaman
             ->withQueryString(); // Pertahankan query string untuk navigasi paginasi
 
-        return Inertia::render('articles/index', [
+        return Inertia::render('businesses/articles/index', [
             'articles' => ArticleSummaryResource::collection($articles), // Gunakan ArticleSummaryResource
             'filters' => $request->only(['search', 'category', 'tag']), // Kirim filter ke frontend
             'categories' => CategoryResource::collection(Category::all(['id', 'name', 'slug'])), // Semua kategori untuk filter
@@ -70,7 +70,7 @@ class BlogController extends Controller
         // Opsional: Tingkatkan view count
         $article->increment('views_count');
 
-        return Inertia::render('articles/show', [
+        return Inertia::render('businesses/articles/show', [
             'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource
         ]);
     }
