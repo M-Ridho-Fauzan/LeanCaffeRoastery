@@ -33,7 +33,7 @@ export function DesktopNavMenu() {
     const { url } = usePage();
 
     return (
-        <NavigationMenu className="flex h-full items-stretch">
+        <NavigationMenu className="flex h-full items-stretch" viewport={false}>
             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                 {visibleNavItems.map((item) => (
                     <NavigationMenuItem key={item.href || item.title} className="relative flex h-full items-center">
@@ -73,7 +73,6 @@ export function DesktopNavMenu() {
                                                                 {childItem.description}
                                                             </p>
                                                         )}
-                                                        <hr />
                                                     </Link>
                                                 </NavigationMenuLink>
                                             </li>

@@ -52,8 +52,6 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        // Category::create($request->all()); // Trait HasSlug akan mengisi slug
-
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category created successfully.');
     }
@@ -65,7 +63,6 @@ class CategoryController extends Controller
     {
         Gate::authorize('view', $category);
 
-        // Opsional: Jika Anda ingin halaman detail untuk kategori
         return Inertia::render('Admin/Categories/Show', [
             'category' => $category,
         ]);
@@ -89,8 +86,6 @@ class CategoryController extends Controller
     public function update(UpdateCategoryRequest $request, Category $category)
     {
         $category->update($request->validated());
-
-        // $category->update($request->all()); // Trait HasSlug akan mengupdate slug jika name berubah
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category updated successfully.');

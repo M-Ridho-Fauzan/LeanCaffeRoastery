@@ -19,18 +19,31 @@ Breadcrumbs::for('location', function (BreadcrumbGenerator $trail) {
     $trail->push('Location', route('location'));
 });
 
+/**
+ *
+ *|***********************************************|
+ *|                                               |
+ *| ############  DASHBOARD ROUTE  #############  |
+ *|                                               |
+ *|***********************************************|
+
+ */
+
 Breadcrumbs::for('dashboard', function (BreadcrumbGenerator $trail) {
     $trail->push('Dashboard', route('dashboard'));
 });
 
-// Dashboard > Manage Users
 Breadcrumbs::for('admin.users.index', function (BreadcrumbGenerator $trail) {
     $trail->parent('dashboard');
     $trail->push('Manage Users', route('admin.users.index'));
 });
 
-// Contoh untuk Manage Products
-// Breadcrumbs::for('admin.products.index', function (BreadcrumbGenerator $trail) {
-//     $trail->parent('dashboard');
-//     $trail->push('Manage Products', route('admin.products.index'));
-// });
+Breadcrumbs::for('admin.products.index', function (BreadcrumbGenerator $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Manage Products', route('admin.products.index'));
+});
+
+Breadcrumbs::for('editor.articles.index', function (BreadcrumbGenerator $trail) {
+    $trail->parent('dashboard');
+    $trail->push('Manage Articles', route('editor.articles.index'));
+});

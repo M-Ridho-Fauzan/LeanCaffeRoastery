@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use RobertBoes\InertiaBreadcrumbs\Breadcrumb;
 use RobertBoes\InertiaBreadcrumbs\InertiaBreadcrumbs;
 use Tighten\Ziggy\Ziggy;
 
@@ -70,6 +71,12 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request
                 ->hasCookie('sidebar_state') ||
                 $request->cookie('sidebar_state') === 'true',
+            InertiaBreadcrumbs::serializeUsing(fn(Breadcrumb $breadcrumb) => [
+                'title' => $breadcrumb->title(),
+                'href' => $breadcrumb->url(),
+                'active' => $breadcrumb->current(),
+                'data' => $breadcrumb->data(),
+            ]),
         ];
     }
 }

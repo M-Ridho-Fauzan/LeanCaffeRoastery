@@ -23,13 +23,13 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/products', function () {
-    return Inertia::render('products/index');
+    return Inertia::render('businesses/products/index');
 })->name('products.index');
 
 Route::get('/products/{product:slug}', function (Product $product) {
     $product->load(['origins', 'processes', 'brewMethods', 'images', 'primaryImage']);
 
-    return Inertia::render('products/show', [
+    return Inertia::render('businesses/products/show', [
         'product' => new ProductResource($product),
     ]);
 })->name('products.show');
@@ -80,22 +80,30 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             Route::get('/users', function () {
                 Breadcrumbs::render('admin.users.index');
 
-                // $fullBreadcrumbTrail = \Diglactic\Breadcrumbs\Breadcrumbs::generate('admin.users.index')->toArray();
+                // $fullBreadcrumbTrail = \Diglactic\Breadcrumbs\Breadcrumbs::render('admin.users.index');
                 // dd($fullBreadcrumbTrail);
 
                 return Inertia::render('editors/authority/user/index');
             })->name('users.index');
+
+            Route::get('products', function () {
+                Breadcrumbs::render('admin.products.index');
+
+                return Inertia::render('editors/products/index');
+            })->name('products.index');
         }
     );
 
 
 Route::middleware(['auth', 'verified', 'role:admin,author'])
-    ->prefix('author')
-    ->name('author.')
+    ->prefix('editor')
+    ->name('editor.')
     ->group(
         function () {
             Route::get('/articles', function () {
-                return Inertia::render('editors/blogs/authors/index');
+                Breadcrumbs::render('editor.articles.index');
+
+                return Inertia::render('editors/blogs/index');
             })->name('articles.index');
         }
     );
