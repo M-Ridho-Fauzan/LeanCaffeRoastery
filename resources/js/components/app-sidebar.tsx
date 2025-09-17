@@ -12,7 +12,16 @@
  **/
 import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarRail,
+} from '@/components/ui/sidebar';
 import { footerNavItems } from '@/config/navigation';
 import { Link } from '@inertiajs/react';
 import AppLogo from './app-logo';
@@ -42,6 +51,7 @@ export function AppSidebar() {
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
+            <SidebarRail />
         </Sidebar>
     );
 }
