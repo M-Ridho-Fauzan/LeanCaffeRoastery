@@ -37,7 +37,7 @@ export default function CollapsibleSidebarMenuItem({ item, currentUrl, level = 0
 
     // Indentasi berdasarkan level (misal: level 0 -> pl-4, level 1 -> pl-6, level 2 -> pl-8)
     const indent = level * 2; // Setiap level menambahkan 2 unit padding
-    const indentClass = `pl-${4 + indent}`; // Base padding 4 + level-based indent
+    const indentClass = `pl-${3 + indent}`; // Base padding 4 + level-based indent
 
     // Tentukan elemen <li> mana yang akan digunakan berdasarkan level
     // Asumsi: item level 0 pakai <li> biasa (main menu item), level > 0 pakai <li> sub-menu item.

@@ -51,7 +51,7 @@ export function AppSidebar() {
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
-            <SidebarRail />
+            <SidebarRail withHandle />
         </Sidebar>
     );
 }

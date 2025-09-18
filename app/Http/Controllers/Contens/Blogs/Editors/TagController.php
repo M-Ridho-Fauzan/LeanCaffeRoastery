@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Blogs\StoreTagRequest;
 use App\Http\Requests\Blogs\UpdateTagRequest;
 use App\Http\Resources\Blogs\Editors\TagResource;
+use Diglactic\Breadcrumbs\Breadcrumbs;
 
 class TagController extends Controller
 {
@@ -28,7 +29,9 @@ class TagController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/Tags/Index', [
+        Breadcrumbs::render('admin.tags.index');
+
+        return Inertia::render('editors/authority/blogs/tags-index', [
             'tags' => TagResource::collection($tags),
             'filters' => $request->only(['search']),
         ]);

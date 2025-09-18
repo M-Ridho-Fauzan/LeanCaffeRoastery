@@ -225,6 +225,11 @@ export function useSidebarResize({
             if (!enableDrag) {
                 return;
             }
+
+            if (e.cancelable) {
+                e.preventDefault(); // Moved here, and conditionally called
+            }
+
             isInteractingWithRail.current = true;
             isDragging.current = false; // Reset dragging flag on new interaction
 
@@ -249,7 +254,7 @@ export function useSidebarResize({
                 railRect.current = null;
             }
 
-            e.preventDefault(); // Prevent default touch behavior like scrolling
+            // e.preventDefault(); // Prevent default touch behavior like scrolling
         },
         [enableDrag, isCollapsed, currentWidth, isNested, getClientX],
     );
@@ -270,6 +275,12 @@ export function useSidebarResize({
             }
 
             if (isDragging.current) {
+                // Crucial: Prevent default scrolling for touchmove events during drag
+                // Also check e.cancelable before calling preventDefault
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+
                 // Get unit for width calculations
                 const { unit } = parseWidth(currentWidth);
 
@@ -426,20 +437,37 @@ export function useSidebarResize({
     }, [onToggle, enableToggle, setIsDraggingRail]);
 
     React.useEffect(() => {
-        // Attach unified mouse and touch listeners to the document
-        // This ensures dragging can continue even if the pointer/finger leaves the exact handle area
-        document.addEventListener('mousemove', handleDrag);
-        document.addEventListener('mouseup', endInteraction);
-        document.addEventListener('touchmove', handleDrag, { passive: false }); // passive: false is crucial for preventDefault
-        document.addEventListener('touchend', endInteraction);
+        const dragElement = dragRef.current;
+
+        // Native touchstart handler on the element itself, with passive: false
+        // This makes sure the touchstart event is cancelable when it originates from the dragRef button.
+        const nativeTouchStart = (e: TouchEvent) => {
+            // No explicit preventDefault here, as startInteraction will handle it conditionally.
+            startInteraction(e);
+        };
+
+        const unifiedHandleDrag = (e: MouseEvent | TouchEvent) => handleDrag(e);
+        const unifiedEndInteraction = () => endInteraction();
+
+        if (dragElement) {
+            dragElement.addEventListener('touchstart', nativeTouchStart, { passive: false });
+        }
+
+        document.addEventListener('mousemove', unifiedHandleDrag);
+        document.addEventListener('mouseup', unifiedEndInteraction);
+        document.addEventListener('touchmove', unifiedHandleDrag, { passive: false });
+        document.addEventListener('touchend', unifiedEndInteraction);
 
         return () => {
-            document.removeEventListener('mousemove', handleDrag);
-            document.removeEventListener('mouseup', endInteraction);
-            document.removeEventListener('touchmove', handleDrag);
-            document.removeEventListener('touchend', endInteraction);
+            if (dragElement) {
+                dragElement.removeEventListener('touchstart', nativeTouchStart);
+            }
+            document.removeEventListener('mousemove', unifiedHandleDrag);
+            document.removeEventListener('mouseup', unifiedEndInteraction);
+            document.removeEventListener('touchmove', unifiedHandleDrag);
+            document.removeEventListener('touchend', unifiedEndInteraction);
         };
-    }, [handleDrag, endInteraction]);
+    }, [handleDrag, endInteraction, startInteraction]);
 
     // Handlers to be passed to the button's onMouseDown/onTouchStart
     const handleMouseDown = React.useCallback(
@@ -449,17 +477,26 @@ export function useSidebarResize({
         [startInteraction],
     );
 
+    // handleTouchStart is no longer needed here as the native touchstart listener handles it.
+    // We can return a no-op function or remove it from the exposed interface if not strictly required elsewhere.
+    // For consistency if the interface expects it, we can return a dummy.
     const handleTouchStart = React.useCallback(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (e: React.TouchEvent) => {
-            startInteraction(e.nativeEvent);
+            // This function won't actually be called if `nativeTouchStart` is correctly setup
+            // and `onTouchStart` is removed from SidebarRail.
+            // If you MUST use it on the component, you'd call startInteraction(e.nativeEvent) here,
+            // but then you'd be fighting React's default passive behavior for touch events.
+            // It's safer to let the native listener handle it.
+            // console.warn('handleTouchStart was called, but native listener is preferred for touch events.');
         },
-        [startInteraction],
+        [], // No dependencies as it's a dummy function
     );
 
     return {
         dragRef,
         isDragging,
         handleMouseDown,
-        handleTouchStart, // Expose handleTouchStart for use in SidebarRail
+        handleTouchStart, // Still expose it if your SidebarRail expects it, but it won't be functional for passive:false
     };
 }

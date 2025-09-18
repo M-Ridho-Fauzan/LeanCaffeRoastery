@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Blogs\StoreCategoryRequest;
 use App\Http\Requests\Blogs\UpdateCategoryRequest;
 use App\Http\Resources\Blogs\Editors\CategoryResource;
+use Diglactic\Breadcrumbs\Breadcrumbs;
 
 class CategoryController extends Controller
 {
@@ -18,7 +19,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        Gate::authorize('view', Category::class);
+        Gate::authorize('viewAny', Category::class);
 
         // Untuk menampilkan daftar kategori di halaman admin
         $categories = Category::query()
@@ -29,7 +30,9 @@ class CategoryController extends Controller
             ->paginate(10)
             ->withQueryString(); // Agar query string filter/search tetap ada di paginasi
 
-        return Inertia::render('Admin/Categories/Index', [
+        Breadcrumbs::render('admin.categories.index');
+
+        return Inertia::render('editors/authority/blogs/categories-index', [
             'categories' => CategoryResource::collection($categories),
             'filters' => $request->only(['search']),
         ]);

@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -24,9 +25,12 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Article::class);
+
+        // dd($request);
+
         // Eager load category dan user untuk ditampilkan di tabel
-        $articles = Article::query()
-            ->with(['category', 'user'])
+        $articlesQuery = Article::query()
+            ->with(['category', 'user:id,name,email'])
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($q) use ($search) {
@@ -36,17 +40,34 @@ class ArticleController extends Controller
                         $q->where('name', 'like', "%{$search}%");
                     });
             })
+            // Perbaikan di sini: Teruskan nilai input langsung ke when
             ->when($request->input('category'), function ($query, $categorySlug) {
-                $query->whereHas('category', fn($q) => $q->where('slug', $categorySlug));
+                // Kemudian, cek kondisi 'all' di dalam closure
+                if ($categorySlug !== 'all') {
+                    Log::info('Filtering by category:', ['slug' => $categorySlug]);
+                    $query->whereHas('category', fn($q) => $q->where('slug', $categorySlug));
+                }
             })
+            // Perbaikan di sini: Teruskan nilai input langsung ke when
             ->when($request->input('status'), function ($query, $status) {
-                $query->where('status', $status);
+                // Kemudian, cek kondisi 'all' di dalam closure
+                if ($status !== 'all') {
+                    Log::info('Filtering by status:', ['status' => $status]);
+                    $query->where('status', $status);
+                }
             })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->latest();
+        // ->paginate(10)
+        // ->withQueryString();
 
-        return Inertia::render('editors/blogs/publics/index', [
+        $sql = $articlesQuery->toSql();
+        $bindings = $articlesQuery->getBindings();
+        Log::info('SQL Query:', ['sql' => $sql, 'bindings' => $bindings]);
+
+        $articles = $articlesQuery->paginate(10)->withQueryString();
+        // dd($articlesQuery->toArray());
+
+        return Inertia::render('editors/blogs/index', [
             // Gunakan ArticleDetailResource::collection() untuk daftar artikel admin
             'articles' => ArticleDetailResource::collection($articles),
             'filters' => $request->only(['search', 'category', 'status']),
@@ -63,7 +84,7 @@ class ArticleController extends Controller
     {
         Gate::authorize('create', Article::class);
 
-        return Inertia::render('Admin/Articles/Create', [
+        return Inertia::render('', [
             'categories' => CategoryResource::collection(Category::all()), // Gunakan Resource
             'tags' => TagResource::collection(Tag::all()), // Gunakan Resource
         ]);
@@ -96,7 +117,7 @@ class ArticleController extends Controller
             $article->tags()->attach($validatedData['tags']); // Attach tags
         }
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article created successfully.');
+        return redirect()->route('editor.articles.index')->with('success', 'Article created successfully.');
     }
 
     /**
@@ -109,7 +130,7 @@ class ArticleController extends Controller
         // Eager load relasi untuk detail tampilan
         $article->load(['user', 'category', 'tags']);
 
-        return Inertia::render('Admin/Articles/Show', [
+        return Inertia::render('', [
             'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource
         ]);
     }
@@ -124,7 +145,7 @@ class ArticleController extends Controller
         // Eager load relasi untuk mengisi form edit
         $article->load(['category', 'tags']);
 
-        return Inertia::render('Admin/Articles/Edit', [
+        return Inertia::render('', [
             'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource untuk data artikel yang diedit
             'categories' => CategoryResource::collection(Category::all()), // Gunakan Resource
             'tags' => TagResource::collection(Tag::all()), // Gunakan Resource
@@ -169,7 +190,7 @@ class ArticleController extends Controller
             $article->tags()->detach(); // Hapus semua tags jika tidak ada yang dikirim
         }
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article updated successfully.');
+        return redirect()->route('editor.articles.index')->with('success', 'Article updated successfully.');
     }
 
     /**
@@ -185,6 +206,6 @@ class ArticleController extends Controller
 
         $article->delete();
 
-        return redirect()->route('admin.articles.index')->with('success', 'Article deleted successfully.');
+        return redirect()->route('editor.articles.index')->with('success', 'Article deleted successfully.');
     }
 }

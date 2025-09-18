@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 18/08/2025 - 15:49:34
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 18/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 
@@ -63,12 +51,27 @@ export interface User {
 
 // ===
 
+export type FlashMessages = {
+    success?: string;
+    error?: string;
+    message?: string;
+    // Tambahkan tipe pesan flash lainnya jika Anda menggunakannya (misal: 'info', 'warning')
+    // info?: string;
+    // warning?: string;
+};
+
+/**
+ *
+ * Penggunaan PageProps: Bagaimana Anda bisa memanfaatkan properti
+ * global seperti auth dan flash yang didefinisikan di PageProps.
+ *
+ */
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User;
     };
     ziggy: Config & { location: string };
-    flash: FlashMessages;
+    flash: FlashMessages; // Menambahkan penanganan pesan sukses/error setelah operasi CRUD.
     name: string;
     quote: {
         message: string;

@@ -36,7 +36,7 @@ class ArticleFactory extends Factory
                 ->implode(''),
             'featured_image_url' => $this->faker->imageUrl(640, 480, 'nature', true, 'Faker'), // Gambar placeholder
             'published_at' => $this->faker->optional(0.8)->dateTimeBetween('-1 year', 'now'), // 80% kemungkinan sudah published
-            'status' => $this->faker->randomElement(['draft', 'published']),
+            'status' => $this->faker->randomElement(['draft', 'published', 'archived']),
             'views_count' => $this->faker->numberBetween(0, 5000),
         ];
     }
