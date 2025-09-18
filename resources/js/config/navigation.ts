@@ -26,8 +26,10 @@ import {
     PackagePlus,
     ScrollText,
     Settings,
+    Shapes,
     ShieldAlert,
     ShoppingCart,
+    Tag,
     User,
 } from 'lucide-react';
 
@@ -131,6 +133,22 @@ export const platformItems: NavItem[] = [
                 icon: FileEdit,
                 description: 'Create, publish, and manage your articles.',
                 roles: ['admin', 'author'],
+                children: [
+                    {
+                        title: 'Manage Categories',
+                        href: '/editor/categories',
+                        icon: Shapes,
+                        description: 'See a quick summary of your site activity.',
+                        roles: ['admin'],
+                    },
+                    {
+                        title: 'Manage Tags',
+                        href: '/editor/tags',
+                        icon: Tag,
+                        description: 'Add, edit, or delete user accounts.',
+                        roles: ['admin'],
+                    },
+                ],
             },
             {
                 title: 'Advanced Settings',

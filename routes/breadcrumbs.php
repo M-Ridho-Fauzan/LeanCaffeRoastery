@@ -47,3 +47,13 @@ Breadcrumbs::for('editor.articles.index', function (BreadcrumbGenerator $trail) 
     $trail->parent('dashboard');
     $trail->push('Manage Articles', route('editor.articles.index'));
 });
+
+Breadcrumbs::for('admin.categories.index', function (BreadcrumbGenerator $trail) {
+    $trail->parent('editor.articles.index');
+    $trail->push('Manage Categories', route('admin.categories.index'));
+});
+
+Breadcrumbs::for('admin.tags.index', function (BreadcrumbGenerator $trail) {
+    $trail->parent('editor.articles.index');
+    $trail->push('Manage tags', route('admin.tags.index'));
+});

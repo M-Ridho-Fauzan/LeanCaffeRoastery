@@ -74,7 +74,7 @@ class HandleInertiaRequests extends Middleware
             InertiaBreadcrumbs::serializeUsing(fn(Breadcrumb $breadcrumb) => [
                 'title' => $breadcrumb->title(),
                 'href' => $breadcrumb->url(),
-                'active' => $breadcrumb->current(),
+                'currentPage' => $breadcrumb->current(),
                 'data' => $breadcrumb->data(),
             ]),
         ];

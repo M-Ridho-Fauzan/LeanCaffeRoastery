@@ -344,8 +344,9 @@ const SidebarRail = React.forwardRef<
 	React.ComponentProps<"button"> & {
 		//* new prop for enabling drag
 		enableDrag?: boolean;
+        withHandle?: boolean;
 	}
->(({ className, enableDrag = true, ...props }, ref) => {
+>(({ className, withHandle, enableDrag = true, ...props }, ref) => {
 	const { toggleSidebar, setWidth, state, width, setIsDraggingRail } =
 		useSidebar();
 
@@ -371,6 +372,10 @@ const SidebarRail = React.forwardRef<
 		[ref, dragRef],
 	);
 
+    const withHandleClass = withHandle && ( "items-center justify-center focus:bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none");
+
+    // const testASD = handleTouchStart && ("");
+
 	return (
 		<button
 			//* updated ref to use combinedRef
@@ -381,25 +386,27 @@ const SidebarRail = React.forwardRef<
 			// onClick={toggleSidebar} // REMOVED: Toggling is now handled by endInteraction if not a drag
 			onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart} // ADDED: Touch start handler for mobile/touch devices
-			title="Toggle Sidebar"
+			title="Drag to collapse"
 			className={cn(
-				"absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
-				// Corrected cursor classes to use group-data for parent sidebar state
-                "group-data-[side=left]:cursor-w-resize group-data-[side=right]:cursor-e-resize",
+				"absolute inset-y-0 z-20 hidden w-4 cursor-e-resize -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex",
+				"group-data-[side=left]:-right-4",
+				"group-data-[side=right]:left-0",
+				"group-data-[collapsible=icon][data-side=left]:right-[-1.5rem]", // Menyesuaikan untuk mode ikon
+				"group-data-[collapsible=icon][data-side=right]:left-[-1.5rem]", // Menyesuaikan untuk mode ikon
 				"[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
 				"group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full hover:group-data-[collapsible=offcanvas]:bg-sidebar",
 				"[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
 				"[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
-                "items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none",
+                withHandleClass,
 				className,
 			)}
 			{...props}
 		>
-            {/* {withHandle && ( */}
+            {withHandle && (
                 <div className="z-10 flex focus:bg-border h-6 w-4 items-center justify-center rounded-sm border bg-border">
                     <GripVertical className="h-2.5 w-2.5" />
                 </div>
-            {/* )} */}
+             )}
         </button>
 	);
 });
