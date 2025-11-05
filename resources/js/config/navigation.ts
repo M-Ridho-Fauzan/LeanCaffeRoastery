@@ -28,7 +28,6 @@ import {
     Settings,
     Shapes,
     ShieldAlert,
-    ShoppingCart,
     Tag,
     User,
 } from 'lucide-react';
@@ -62,13 +61,13 @@ export const platformItems: NavItem[] = [
                 description: 'Browse all available items in our menu.',
                 roles: 'public',
             },
-            {
-                title: 'Ordering',
-                href: '/products/ordering',
-                icon: ShoppingCart,
-                description: 'Place your order for pickup or delivery.',
-                roles: ['user', 'admin', 'author'],
-            },
+            // {
+            //     title: 'Ordering',
+            //     href: '/product/ordering',
+            //     icon: ShoppingCart,
+            //     description: 'Place your order for pickup or delivery.',
+            //     roles: ['user', 'admin', 'author'],
+            // },
             {
                 title: 'Wishlist',
                 href: '/products/wishlist',
@@ -78,7 +77,7 @@ export const platformItems: NavItem[] = [
             },
             {
                 title: 'Charts',
-                href: '/products/charts',
+                href: '/product/charts',
                 icon: BarChart,
                 description: 'View sales and product performance charts.',
                 roles: ['admin', 'author'],

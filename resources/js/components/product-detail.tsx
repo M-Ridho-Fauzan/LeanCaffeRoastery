@@ -1,25 +1,9 @@
-'use client';
-
-/**
- * @description      : Enhanced Product Detail Component with Fixed Image Switching
- * @author           : v0
- * @group            :
- * @created          : 09/07/2025 - Updated
- *
- * MODIFICATION LOG
- * - Version         : 2.0.0
- * - Date            : 09/07/2025
- * - Author          : v0
- * - Modification    : Fixed image switching bug and improved design
- **/
-
-// Import komponen Checkout dari lokasi yang sudah dipisahkan
-import { Dialog, DialogContent } from '@/components/ui/dialog'; // Sesuaikan path ini jika berbeda
 import Checkout from '@/pages/ordering/payments/checkout';
 import type { Product } from '@/types';
 import { Button } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, CornerUpLeft, Heart, ShoppingCart, Star } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dialog, DialogContent } from './ui/dialog';
 
 interface ProductDetailsProps {
     product: Product;
@@ -45,7 +29,7 @@ function ProductDetail({ product }: ProductDetailsProps) {
         [product.price],
     );
 
-    const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(true); // Menggunakan tipe boolean eksplisit
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false); // Menggunakan tipe boolean eksplisit
 
     useEffect(() => {
         setSelectedImageIndex(0);
@@ -314,12 +298,7 @@ function ProductDetail({ product }: ProductDetailsProps) {
             </div>
 
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-                {/* PERUBAHAN DI SINI: Sesuaikan className untuk DialogContent */}
-                <DialogContent className="flex h-full max-h-[95vh] w-full flex-col p-0 sm:max-w-2xl">
-                    {/* `w-full` untuk responsif di mobile, `sm:max-w-2xl` untuk lebar di desktop (672px) */}
-                    {/* `h-full max-h-[95vh]` untuk tinggi, hampir memenuhi viewport tapi dengan margin */}
-                    {/* `p-0` menghilangkan padding default DialogContent */}
-                    {/* `flex flex-col` agar komponen Checkout di dalamnya bisa menggunakan layout flex */}
+                <DialogContent className="/* Penting: Flex column dan tanpa padding internal / / Mobile: Lebar penuh, tinggi 95vh, tanpa radius, tanpa margin luar / / Tablet/Desktop: Max lebar 672px, tinggi auto (batas 95vh), radius, terpusat / / Medium Desktop: Max lebar 896px / / Large Desktop: Max lebar 1024px */ m-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl">
                     <Checkout product={product} onClose={() => setIsCheckoutOpen(false)} />
                 </DialogContent>
             </Dialog>
