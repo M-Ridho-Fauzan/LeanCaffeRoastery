@@ -48,6 +48,16 @@ Breadcrumbs::for('editor.articles.index', function (BreadcrumbGenerator $trail) 
     $trail->push('Manage Articles', route('editor.articles.index'));
 });
 
+Breadcrumbs::for('editor.articles.create', function (BreadcrumbGenerator $trail) {
+    $trail->parent('editor.articles.index');
+    $trail->push('Add Articles', route('editor.articles.create'));
+});
+
+// Breadcrumbs::for('editor.articles.create', function (BreadcrumbGenerator $trail) {
+//     $trail->parent('editor.articles.index');
+//     $trail->push('Add Articles', route('editor.articles.create'));
+// });
+
 Breadcrumbs::for('admin.categories.index', function (BreadcrumbGenerator $trail) {
     $trail->parent('editor.articles.index');
     $trail->push('Manage Categories', route('admin.categories.index'));

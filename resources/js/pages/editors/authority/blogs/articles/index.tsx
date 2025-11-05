@@ -7,9 +7,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from '@/components/ui/input';
 // Jika Anda punya komponen Pagination kustom, ini akan menjadi wrapper untuk Link Inertia
 // Jika tidak, anggap ini hanya div. Ini sudah diimplementasikan dengan baik di bagian bawah.
+import { ComboboxSearch } from '@/components/combobox-search';
 import { Pagination } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { type BreadcrumbItem, type PageProps } from '@/types'; // Import User dan FlashMessages
 import { Head, Link, router, useForm } from '@inertiajs/react'; // Tambahkan usePage jika perlu di sub-komponen
@@ -21,6 +23,18 @@ import { toast } from 'sonner'; // Asumsi Anda punya toast (shadcn/ui atau lainn
 
 // --- Definisi Tipe ---
 // (Tidak ada perubahan pada definisi tipe ini, tetap pertahankan)
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+}
+
+interface Tags {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Article {
     id: number;
     title: string;
@@ -32,28 +46,14 @@ interface Article {
     views_count: number;
     created_at: string;
     updated_at: string;
-    category: {
-        id: number;
-        name: string;
-        slug: string;
-    } | null;
+    category: Category | null;
     author: {
         // Asumsi ini adalah 'user' di backend Anda
         id: number;
         name: string;
         email: string;
     };
-    tags: {
-        id: number;
-        name: string;
-        slug: string;
-    }[];
-}
-
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
+    tags: Tags[];
 }
 
 // Extends PageProps untuk mendapatkan properti global (auth, flash, ziggy, dll.)
@@ -80,23 +80,29 @@ interface ArticlesIndexSpecificProps {
     filters: {
         search?: string;
         category?: string;
+        tags?: string;
         status?: 'draft' | 'published' | 'archived';
     };
     categories: {
         data: Category[];
     };
+    tags: {
+        data: Tags[];
+    };
     statuses: ('draft' | 'published' | 'archived')[];
     breadcrumbs: BreadcrumbItem[];
+    flash: { success?: string; error?: string; message?: string };
 }
 
 // Gabungkan ArticlesIndexSpecificProps dengan PageProps global
 type ArticlesIndexPageProps = PageProps & ArticlesIndexSpecificProps;
 
-export default function ArticleIndex({ articles, filters, categories, statuses, breadcrumbs, flash }: ArticlesIndexPageProps) {
+export default function ArticleIndex({ articles, filters, categories, statuses, breadcrumbs, flash, tags: availableTags }: ArticlesIndexPageProps) {
     // Inisialisasi state filter langsung dari props filters
     // `filters` dijamin selalu ada sebagai objek karena `request->only()` di controller
     const [search, setSearch] = useState(filters.search || '');
     const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
+    const [selectedTag, setSelectedTag] = useState(filters.tags || 'all');
     const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
@@ -106,7 +112,7 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
 
     // Fungsi untuk menerapkan filter
     const throttledApplyFilters = useRef(
-        throttle((s: string, c: string, st: string) => {
+        throttle((s: string, c: string, t: string, st: string) => {
             // console.log("Applying filters:", { search: s, category: c, status: st });
             router.get(
                 route('editor.articles.index'),
@@ -119,6 +125,7 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                     {
                         search: s,
                         category: c !== 'all' ? c : undefined,
+                        tags: t !== 'all' ? c : undefined,
                         status: st !== 'all' ? st : undefined,
                     },
                     (value) => value !== undefined && value !== '',
@@ -134,14 +141,14 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
 
     useEffect(() => {
         // Panggil fungsi throttled yang sudah di-memoize
-        throttledApplyFilters(search, selectedCategory, selectedStatus);
+        throttledApplyFilters(search, selectedCategory, selectedTag, selectedStatus);
 
         // Cleanup function untuk membatalkan panggilan throttled yang tertunda jika komponen unmount
         // atau jika dependensi berubah sebelum waktu throttling habis
         return () => {
             throttledApplyFilters.cancel();
         };
-    }, [search, selectedCategory, selectedStatus, throttledApplyFilters]); // Dependensi yang benar
+    }, [search, selectedCategory, selectedStatus, selectedTag, throttledApplyFilters]); // Dependensi yang benar
 
     // Efek untuk menampilkan pesan flash (misalnya dari CRUD lainnya)
     useEffect(() => {
@@ -186,9 +193,20 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
     const handleClearFilters = () => {
         setSearch('');
         setSelectedCategory('all');
+        setSelectedTag('all');
         setSelectedStatus('all');
         // Karena state berubah, useEffect akan terpanggil kembali untuk menerapkan filter kosong
     };
+
+    const truncateText = (text: string, maxLength: number) => {
+        if (text.length > maxLength) {
+            return text.substring(0, maxLength) + '...';
+        }
+        return text;
+    };
+
+    const TAGS_TO_SHOW_INITIALLY = 2;
+    const TAG_DISPLAY_LENGTH = 10;
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
@@ -208,20 +226,25 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                 <div className="flex flex-wrap items-center gap-4">
                     <Input placeholder="Search articles..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
 
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter by Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.data &&
-                                categories.data.map((category) => (
-                                    <SelectItem key={category.id} value={category.slug}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                        </SelectContent>
-                    </Select>
+                    <ComboboxSearch
+                        title="Categories"
+                        options={categories.data}
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                        placeholder="Select Categories"
+                        emptyMessage="No categories found"
+                        className="w-[180px]"
+                    />
+
+                    <ComboboxSearch
+                        title="Tags"
+                        options={availableTags.data}
+                        value={selectedTag}
+                        onValueChange={setSelectedTag}
+                        placeholder="Select Categories"
+                        emptyMessage="No categories found"
+                        className="w-[180px]"
+                    />
 
                     <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                         <SelectTrigger className="w-[180px]">
@@ -253,6 +276,7 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                                 <TableHead className="w-[50px]">ID</TableHead>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Category</TableHead>
+                                <TableHead>Tags</TableHead>
                                 <TableHead>Author</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Published At</TableHead>
@@ -271,6 +295,44 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                                             </Link>
                                         </TableCell>
                                         <TableCell>{article.category?.name || 'N/A'}</TableCell>
+                                        <TableCell className="px-4 py-2">
+                                            <div className="flex flex-wrap gap-1">
+                                                {article.tags.slice(0, TAGS_TO_SHOW_INITIALLY).map((tag) => (
+                                                    <Badge key={tag.id} variant="secondary">
+                                                        <Tooltip>
+                                                            {' '}
+                                                            {/* Tambahkan tooltip untuk setiap tag yang terpotong */}
+                                                            <TooltipTrigger asChild>
+                                                                <span>{truncateText(tag.name, TAG_DISPLAY_LENGTH)}</span>
+                                                            </TooltipTrigger>
+                                                            {tag.name.length > TAG_DISPLAY_LENGTH && (
+                                                                <TooltipContent>
+                                                                    <p>{tag.name}</p>
+                                                                </TooltipContent>
+                                                            )}
+                                                        </Tooltip>
+                                                    </Badge>
+                                                ))}
+                                                {article.tags.length > TAGS_TO_SHOW_INITIALLY && (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Badge variant="outline" className="cursor-pointer">
+                                                                +{article.tags.length - TAGS_TO_SHOW_INITIALLY} more
+                                                            </Badge>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="max-w-[200px] rounded-md bg-popover p-2 text-popover-foreground shadow-md">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {article.tags.slice(TAGS_TO_SHOW_INITIALLY).map((tag) => (
+                                                                    <Badge key={tag.id} variant="secondary">
+                                                                        {tag.name}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{article.author.name}</TableCell>
                                         <TableCell>
                                             {/* Badge styling bisa lebih spesifik */}
@@ -337,6 +399,8 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                                     else params.delete('search');
                                     if (selectedCategory !== 'all') params.set('category', selectedCategory);
                                     else params.delete('category');
+                                    if (selectedTag !== 'all') params.set('Tag', selectedTag);
+                                    else params.delete('Tag');
                                     if (selectedStatus !== 'all') params.set('status', selectedStatus);
                                     else params.delete('status');
 

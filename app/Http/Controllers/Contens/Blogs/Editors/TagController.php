@@ -29,9 +29,9 @@ class TagController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        Breadcrumbs::render('admin.tags.index');
+        Breadcrumbs::render('editor.tags.index');
 
-        return Inertia::render('editors/authority/blogs/tags-index', [
+        return Inertia::render('editors/authority/blogs/tags/index', [
             'tags' => TagResource::collection($tags),
             'filters' => $request->only(['search']),
         ]);
@@ -54,7 +54,7 @@ class TagController extends Controller
     {
         Tag::create($request->validated());
 
-        return redirect()->route('admin.tags.index')
+        return redirect()->route('editor.tags.index')
             ->with('success', 'Tag created successfully.');
     }
 
@@ -89,7 +89,7 @@ class TagController extends Controller
     {
         $tag->update($request->validated());
 
-        return redirect()->route('admin.tags.index')
+        return redirect()->route('editor.tags.index')
             ->with('success', 'Tag updated successfully.');
     }
 
@@ -102,6 +102,6 @@ class TagController extends Controller
 
         $tag->delete();
 
-        return redirect()->route('admin.tags.index')->with('success', 'Tag deleted successfully.');
+        return redirect()->route('editor.tags.index')->with('success', 'Tag deleted successfully.');
     }
 }

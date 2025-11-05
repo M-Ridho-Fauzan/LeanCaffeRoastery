@@ -30,9 +30,9 @@ class CategoryController extends Controller
             ->paginate(10)
             ->withQueryString(); // Agar query string filter/search tetap ada di paginasi
 
-        Breadcrumbs::render('admin.categories.index');
+        Breadcrumbs::render('editor.categories.index');
 
-        return Inertia::render('editors/authority/blogs/categories-index', [
+        return Inertia::render('editors/authority/blogs/categories/index', [
             'categories' => CategoryResource::collection($categories),
             'filters' => $request->only(['search']),
         ]);
