@@ -13,6 +13,9 @@
  * - Modification    : Fixed image switching bug and improved design
  **/
 
+// Import komponen Checkout dari lokasi yang sudah dipisahkan
+import { Dialog, DialogContent } from '@/components/ui/dialog'; // Sesuaikan path ini jika berbeda
+import Checkout from '@/pages/ordering/payments/checkout';
 import type { Product } from '@/types';
 import { Button } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, CornerUpLeft, Heart, ShoppingCart, Star } from 'lucide-react';
@@ -42,6 +45,8 @@ function ProductDetail({ product }: ProductDetailsProps) {
         [product.price],
     );
 
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(true); // Menggunakan tipe boolean eksplisit
+
     useEffect(() => {
         setSelectedImageIndex(0);
         thumbnailsContainerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
@@ -64,6 +69,11 @@ function ProductDetail({ product }: ProductDetailsProps) {
 
     const toggleWishlist = useCallback(() => {
         setIsWishlisted((prev) => !prev);
+    }, []);
+
+    // Fungsi yang akan dipanggil saat tombol "Buy Now" diklik
+    const handleBuyNowClick = useCallback(() => {
+        setIsCheckoutOpen(true); // Membuka dialog
     }, []);
 
     const renderFlavorNotes = useMemo(
@@ -293,10 +303,26 @@ function ProductDetail({ product }: ProductDetailsProps) {
                             <ShoppingCart className="h-5 w-5" />
                             <span>Add to Cart - Rp {formattedPrice}</span>
                         </button>
-                        <button className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-800 hover:bg-gray-200">Buy Now</button>
+                        <button
+                            onClick={handleBuyNowClick}
+                            className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-800 hover:bg-gray-200"
+                        >
+                            Buy Now
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+                {/* PERUBAHAN DI SINI: Sesuaikan className untuk DialogContent */}
+                <DialogContent className="flex h-full max-h-[95vh] w-full flex-col p-0 sm:max-w-2xl">
+                    {/* `w-full` untuk responsif di mobile, `sm:max-w-2xl` untuk lebar di desktop (672px) */}
+                    {/* `h-full max-h-[95vh]` untuk tinggi, hampir memenuhi viewport tapi dengan margin */}
+                    {/* `p-0` menghilangkan padding default DialogContent */}
+                    {/* `flex flex-col` agar komponen Checkout di dalamnya bisa menggunakan layout flex */}
+                    <Checkout product={product} onClose={() => setIsCheckoutOpen(false)} />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
