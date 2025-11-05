@@ -1,16 +1,5 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 17/08/2025 - 19:15:10
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 17/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import { AppContent } from '@/components/app-content';
+import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { AppShell } from '@/components/app-shell';
 import { type BreadcrumbItem } from '@/types';
@@ -21,6 +10,7 @@ export default function AppHeaderLayout({ children, breadcrumbs }: PropsWithChil
         <AppShell>
             <AppHeader breadcrumbs={breadcrumbs} />
             <AppContent>{children}</AppContent>
+            <AppFooter />
         </AppShell>
     );
 }
