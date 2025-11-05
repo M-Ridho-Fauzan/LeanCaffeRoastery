@@ -1,23 +1,10 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 09/09/2025 - 22:32:49
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 09/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
-// data/navItems.ts
-
 import { NavItem } from '@/types';
 import {
     BarChart,
     Building2,
     CornerDownRight,
     FileEdit,
+    FilePlus2,
     Heart,
     Home,
     LayoutGrid,
@@ -38,7 +25,7 @@ export const platformItems: NavItem[] = [
         href: '/',
         icon: Home,
         roles: 'public',
-        description: 'Go back to the main homepage.', // Contoh deskripsi
+        description: 'Go back to the main homepage.',
     },
     {
         title: 'About',
@@ -100,7 +87,6 @@ export const platformItems: NavItem[] = [
     },
     {
         title: 'Dashboard',
-        href: '/dashboard',
         icon: LayoutGrid,
         roles: ['admin', 'author'],
         description: 'Access your administrative and author tools.',
@@ -113,6 +99,13 @@ export const platformItems: NavItem[] = [
                 roles: ['admin', 'author'],
             },
             {
+                title: 'Charts', // Pindahkan ke sini untuk analisis admin/author
+                href: '/dashboard/charts',
+                icon: BarChart,
+                description: 'View sales and product performance charts.',
+                roles: ['admin', 'author'],
+            },
+            {
                 title: 'Manage Users',
                 href: '/admin/users',
                 icon: User,
@@ -120,31 +113,59 @@ export const platformItems: NavItem[] = [
                 roles: ['admin'],
             },
             {
-                title: 'Manage Product',
+                title: 'Manage Products', // Plural dan deskripsi sesuai
                 href: '/admin/products',
                 icon: PackagePlus,
-                description: 'Create, publish, and manage your articles.',
+                description: 'Create, publish, and manage your products.',
                 roles: ['admin'],
             },
             {
-                title: 'Manage Posts',
-                href: '/editor/articles',
+                title: 'Articles & Content', // Menggabungkan semua hal terkait artikel di sini
                 icon: FileEdit,
-                description: 'Create, publish, and manage your articles.',
                 roles: ['admin', 'author'],
+                description: 'Manage your articles and review content contributions.',
+                children: [
+                    {
+                        title: 'All Articles', // Untuk admin melihat semua, atau author melihat semua miliknya
+                        href: '/editor/articles',
+                        icon: Newspaper,
+                        description: 'View and manage all published and draft articles.',
+                        roles: ['admin'], // Admin bisa melihat semua
+                    },
+                    {
+                        title: 'My Articles', // Untuk author hanya melihat artikelnya sendiri
+                        href: '/editor/articles/my',
+                        icon: CornerDownRight,
+                        description: 'View and manage articles you have created.',
+                        roles: ['admin', 'author'], // Author hanya melihat miliknya, Admin juga bisa lihat miliknya
+                    },
+                    {
+                        title: 'Add Article',
+                        href: route('editor.articles.create'),
+                        icon: FilePlus2,
+                        description: 'Create and publish a new article.',
+                        roles: ['admin', 'author'],
+                    },
+                ],
+            },
+            {
+                title: 'Content Structure', // untuk manajemen Admin-Only
+                icon: Shapes,
+                roles: ['admin'],
+                description: 'Admin-only tools to organize categories and tags for articles.',
                 children: [
                     {
                         title: 'Manage Categories',
                         href: '/editor/categories',
-                        icon: Shapes,
-                        description: 'See a quick summary of your site activity.',
+                        icon: Shapes, // atau ikon berbeda jika ada
+                        description: 'Add, edit, and organize article categories system-wide.',
                         roles: ['admin'],
                     },
                     {
                         title: 'Manage Tags',
                         href: '/editor/tags',
                         icon: Tag,
-                        description: 'Add, edit, or delete user accounts.',
+                        description: 'Add, edit, and manage article tags system-wide.',
                         roles: ['admin'],
                     },
                 ],
@@ -166,5 +187,6 @@ export const footerNavItems: NavItem[] = [
         href: '/kebijakan-privasi',
         icon: ShieldAlert,
         roles: 'public',
+        description: 'Baca kebijakan privasi kami untuk melindungi data Anda.',
     },
 ];

@@ -29,14 +29,18 @@ class ArticleController extends Controller
         // dd($request);
 
         // Eager load category dan user untuk ditampilkan di tabel
-        $articlesQuery = Article::query()
-            ->with(['category', 'user:id,name,email'])
+        // $articlesQuery = Article::query()
+        $articles = Article::query()
+            ->with(['category', 'tags', 'user:id,name,email'])
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     })
                     ->orWhereHas('category', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tags', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     });
             })
@@ -48,6 +52,13 @@ class ArticleController extends Controller
                     $query->whereHas('category', fn($q) => $q->where('slug', $categorySlug));
                 }
             })
+            ->when($request->input('tags'), function ($query, $tagsSlug) {
+                // Kemudian, cek kondisi 'all' di dalam closure
+                if ($tagsSlug !== 'all') {
+                    Log::info('Filtering by tags:', ['slug' => $tagsSlug]);
+                    $query->whereHas('tags', fn($q) => $q->where('slug', $tagsSlug));
+                }
+            })
             // Perbaikan di sini: Teruskan nilai input langsung ke when
             ->when($request->input('status'), function ($query, $status) {
                 // Kemudian, cek kondisi 'all' di dalam closure
@@ -56,23 +67,23 @@ class ArticleController extends Controller
                     $query->where('status', $status);
                 }
             })
-            ->latest();
-        // ->paginate(10)
-        // ->withQueryString();
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
-        $sql = $articlesQuery->toSql();
-        $bindings = $articlesQuery->getBindings();
-        Log::info('SQL Query:', ['sql' => $sql, 'bindings' => $bindings]);
+        // $sql = $articlesQuery->toSql();
+        // $bindings = $articlesQuery->getBindings();
+        // Log::info('SQL Query:', ['sql' => $sql, 'bindings' => $bindings]);
 
-        $articles = $articlesQuery->paginate(10)->withQueryString();
+        // $articles = $articlesQuery->paginate(10)->withQueryString();
         // dd($articlesQuery->toArray());
 
-        return Inertia::render('editors/blogs/index', [
+        return Inertia::render('editors/authority/blogs/articles/index', [
             // Gunakan ArticleDetailResource::collection() untuk daftar artikel admin
             'articles' => ArticleDetailResource::collection($articles),
-            'filters' => $request->only(['search', 'category', 'status']),
-            // Menggunakan CategoryResource::collection() untuk daftar kategori agar konsisten
+            'filters' => $request->only(['search', 'category', 'tags', 'status']),
             'categories' => CategoryResource::collection(Category::all()),
+            'tags' => TagResource::collection(Tag::all()),
             'statuses' => ['draft', 'published', 'archived'],
         ]);
     }
@@ -82,9 +93,10 @@ class ArticleController extends Controller
      */
     public function create()
     {
+        // 'editor.articles.create'
         Gate::authorize('create', Article::class);
 
-        return Inertia::render('', [
+        return Inertia::render('editors/authority/blogs/articles/create', [
             'categories' => CategoryResource::collection(Category::all()), // Gunakan Resource
             'tags' => TagResource::collection(Tag::all()), // Gunakan Resource
         ]);
@@ -130,8 +142,8 @@ class ArticleController extends Controller
         // Eager load relasi untuk detail tampilan
         $article->load(['user', 'category', 'tags']);
 
-        return Inertia::render('', [
-            'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource
+        return Inertia::render('editors/authority/blogs/articles/show', [
+            'article' => new ArticleDetailResource($article),
         ]);
     }
 
