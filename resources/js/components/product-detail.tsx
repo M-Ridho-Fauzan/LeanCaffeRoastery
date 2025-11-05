@@ -1,22 +1,9 @@
-'use client';
-
-/**
- * @description      : Enhanced Product Detail Component with Fixed Image Switching
- * @author           : v0
- * @group            :
- * @created          : 09/07/2025 - Updated
- *
- * MODIFICATION LOG
- * - Version         : 2.0.0
- * - Date            : 09/07/2025
- * - Author          : v0
- * - Modification    : Fixed image switching bug and improved design
- **/
-
+import Checkout from '@/pages/ordering/payments/checkout';
 import type { Product } from '@/types';
 import { Button } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, CornerUpLeft, Heart, ShoppingCart, Star } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dialog, DialogContent } from './ui/dialog';
 
 interface ProductDetailsProps {
     product: Product;
@@ -42,6 +29,8 @@ function ProductDetail({ product }: ProductDetailsProps) {
         [product.price],
     );
 
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false); // Menggunakan tipe boolean eksplisit
+
     useEffect(() => {
         setSelectedImageIndex(0);
         thumbnailsContainerRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
@@ -64,6 +53,11 @@ function ProductDetail({ product }: ProductDetailsProps) {
 
     const toggleWishlist = useCallback(() => {
         setIsWishlisted((prev) => !prev);
+    }, []);
+
+    // Fungsi yang akan dipanggil saat tombol "Buy Now" diklik
+    const handleBuyNowClick = useCallback(() => {
+        setIsCheckoutOpen(true); // Membuka dialog
     }, []);
 
     const renderFlavorNotes = useMemo(
@@ -293,10 +287,21 @@ function ProductDetail({ product }: ProductDetailsProps) {
                             <ShoppingCart className="h-5 w-5" />
                             <span>Add to Cart - Rp {formattedPrice}</span>
                         </button>
-                        <button className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-800 hover:bg-gray-200">Buy Now</button>
+                        <button
+                            onClick={handleBuyNowClick}
+                            className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-800 hover:bg-gray-200"
+                        >
+                            Buy Now
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+                <DialogContent className="/* Penting: Flex column dan tanpa padding internal / / Mobile: Lebar penuh, tinggi 95vh, tanpa radius, tanpa margin luar / / Tablet/Desktop: Max lebar 672px, tinggi auto (batas 95vh), radius, terpusat / / Medium Desktop: Max lebar 896px / / Large Desktop: Max lebar 1024px */ m-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl">
+                    <Checkout product={product} onClose={() => setIsCheckoutOpen(false)} />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

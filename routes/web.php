@@ -143,6 +143,14 @@ Route::middleware(['auth', 'verified'])
                 // Jika Anda punya fitur admin-only untuk kategori/tag yang berbeda,
                 // baru tambahkan rute khusus di sini.
             });
+
+        // Route::get('product/ordering', function () {
+        //     return Inertia::render('ordering/payments/ordering');
+        // })->name('product.payments.ordering');
+
+        Route::get('product/charts', function () {
+            return Inertia::render('ordering/payments/charts');
+        })->name('product.payments.charts');
     });
 
 // =========================================================================
@@ -152,3 +160,6 @@ Route::middleware(['auth', 'verified'])
 require __DIR__ . '/editors.php'; // Mungkin berisi rute yang spesifik untuk editor
 require __DIR__ . '/settings.php'; // Mungkin berisi rute pengaturan umum
 require __DIR__ . '/auth.php'; // Rute autentikasi (login, register, dll.)
+
+
+
