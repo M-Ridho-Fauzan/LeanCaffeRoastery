@@ -50,14 +50,12 @@ const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, description,
     </button>
 );
 
-// Dummy data untuk metode pembayaran, disesuaikan untuk tampilan awal dan detail
+// Dummy data untuk metode pembayaran, Dihapus: Credit Card
 const paymentMethods = [
     { id: 'bank_transfer', name: 'Bank Transfer', description: 'Transfer Ke Rekening Bank Kami', icon: <Banknote className="h-5 w-5" /> },
     { id: 'virtual_account', name: 'Virtual Account', description: 'BCA, BRI, Mandiri Virtual Account', icon: <Landmark className="h-5 w-5" /> },
     { id: 'e_wallet', name: 'E-Wallet', description: 'DANA, OVO, GoPay, ShopeePay', icon: <Wallet className="h-5 w-5" /> },
     { id: 'qr_code', name: 'QRIS', description: 'Scan QR Code Untuk Membayar', icon: <QrCode className="h-5 w-5" /> },
-    // Menambahkan Credit Card agar dapat ditangani di renderPaymentDetailsContent jika diperlukan
-    { id: 'credit_card', name: 'Credit Card', description: 'Visa, Mastercard', icon: <CreditCard className="h-5 w-5" /> },
 ];
 
 const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
@@ -206,36 +204,7 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                         </p>
                     </div>
                 );
-            case 'credit_card':
-                return (
-                    <div className="space-y-4">
-                        <p className="text-gray-700">Silakan masukkan detail kartu kredit Anda.</p>
-                        <input
-                            type="text"
-                            placeholder="Nomor Kartu (XXXX-XXXX-XXXX-XXXX)"
-                            className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            {' '}
-                            {/* Menggunakan grid untuk responsivitas */}
-                            <input
-                                type="text"
-                                placeholder="MM/YY"
-                                className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder="CVC"
-                                className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Nama Pemilik Kartu"
-                            className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                    </div>
-                );
+            /* Kasus 'credit_card' telah dihapus */
             default:
                 return <p className="text-gray-500">Pilih metode pembayaran untuk melihat detail.</p>;
         }

@@ -4,7 +4,6 @@ import {
     Building2,
     CornerDownRight,
     FileEdit,
-    FilePlus2,
     Heart,
     Home,
     LayoutGrid,
@@ -13,9 +12,7 @@ import {
     PackagePlus,
     ScrollText,
     Settings,
-    Shapes,
     ShieldAlert,
-    Tag,
     User,
 } from 'lucide-react';
 
@@ -113,66 +110,29 @@ export const platformItems: NavItem[] = [
                 roles: ['admin'],
             },
             {
-                title: 'Manage Products', // Plural dan deskripsi sesuai
+                title: 'Product',
                 href: '/admin/products',
                 icon: PackagePlus,
                 description: 'Create, publish, and manage your products.',
                 roles: ['admin'],
             },
             {
-                title: 'Articles & Content', // Menggabungkan semua hal terkait artikel di sini
+                title: 'Article',
+                href: '/editor/articles',
                 icon: FileEdit,
                 roles: ['admin', 'author'],
                 description: 'Manage your articles and review content contributions.',
-                children: [
-                    {
-                        title: 'All Articles', // Untuk admin melihat semua, atau author melihat semua miliknya
-                        href: '/editor/articles',
-                        icon: Newspaper,
-                        description: 'View and manage all published and draft articles.',
-                        roles: ['admin'], // Admin bisa melihat semua
-                    },
-                    {
-                        title: 'My Articles', // Untuk author hanya melihat artikelnya sendiri
-                        href: '/editor/articles/my',
-                        icon: CornerDownRight,
-                        description: 'View and manage articles you have created.',
-                        roles: ['admin', 'author'], // Author hanya melihat miliknya, Admin juga bisa lihat miliknya
-                    },
-                    {
-                        title: 'Add Article',
-                        href: route('editor.articles.create'),
-                        icon: FilePlus2,
-                        description: 'Create and publish a new article.',
-                        roles: ['admin', 'author'],
-                    },
-                ],
             },
             {
-                title: 'Content Structure', // untuk manajemen Admin-Only
-                icon: Shapes,
-                roles: ['admin'],
-                description: 'Admin-only tools to organize categories and tags for articles.',
-                children: [
-                    {
-                        title: 'Manage Categories',
-                        href: '/editor/categories',
-                        icon: Shapes, // atau ikon berbeda jika ada
-                        description: 'Add, edit, and organize article categories system-wide.',
-                        roles: ['admin'],
-                    },
-                    {
-                        title: 'Manage Tags',
-                        href: '/editor/tags',
-                        icon: Tag,
-                        description: 'Add, edit, and manage article tags system-wide.',
-                        roles: ['admin'],
-                    },
-                ],
+                title: 'Notification',
+                href: '/editor/notifications',
+                icon: FileEdit,
+                description: 'Create, publish, and manage your articles.',
+                roles: ['admin', 'author'],
             },
             {
-                title: 'Advanced Settings',
-                href: '/admin/settings',
+                title: 'Settings',
+                href: '/settings/profile',
                 icon: Settings,
                 description: 'Configure application settings and preferences.',
                 roles: ['admin'],

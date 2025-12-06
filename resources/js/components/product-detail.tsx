@@ -266,7 +266,7 @@ function ProductDetail({ product }: ProductDetailsProps) {
                     <div className="mb-8 space-y-6">
                         {viewMode === 'beginner' ? (
                             <>
-                                <h3 className="border-b-2 border-blue-500 pb-2 text-xl font-bold text-gray-900">Simple Overview</h3>
+                                <h3 className="border-b-2 border-blue-500 pb-2 text-xl font-bold text-gray-900">Order</h3>
                                 {renderFlavorNotes}
                                 {renderBrewMethods(true)}
                                 {renderOrigins(true)}

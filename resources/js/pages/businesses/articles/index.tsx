@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 13/09/2025 - 04:36:23
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 13/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { Head } from '@inertiajs/react';
 

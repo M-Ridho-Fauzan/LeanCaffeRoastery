@@ -1,40 +1,17 @@
-// resources/js/Pages/editors/blogs/publics/index.jsx
-
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-// Jika Anda punya komponen Pagination kustom, ini akan menjadi wrapper untuk Link Inertia
-// Jika tidak, anggap ini hanya div. Ini sudah diimplementasikan dengan baik di bagian bawah.
-import { ComboboxSearch } from '@/components/combobox-search';
 import { Pagination } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
-import { type BreadcrumbItem, type PageProps } from '@/types'; // Import User dan FlashMessages
-import { Head, Link, router, useForm } from '@inertiajs/react'; // Tambahkan usePage jika perlu di sub-komponen
+import { type BreadcrumbItem, type PageProps } from '@/types';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pickBy, throttle } from 'lodash';
-import { DotSquareIcon } from 'lucide-react';
+import { CloudUpload, Filter, Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner'; // Asumsi Anda punya toast (shadcn/ui atau lainnya)
+import { toast } from 'sonner';
 
 // --- Definisi Tipe ---
-// (Tidak ada perubahan pada definisi tipe ini, tetap pertahankan)
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-}
-
-interface Tags {
-    id: number;
-    name: string;
-    slug: string;
-}
-
 interface Article {
     id: number;
     title: string;
@@ -46,17 +23,29 @@ interface Article {
     views_count: number;
     created_at: string;
     updated_at: string;
-    category: Category | null;
+    category: {
+        id: number;
+        name: string;
+        slug: string;
+    } | null;
     author: {
-        // Asumsi ini adalah 'user' di backend Anda
         id: number;
         name: string;
         email: string;
     };
-    tags: Tags[];
+    tags: {
+        id: number;
+        name: string;
+        slug: string;
+    }[];
 }
 
-// Extends PageProps untuk mendapatkan properti global (auth, flash, ziggy, dll.)
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface ArticlesIndexSpecificProps {
     articles: {
         data: Article[];
@@ -80,93 +69,78 @@ interface ArticlesIndexSpecificProps {
     filters: {
         search?: string;
         category?: string;
-        tags?: string;
         status?: 'draft' | 'published' | 'archived';
     };
     categories: {
         data: Category[];
     };
-    tags: {
-        data: Tags[];
-    };
     statuses: ('draft' | 'published' | 'archived')[];
     breadcrumbs: BreadcrumbItem[];
-    flash: { success?: string; error?: string; message?: string };
 }
 
-// Gabungkan ArticlesIndexSpecificProps dengan PageProps global
 type ArticlesIndexPageProps = PageProps & ArticlesIndexSpecificProps;
 
-export default function ArticleIndex({ articles, filters, categories, statuses, breadcrumbs, flash, tags: availableTags }: ArticlesIndexPageProps) {
-    // Inisialisasi state filter langsung dari props filters
-    // `filters` dijamin selalu ada sebagai objek karena `request->only()` di controller
+export default function ArticleIndex({ articles, filters, categories, statuses, breadcrumbs, flash }: ArticlesIndexPageProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
-    const [selectedTag, setSelectedTag] = useState(filters.tags || 'all');
     const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
+
+    // State untuk Dialog Delete
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
-    // useForm digunakan untuk DELETE request karena memberikan fitur loading, errors, dll.
+    // State untuk Dialog Add Article
+    const [isAddArticleOpen, setIsAddArticleOpen] = useState(false);
+
+    // --- STATE BARU UNTUK EDIT ---
+    const [isEditArticleOpen, setIsEditArticleOpen] = useState(false);
+    const [articleToEdit, setArticleToEdit] = useState<Article | null>(null);
+
     const { delete: inertiaDelete, processing, errors } = useForm();
 
-    // Fungsi untuk menerapkan filter
     const throttledApplyFilters = useRef(
-        throttle((s: string, c: string, t: string, st: string) => {
-            // console.log("Applying filters:", { search: s, category: c, status: st });
+        throttle((s: string, c: string, st: string) => {
             router.get(
                 route('editor.articles.index'),
-                // pickBy akan menghapus properti dengan nilai falsy (null, undefined, '')
-                // Jadi, jika search kosong, dia tidak akan dikirim.
-                // Namun, 'all' untuk category/status adalah nilai yang disengaja, jadi perlu logic pickBy yang lebih hati-hati
-                // Atau cukup kirim semua, dan backend yang handle.
-                // Jika ingin hanya mengirim yang bukan 'all' atau bukan string kosong:
                 pickBy(
                     {
                         search: s,
                         category: c !== 'all' ? c : undefined,
-                        tags: t !== 'all' ? c : undefined,
                         status: st !== 'all' ? st : undefined,
                     },
                     (value) => value !== undefined && value !== '',
-                ), // pickBy juga akan menghapus undefined
+                ),
                 {
-                    preserveState: true, // Pertahankan state lokal komponen (misal: scroll position)
-                    replace: true, // Ganti entry di history browser, bukan menambah
-                    preserveScroll: true, // Pertahankan posisi scroll
+                    preserveState: true,
+                    replace: true,
+                    preserveScroll: true,
                 },
             );
-        }, 300), // Throttling untuk menghindari terlalu banyak request saat mengetik/memilih
+        }, 300),
     ).current;
 
     useEffect(() => {
-        // Panggil fungsi throttled yang sudah di-memoize
-        throttledApplyFilters(search, selectedCategory, selectedTag, selectedStatus);
-
-        // Cleanup function untuk membatalkan panggilan throttled yang tertunda jika komponen unmount
-        // atau jika dependensi berubah sebelum waktu throttling habis
+        throttledApplyFilters(search, selectedCategory, selectedStatus);
         return () => {
             throttledApplyFilters.cancel();
         };
-    }, [search, selectedCategory, selectedStatus, selectedTag, throttledApplyFilters]); // Dependensi yang benar
+    }, [search, selectedCategory, selectedStatus, throttledApplyFilters]);
 
-    // Efek untuk menampilkan pesan flash (misalnya dari CRUD lainnya)
     useEffect(() => {
-        if (flash.success) {
-            toast.success(flash.success);
-        }
-        if (flash.error) {
-            toast.error(flash.error);
-        }
-        // Jika ada pesan umum
-        if (flash.message) {
-            toast.info(flash.message); // Atau sesuaikan dengan jenis toast yang Anda inginkan
-        }
+        if (flash.success) toast.success(flash.success);
+        if (flash.error) toast.error(flash.error);
+        if (flash.message) toast.info(flash.message);
     }, [flash]);
 
     const handleDeleteClick = (article: Article) => {
         setArticleToDelete(article);
         setIsDeleteDialogOpen(true);
+    };
+
+    // --- HANDLER BARU UNTUK EDIT ---
+    const handleEditClick = (article: Article) => {
+        setArticleToEdit(article);
+        setIsEditArticleOpen(true);
     };
 
     const confirmDelete = () => {
@@ -175,14 +149,11 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
                     setArticleToDelete(null);
-                    toast.success(`Article "${articleToDelete.title}" deleted successfully.`);
-                    // router.reload() akan memuat ulang halaman dengan URL dan query params saat ini,
-                    // sehingga filter yang ada tetap akan diterapkan.
+                    toast.success(Article "${articleToDelete.title}" deleted successfully.);
                     router.reload();
                 },
                 onError: (errorResponse) => {
                     setIsDeleteDialogOpen(false);
-                    // Menampilkan error dari backend (jika ada)
                     const errorMessage = Object.values(errorResponse).flat().join('\n') || 'Failed to delete article.';
                     toast.error(errorMessage);
                 },
@@ -190,274 +161,380 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
         }
     };
 
-    const handleClearFilters = () => {
-        setSearch('');
-        setSelectedCategory('all');
-        setSelectedTag('all');
-        setSelectedStatus('all');
-        // Karena state berubah, useEffect akan terpanggil kembali untuk menerapkan filter kosong
-    };
-
-    const truncateText = (text: string, maxLength: number) => {
-        if (text.length > maxLength) {
-            return text.substring(0, maxLength) + '...';
-        }
-        return text;
-    };
-
-    const TAGS_TO_SHOW_INITIALLY = 2;
-    const TAG_DISPLAY_LENGTH = 10;
-
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
-            {/* Menggunakan `auth.user.name` misalnya di judul halaman atau user profile */}
-            {/* <Head title={`Articles for ${auth.user.name}`} /> */}
-            <Head title={breadcrumbs[breadcrumbs.length - 1].title} />
+            <Head title="Article List" />
 
-            <div className="flex flex-col gap-6 p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Articles</h1>
-                    <Link href={route('editor.articles.create')}>
-                        <Button>Add New Article</Button>
-                    </Link>
-                </div>
+            <div className="flex h-full flex-col p-4">
+                <div className="min-h-[85vh] w-full rounded-xl border border-sidebar-border/70 bg-white p-6 shadow-sm dark:border-sidebar-border dark:bg-sidebar">
+                    <div className="mb-6">
+                        <h1 className="text-xl font-bold text-[#2e236c] dark:text-white">Article List</h1>
+                    </div>
 
-                {/* Filter Section */}
-                <div className="flex flex-wrap items-center gap-4">
-                    <Input placeholder="Search articles..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+                    <div className="mb-4 flex flex-col items-center justify-between gap-4 md:flex-row">
+                        <div className="relative w-full md:w-1/2">
+                            <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#2e236c]" />
+                            <input
+                                type="text"
+                                placeholder="Search Articles"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full rounded-full border border-[#2e236c]/40 bg-transparent py-2.5 pr-4 pl-12 text-sm text-[#2e236c] placeholder:text-[#2e236c]/60 focus:ring-2 focus:ring-[#2e236c]/20 focus:outline-none"
+                            />
+                        </div>
 
-                    <ComboboxSearch
-                        title="Categories"
-                        options={categories.data}
-                        value={selectedCategory}
-                        onValueChange={setSelectedCategory}
-                        placeholder="Select Categories"
-                        emptyMessage="No categories found"
-                        className="w-[180px]"
-                    />
+                        <div className="w-full md:w-auto">
+                            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                <SelectTrigger className="h-11 w-full rounded-full border border-[#2e236c]/40 px-6 text-[#2e236c]/70 md:min-w-[200px]">
+                                    <div className="flex items-center gap-3">
+                                        <Filter className="h-4 w-4" />
+                                        <SelectValue placeholder="All Status" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    {statuses.map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
 
-                    <ComboboxSearch
-                        title="Tags"
-                        options={availableTags.data}
-                        value={selectedTag}
-                        onValueChange={setSelectedTag}
-                        placeholder="Select Categories"
-                        emptyMessage="No categories found"
-                        className="w-[180px]"
-                    />
+                    <div className="mb-8">
+                        <button
+                            onClick={() => setIsAddArticleOpen(true)}
+                            className="flex items-center gap-2 rounded-full bg-[#2e236c] px-6 py-2.5 text-sm text-white shadow-sm transition-colors hover:bg-[#2e236c]/90"
+                        >
+                            <Plus className="h-5 w-5" />
+                            <span>Add Article</span>
+                        </button>
+                    </div>
 
-                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter by Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            {statuses.map((status) => (
-                                <SelectItem key={status} value={status}>
-                                    {/* Uppercase hanya huruf pertama */}
-                                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse text-left">
+                            <thead>
+                                <tr className="text-sm font-bold text-[#2e236c]">
+                                    <th className="w-[40%] py-4 pr-4">Article</th>
+                                    <th className="px-4 py-4">Author</th>
+                                    <th className="px-4 py-4">Date</th>
+                                    <th className="px-4 py-4">Status</th>
+                                    <th className="py-4 pl-4 text-right"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-sm">
+                                {articles.data.length > 0 ? (
+                                    articles.data.map((article) => (
+                                        <tr key={article.id} className="group hover:bg-gray-50/50">
+                                            <td className="py-6 pr-4 align-top">
+                                                <div className="flex gap-4">
+                                                    <div className="h-16 w-24 shrink-0 overflow-hidden rounded-md bg-gray-100">
+                                                        {article.featured_image_url ? (
+                                                            <img
+                                                                src={article.featured_image_url}
+                                                                alt={article.title}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center bg-[#2e236c]/10 text-xs text-[#2e236c]/40">
+                                                                No Image
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col justify-start">
+                                                        <span className="mb-1 text-[15px] font-bold text-[#2e236c]">{article.title}</span>
+                                                        <p className="line-clamp-2 text-xs leading-relaxed font-light text-gray-400">
+                                                            {article.excerpt || 'No description available for this article.'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-6 align-middle font-medium text-[#2e236c]">{article.author.name}</td>
+                                            <td className="px-4 py-6 align-middle font-medium whitespace-nowrap text-[#2e236c]">
+                                                {article.published_at
+                                                    ? format(new Date(article.published_at), 'MMM, dd yyyy')
+                                                    : format(new Date(article.created_at), 'MMM, dd yyyy')}
+                                            </td>
+                                            <td className="px-4 py-6 align-middle">
+                                                <span
+                                                    className={`rounded-full px-5 py-1.5 text-xs font-medium text-white capitalize shadow-sm ${
+                                                        article.status === 'published'
+                                                            ? 'bg-[#32c945]'
+                                                            : article.status === 'draft'
+                                                              ? 'bg-[#ff5b5b]'
+                                                              : 'bg-gray-400'
+                                                    }`}
+                                                >
+                                                    {article.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-6 pl-4 text-right align-middle">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    {/* TOMBOL PENSIL YANG DIMODIFIKASI UNTUK MEMICU EDIT POPUP */}
+                                                    <button
+                                                        onClick={() => handleEditClick(article)}
+                                                        className="rounded-md border border-[#2e236c] p-1.5 text-[#2e236c] transition-colors hover:bg-[#2e236c] hover:text-white"
+                                                    >
+                                                        <SquarePen className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(article)}
+                                                        className="p-1.5 text-[#2e236c] transition-colors hover:text-red-600"
+                                                    >
+                                                        <Trash2 className="h-6 w-6" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center text-gray-400">
+                                            No articles found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
 
-                    {(search || selectedCategory !== 'all' || selectedStatus !== 'all') && (
-                        <Button variant="outline" onClick={handleClearFilters}>
-                            Clear Filters
-                        </Button>
+                    {articles.last_page > 1 && (
+                        <div className="mt-8 flex justify-center">
+                            <Pagination>
+                                <div className="flex space-x-2">
+                                    {articles.links.map((link, index) => {
+                                        const params = new URLSearchParams(link.url ? new URL(link.url).search : '');
+                                        if (search) params.set('search', search);
+                                        else params.delete('search');
+                                        if (selectedCategory !== 'all') params.set('category', selectedCategory);
+                                        else params.delete('category');
+                                        if (selectedStatus !== 'all') params.set('status', selectedStatus);
+                                        else params.delete('status');
+                                        const fullHref = ${route('editor.articles.index')}?${params.toString()};
+
+                                        return link.url ? (
+                                            <Link
+                                                key={index}
+                                                href={fullHref}
+                                                className={rounded-md border px-3 py-1 text-sm ${link.active ? 'border-[#2e236c] bg-[#2e236c] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ) : (
+                                            <span
+                                                key={index}
+                                                className="cursor-not-allowed rounded-md border px-3 py-1 text-sm text-gray-300"
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </Pagination>
+                        </div>
                     )}
                 </div>
-
-                {/* Articles Table */}
-                <div className="rounded-md border bg-card text-card-foreground shadow-sm">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50px]">ID</TableHead>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Tags</TableHead>
-                                <TableHead>Author</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Published At</TableHead>
-                                <TableHead>Views</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {articles.data.length > 0 ? (
-                                articles.data.map((article) => (
-                                    <TableRow key={article.id}>
-                                        <TableCell className="font-medium">{article.id}</TableCell>
-                                        <TableCell>
-                                            <Link href={route('editor.articles.edit', article.id)} className="font-semibold hover:underline">
-                                                {article.title}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell>{article.category?.name || 'N/A'}</TableCell>
-                                        <TableCell className="px-4 py-2">
-                                            <div className="flex flex-wrap gap-1">
-                                                {article.tags.slice(0, TAGS_TO_SHOW_INITIALLY).map((tag) => (
-                                                    <Badge key={tag.id} variant="secondary">
-                                                        <Tooltip>
-                                                            {' '}
-                                                            {/* Tambahkan tooltip untuk setiap tag yang terpotong */}
-                                                            <TooltipTrigger asChild>
-                                                                <span>{truncateText(tag.name, TAG_DISPLAY_LENGTH)}</span>
-                                                            </TooltipTrigger>
-                                                            {tag.name.length > TAG_DISPLAY_LENGTH && (
-                                                                <TooltipContent>
-                                                                    <p>{tag.name}</p>
-                                                                </TooltipContent>
-                                                            )}
-                                                        </Tooltip>
-                                                    </Badge>
-                                                ))}
-                                                {article.tags.length > TAGS_TO_SHOW_INITIALLY && (
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Badge variant="outline" className="cursor-pointer">
-                                                                +{article.tags.length - TAGS_TO_SHOW_INITIALLY} more
-                                                            </Badge>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="max-w-[200px] rounded-md bg-popover p-2 text-popover-foreground shadow-md">
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {article.tags.slice(TAGS_TO_SHOW_INITIALLY).map((tag) => (
-                                                                    <Badge key={tag.id} variant="secondary">
-                                                                        {tag.name}
-                                                                    </Badge>
-                                                                ))}
-                                                            </div>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{article.author.name}</TableCell>
-                                        <TableCell>
-                                            {/* Badge styling bisa lebih spesifik */}
-                                            <Badge
-                                                variant={
-                                                    article.status === 'published' ? 'default' : article.status === 'draft' ? 'secondary' : 'outline' // Untuk 'archived' atau status lain
-                                                }
-                                            >
-                                                {article.status.charAt(0).toUpperCase() + article.status.slice(1)}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{article.published_at ? format(new Date(article.published_at), 'PPP') : 'N/A'}</TableCell>
-                                        <TableCell>{article.views_count}</TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <DotSquareIcon className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('editor.articles.edit', article.id)}>Edit</Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteClick(article)}
-                                                        className="text-destructive focus:text-destructive"
-                                                        // Tampilkan loading state jika sedang memproses
-                                                        disabled={processing}
-                                                    >
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                                        No articles found.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {/* Paginasi */}
-                {/* Periksa juga apakah ada lebih dari 1 halaman, bukan hanya jumlah link */}
-                {articles.last_page > 1 && (
-                    <div className="mt-4 flex justify-center">
-                        <Pagination>
-                            <div className="flex space-x-2">
-                                {articles.links.map((link, index) => {
-                                    // Membangun URL dengan mempertahankan filter yang ada
-                                    // URLSearchParams akan secara otomatis menangani encoding
-                                    const params = new URLSearchParams(link.url ? new URL(link.url).search : '');
-
-                                    // Set ulang filter dari state lokal agar konsisten
-                                    if (search) params.set('search', search);
-                                    else params.delete('search');
-                                    if (selectedCategory !== 'all') params.set('category', selectedCategory);
-                                    else params.delete('category');
-                                    if (selectedTag !== 'all') params.set('Tag', selectedTag);
-                                    else params.delete('Tag');
-                                    if (selectedStatus !== 'all') params.set('status', selectedStatus);
-                                    else params.delete('status');
-
-                                    // Membuat href lengkap
-                                    const fullHref = `${route('editor.articles.index')}?${params.toString()}`;
-
-                                    return link.url ? (
-                                        <Link
-                                            key={index}
-                                            href={fullHref} // Gunakan href yang sudah dimodifikasi
-                                            className={`rounded-md border px-4 py-2 ${link.active ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'}`}
-                                            // Inertia Link akan secara otomatis menghandle navigasi, jadi dangerouslySetInnerHTML tidak selalu dibutuhkan
-                                            // kecuali label benar-benar mengandung HTML (misal: "&laquo; Previous")
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ) : (
-                                        <span
-                                            key={index}
-                                            className="cursor-not-allowed rounded-md border px-4 py-2 text-muted-foreground"
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </Pagination>
-                    </div>
-                )}
             </div>
+
+            {/* --- DIALOG: ADD NEW ARTICLE (Tetap Ada) --- */}
+            <Dialog open={isAddArticleOpen} onOpenChange={setIsAddArticleOpen}>
+                <DialogContent className="max-h-[95vh] overflow-y-auto rounded-xl border-none bg-white p-0 shadow-2xl sm:max-w-xl">
+                    <div className="flex items-center justify-between px-6 py-4">
+                        <DialogTitle className="text-lg font-bold text-[#2e236c]">Add New Article</DialogTitle>
+                    </div>
+                    <div className="space-y-5 px-6 pb-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-[#2e236c]">Article Title</label>
+                            <input
+                                type="text"
+                                placeholder="Enter Title"
+                                className="w-full rounded-full border border-[#2e236c]/60 px-4 py-2.5 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-[#2e236c]">Description</label>
+                            <textarea
+                                rows={4}
+                                placeholder="Article Description"
+                                className="w-full resize-none rounded-2xl border border-[#2e236c]/60 px-4 py-3 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-[#2e236c]">Author</label>
+                                <input
+                                    type="text"
+                                    placeholder="Author Name"
+                                    className="w-full rounded-full border border-[#2e236c]/60 px-4 py-2.5 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-[#2e236c]">Status</label>
+                                <Select>
+                                    <SelectTrigger className="h-[42px] w-full rounded-full border border-[#2e236c]/60 px-4 py-2 text-sm text-[#2e236c]/60 focus:ring-1 focus:ring-[#2e236c]">
+                                        <SelectValue placeholder="Select Status" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="published">Published</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="mt-2 flex flex-col items-center rounded-lg border border-[#2e236c]/40 p-6 text-center">
+                            <h4 className="mb-4 text-sm font-bold text-[#2e236c]">Upload</h4>
+                            <div className="mb-6 flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#2e236c]/20 bg-[#f8f9fc] px-4 py-8">
+                                <div className="mb-3">
+                                    <CloudUpload className="h-10 w-10 text-[#2e236c]/60" />
+                                </div>
+                                <p className="mb-1 text-xs font-bold text-black">
+                                    Drag & drop files or <span className="cursor-pointer text-[#2e236c] underline">Browse</span>
+                                </p>
+                                <p className="text-[10px] text-gray-400">Supported formates: JPEG, PNG, JPG</p>
+                            </div>
+                            <button className="w-full rounded-lg bg-[#2e236c] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#2e236c]/90">
+                                Upload File
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex justify-center pt-2 pb-8">
+                        <button className="rounded-full bg-[#2e236c] px-12 py-2.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-[#2e236c]/90">
+                            Save
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* --- DIALOG: EDIT ARTICLE (BARU) --- */}
+            <Dialog open={isEditArticleOpen} onOpenChange={setIsEditArticleOpen}>
+                <DialogContent className="max-h-[95vh] overflow-y-auto rounded-xl border-none bg-white p-0 shadow-2xl sm:max-w-xl">
+                    <div className="flex items-center justify-between px-6 py-4">
+                        <DialogTitle className="text-lg font-bold text-[#2e236c]">Edit Article</DialogTitle>
+                    </div>
+
+                    {articleToEdit && (
+                        <div className="space-y-5 px-6 pb-6">
+                            {/* Article Title (Pre-filled) */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-[#2e236c]">Article Title</label>
+                                <input
+                                    type="text"
+                                    defaultValue={articleToEdit.title}
+                                    className="w-full rounded-full border border-[#2e236c]/60 px-4 py-2.5 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                                />
+                            </div>
+
+                            {/* Description (Pre-filled) */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-[#2e236c]">Description</label>
+                                <textarea
+                                    rows={4}
+                                    defaultValue={articleToEdit.excerpt}
+                                    className="w-full resize-none rounded-2xl border border-[#2e236c]/60 px-4 py-3 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                                />
+                            </div>
+
+                            {/* Row: Author & Status (Pre-filled) */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-[#2e236c]">Author</label>
+                                    <input
+                                        type="text"
+                                        defaultValue={articleToEdit.author.name}
+                                        className="w-full rounded-full border border-[#2e236c]/60 px-4 py-2.5 text-sm text-[#2e236c] placeholder:text-[#2e236c]/40 focus:ring-1 focus:ring-[#2e236c] focus:outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-[#2e236c]">Status</label>
+                                    {/* Default Value untuk Select */}
+                                    <Select defaultValue={articleToEdit.status}>
+                                        <SelectTrigger className="h-[42px] w-full rounded-full border border-[#2e236c]/60 px-4 py-2 text-sm text-[#2e236c]/60 focus:ring-1 focus:ring-[#2e236c]">
+                                            <SelectValue placeholder="Select Status" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                            <SelectItem value="draft">Draft</SelectItem>
+                                            <SelectItem value="published">Published</SelectItem>
+                                            <SelectItem value="archived">Archived</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            {/* Upload Section (Sama persis dengan Add) */}
+                            <div className="mt-2 flex flex-col items-center rounded-lg border border-[#2e236c]/40 p-6 text-center">
+                                <h4 className="mb-4 text-sm font-bold text-[#2e236c]">Upload</h4>
+                                <div className="mb-6 flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#2e236c]/20 bg-[#f8f9fc] px-4 py-8">
+                                    <div className="mb-3">
+                                        <CloudUpload className="h-10 w-10 text-[#2e236c]/60" />
+                                    </div>
+                                    <p className="mb-1 text-xs font-bold text-black">
+                                        Drag & drop files or <span className="cursor-pointer text-[#2e236c] underline">Browse</span>
+                                    </p>
+                                    <p className="text-[10px] text-gray-400">Supported formates: JPEG, PNG, JPG</p>
+                                </div>
+
+                                {/* Contoh tampilan jika ada file (Dummy) sesuai permintaan gambar */}
+                                <div className="mb-6 w-full space-y-4 text-left">
+                                    <div>
+                                        <p className="mb-1 text-xs text-gray-500">Uploading files</p>
+                                        <div className="flex items-center justify-between border-b border-[#2e236c] pb-1">
+                                            <span className="text-xs text-gray-700">your-file-here.png</span>
+                                            <Trash2 className="h-4 w-4 cursor-pointer text-red-500" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="mb-1 text-xs text-gray-500">Uploaded</p>
+                                        <div className="flex items-center justify-between rounded border border-green-400 bg-white px-2 py-1.5">
+                                            <span className="text-xs text-gray-700">image-name-goes-here.png</span>
+                                            <div className="rounded-full bg-gray-300 p-0.5">
+                                                <X className="h-3 w-3 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button className="w-full rounded-lg bg-[#2e236c] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#2e236c]/90">
+                                    Upload File
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-center pt-2 pb-8">
+                        <button className="rounded-full bg-[#2e236c] px-12 py-2.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-[#2e236c]/90">
+                            Save
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogContent>
+                <DialogContent className="rounded-xl bg-white">
                     <DialogHeader>
-                        <DialogTitle>Are you absolutely sure?</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-[#2e236c]">Are you absolutely sure?</DialogTitle>
+                        <DialogDescription className="text-gray-500">
                             This action cannot be undone. This will permanently delete the article{' '}
-                            <span className="font-semibold text-foreground">"{articleToDelete?.title}"</span> and remove its data from our servers.
+                            <span className="font-semibold text-[#2e236c]">"{articleToDelete?.title}"</span>.
                         </DialogDescription>
-                        {/* Menampilkan semua pesan error yang ada dari useForm */}
                         {Object.keys(errors).length > 0 && (
-                            <div className="mt-2 text-sm text-destructive">
-                                {(Object.values(errors) as string[]).map(
-                                    (
-                                        message,
-                                        i, // Perubahan ada di sini!
-                                    ) => (
-                                        <p key={i}>{message}</p>
-                                    ),
-                                )}
+                            <div className="mt-2 text-sm text-red-500">
+                                {(Object.values(errors) as string[]).map((message, i) => (
+                                    <p key={i}>{message}</p>
+                                ))}
                             </div>
                         )}
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={processing}>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={processing} className="rounded-full">
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={confirmDelete} disabled={processing}>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDelete}
+                            disabled={processing}
+                            className="rounded-full bg-red-500 hover:bg-red-600"
+                        >
                             {processing ? 'Deleting...' : 'Delete'}
                         </Button>
                     </DialogFooter>

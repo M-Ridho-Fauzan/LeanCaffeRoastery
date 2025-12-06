@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 21/08/2025 - 16:14:51
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 21/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 // pages/Privacy.tsx atau resources/js/Pages/Privacy.tsx
 
 import PrivacyPolicy from '@/components/privacy-policy';
