@@ -16,7 +16,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Link } from '@inertiajs/react';
 
 import { useScrollDirection } from '@/hooks/use-scroll-direction';
-import AppLogo from './app-logo';
+import AppLogoOnly from './app-logo-only';
 import { DesktopNavMenu } from './desktop-nav-menu';
 import { HeaderActions } from './header-actions';
 import { MobileNavSheet } from './mobile-nav-sheet';
@@ -57,7 +57,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <Link href="/" className="flex items-center space-x-2">
                         {' '}
                         {/* Link ke home, bukan dashboard */}
-                        <AppLogo />
+                        <AppLogoOnly className="size-10 fill-current text-[#303182]" />
                     </Link>
 
                     {/* Desktop Navigation */}

@@ -34,10 +34,21 @@ Route::get('/', function () {
 })->name('home');
 
 // Rute Halaman About
+
 Route::get('/about', function () {
-    // Breadcrumbs::render('about'); // Jika Anda punya breadcrumb untuk about
-    return Inertia::render('about');
+    // 1. Gunakan generate() untuk mendapatkan BreadcrumbCollection, BUKAN View
+    $breadcrumbsCollection = Breadcrumbs::generate('about');
+
+    // 2. Konversi ke array
+    $breadcrumbsArray = $breadcrumbsCollection->toArray();
+
+    // dd($breadcrumbsArray);
+    // 3. Kirim array ke Inertia
+    return Inertia::render('about', [
+        'breadcrumbs' => $breadcrumbsArray, // KIRIM ARRAY!
+    ]);
 })->name('about');
+
 
 // Rute Produk Publik
 Route::prefix('products')->name('products.')->group(function () {
@@ -109,6 +120,12 @@ Route::middleware(['auth', 'verified'])
                 // Tags Management (CRUD)
                 Route::resource('tags', TagController::class);
 
+                Route::get('notifications', function () {
+                    // Breadcrumbs::render('admin.notifications.index');
+                    return Inertia::render('editors/authority/notifications/index');
+                })->name('notifications.index');
+
+
                 // Catatan: Jika Anda sebelumnya memiliki Route::get('/articles', ...)
                 // dengan nama 'editor.articles.index', itu sekarang sudah tercakup oleh
                 // Route::resource('articles', ...) yang membuat rute 'editor.articles.index'
@@ -151,6 +168,9 @@ Route::middleware(['auth', 'verified'])
         Route::get('product/charts', function () {
             return Inertia::render('ordering/payments/charts');
         })->name('product.payments.charts');
+
+        Route::get('product/wishlist', function () {
+        })->name('product.persona.wishlist');
     });
 
 // =========================================================================

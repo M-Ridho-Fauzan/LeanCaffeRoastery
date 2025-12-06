@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 14/09/2025 - 01:13:59
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 14/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -223,7 +211,7 @@ export default function About({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }
                                             {item.year}
                                         </div>
                                     </div>
-                                    <div className="ml-4 flex-grow rounded-xl bg-[#2A3152] p-4 text-left">
+                                    <div className="ml-4 flex-grow rounded-xl bg-[#e6e5ee] p-4 text-left">
                                         <h3 className="text-xl font-semibold">{item.text}</h3>
                                         <p className="text-sm text-[#303182]">{item.subtext}</p>
                                     </div>
@@ -237,7 +225,7 @@ export default function About({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }
                         <h2 className="mb-4 text-3xl font-semibold">Ready to Experience Lean Coffee?</h2>
                         <p className="mb-8 text-[#303182]">Visit our stores or order online to taste the difference that passion and quality make</p>
                         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                            <button className="flex items-center justify-center rounded-full bg-[#303182] px-6 py-3 text-white transition-all duration-300 hover:bg-[#8D6B58]">
+                            <button className="flex items-center justify-center rounded-full bg-[#303182] px-6 py-3 text-white transition-all duration-300 hover:bg-[#5054cf]">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -257,7 +245,7 @@ export default function About({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }
                                 </svg>
                                 <span className="ml-2">Shop Now</span>
                             </button>
-                            <button className="rounded-full border border-gray-500 px-6 py-3 text-gray-300 transition-all duration-300 hover:border-gray-300 hover:bg-[#2A3152]">
+                            <button className="rounded-full border border-gray-500 px-6 py-3 text-gray-300 transition-all duration-300 hover:border-gray-300 hover:bg-[#5054cf]">
                                 Find Out More
                             </button>
                         </div>
