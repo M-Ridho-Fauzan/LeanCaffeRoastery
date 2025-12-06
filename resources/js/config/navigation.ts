@@ -1,17 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 09/09/2025 - 22:32:49
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 09/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
-// data/navItems.ts
-
 import { NavItem } from '@/types';
 import {
     BarChart,
@@ -36,7 +22,7 @@ export const platformItems: NavItem[] = [
         href: '/',
         icon: Home,
         roles: 'public',
-        description: 'Go back to the main homepage.', // Contoh deskripsi
+        description: 'Go back to the main homepage.',
     },
     {
         title: 'About',
@@ -98,7 +84,6 @@ export const platformItems: NavItem[] = [
     },
     {
         title: 'Dashboard',
-        href: '/dashboard',
         icon: LayoutGrid,
         roles: ['admin', 'author'],
         description: 'Access your administrative and author tools.',
@@ -108,6 +93,13 @@ export const platformItems: NavItem[] = [
                 href: '/dashboard',
                 icon: CornerDownRight,
                 description: 'See a quick summary of your site activity.',
+                roles: ['admin', 'author'],
+            },
+            {
+                title: 'Charts', // Pindahkan ke sini untuk analisis admin/author
+                href: '/dashboard/charts',
+                icon: BarChart,
+                description: 'View sales and product performance charts.',
                 roles: ['admin', 'author'],
             },
             {
@@ -121,15 +113,15 @@ export const platformItems: NavItem[] = [
                 title: 'Product',
                 href: '/admin/products',
                 icon: PackagePlus,
-                description: 'Create, publish, and manage your articles.',
+                description: 'Create, publish, and manage your products.',
                 roles: ['admin'],
             },
             {
                 title: 'Article',
                 href: '/editor/articles',
                 icon: FileEdit,
-                description: 'Create, publish, and manage your articles.',
                 roles: ['admin', 'author'],
+                description: 'Manage your articles and review content contributions.',
             },
             {
                 title: 'Notification',
@@ -155,5 +147,6 @@ export const footerNavItems: NavItem[] = [
         href: '/kebijakan-privasi',
         icon: ShieldAlert,
         roles: 'public',
+        description: 'Baca kebijakan privasi kami untuk melindungi data Anda.',
     },
 ];
