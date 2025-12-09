@@ -1,18 +1,6 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 06/09/2025 - 23:38:20
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 06/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { ActiveFilters, BreadcrumbItem, FilterOptions, PaginatedResponse, Product, ZiggyProps } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -21,14 +9,16 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 // Komponen UI dari shadcn/ui
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Ikon dari lucide-react
-import { MapPin, Recycle, Wheat } from 'lucide-react';
 
 // Komponen Filter Kustom
+import ProductDetail from '@/components/product-detail';
 import { ProductFilters } from '@/components/product-filters';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ShoppingCart } from 'lucide-react';
 
 // --- Definisi Tipe Data (Pastikan ini sesuai dengan ProductResource Anda) ---
 
@@ -80,7 +70,7 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
     const rowVirtualizer = useVirtualizer({
         count: rowCount,
         getScrollElement: () => document.documentElement, // <<< PENTING: Gunakan window sebagai scroll parent
-        estimateSize: useCallback(() => 650, []), // Estimasi tinggi rata-rata satu BARIS dari 3 produk + gap
+        estimateSize: useCallback(() => 850, []), // Estimasi tinggi rata-rata satu BARIS dari 3 produk + gap
         overscan: 3,
     });
     // =======================================
@@ -458,50 +448,110 @@ const truncateText = (text: string, maxLength: number) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-const ProductCard = ({ product }: { product: Product }) => (
-    <Link href={route('products.show', { product: product.slug })} className="group">
-        <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-200 hover:shadow-lg">
-            <CardHeader className="p-0">
-                <div className="aspect-h-1 aspect-w-1 relative w-full overflow-hidden bg-gray-200">
-                    <img
-                        src={
-                            product.primary_image_url
-                                ? // ? product.primary_image_url
-                                  `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(truncateText(product.product_name, 20))}`
-                                : `https://placehold.co/600x400/EEE/31343C?text=${encodeURIComponent(truncateText(product.product_name, 20))}`
-                        }
-                        alt={product.product_name}
-                        className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                    />
-                    {product.is_specialty && (
-                        <Badge variant="destructive" className="absolute top-3 right-3">
-                            Specialty
-                        </Badge>
-                    )}
-                </div>
-            </CardHeader>
-            <CardContent className="flex flex-grow flex-col p-4">
-                <CardTitle className="text-lg font-semibold text-gray-800">{product.product_name}</CardTitle>
-                <CardDescription className="mt-1 text-base font-bold text-primary">Rp {product.price.toLocaleString('id-ID')}</CardDescription>
-                <p className="mt-3 mb-4 flex-grow text-sm text-gray-500">{product.flavor_notes}</p>
-                <div className="space-y-2">
-                    <InfoLine icon={<MapPin size={14} />} text={product.origins.map((o) => o.origin_name).join(', ')} />
-                    <InfoLine icon={<Recycle size={14} />} text={product.processes.map((p) => p.process_name).join(', ')} />
-                    <InfoLine icon={<Wheat size={14} />} text={product.type} />
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0">
-                <div className="flex flex-wrap gap-2">
-                    {product.brew_methods.map((bm) => (
-                        <Badge key={bm.id} variant="secondary">
-                            {bm.brew_name}
-                        </Badge>
-                    ))}
-                </div>
-            </CardFooter>
-        </Card>
-    </Link>
-);
+// --- KOMPONEN PRODUCT CARD BARU DENGAN MODAL ---
+const ProductCard = ({ product }: { product: Product }) => {
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+    // Kelas DialogContent yang kompleks, diambil dari ProductDetail
+    const dialogContentClasses =
+        'm-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 ' +
+        'sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl';
+
+    return (
+        <>
+            {/* Mengganti Link dengan DIV, dan menambahkan onClick untuk membuka modal */}
+            <div
+                onClick={() => setIsDetailOpen(true)}
+                className="group h-full cursor-pointer" // Tambahkan cursor-pointer
+            >
+                {/* Card Container: Rounded lebih besar, shadow halus */}
+                <Card className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    {/* --- Bagian Gambar --- */}
+                    <CardHeader className="p-0">
+                        <div className="aspect-h-1 aspect-w-1 relative overflow-hidden bg-[#2A2F5B]">
+                            <img
+                                src={
+                                    product.primary_image_url
+                                        ? product.primary_image_url
+                                        : `https://placehold.co/600x600/2A2F5B/FFFFFF?text=${encodeURIComponent(truncateText(product.product_name, 20))}`
+                                }
+                                alt={product.product_name}
+                                className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                            />
+
+                            {/* Badge: Dipindah ke Kiri Atas & Warna Hijau sesuai desain */}
+                            {product.is_specialty && (
+                                <Badge className="absolute top-4 left-4 border-none bg-[#22C55E] px-3 py-1 text-xs font-bold text-white hover:bg-[#16a34a]">
+                                    Best Seller
+                                </Badge>
+                            )}
+                        </div>
+                    </CardHeader>
+
+                    {/* --- Bagian Konten --- */}
+                    <CardContent className="flex flex-grow flex-col px-5 pt-5 pb-4">
+                        {/* Tag Tipe (House Blend) */}
+                        <div className="mb-2">
+                            <span className="inline-block rounded-full border border-gray-300 px-3 py-0.5 text-[10px] font-semibold tracking-wide text-gray-500 uppercase">
+                                {product.type}
+                            </span>
+                        </div>
+
+                        {/* Judul Produk */}
+                        <CardTitle className="mb-1 line-clamp-1 text-lg font-bold text-gray-900">{product.product_name}</CardTitle>
+
+                        {/* Deskripsi Singkat */}
+                        <p className="mb-4 line-clamp-2 min-h-[2.5em] text-xs leading-relaxed text-gray-500">{product.flavor_notes}</p>
+
+                        {/* Informasi Detail (Origin & Roast/Process) */}
+                        <div className="mt-auto space-y-2 border-t border-dashed border-gray-100 pt-3 text-xs">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-400">Origin:</span>
+                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
+                                    {product.origins.map((o) => o.origin_name).join(', ')}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-400">Process:</span>
+                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
+                                    {product.processes.map((p) => p.process_name).join(', ')}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Harga */}
+                        <div className="mt-4">
+                            <span className="text-lg font-bold text-gray-900">Rp . {product.price.toLocaleString('id-ID')}</span>
+                        </div>
+                    </CardContent>
+
+                    {/* --- Footer / Tombol --- */}
+                    {/* Tombol-tombol ini sekarang hanya visual, klik utama di Card Container */}
+                    <CardFooter className="flex gap-3 px-5 pt-0 pb-5">
+                        {/* Tombol Add to Cart (Visual) */}
+                        <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#2A2F5B] py-2 text-xs font-bold text-white transition-colors group-hover:bg-[#1e2345]">
+                            <ShoppingCart size={14} />
+                            <span>Add To Cart</span>
+                        </div>
+
+                        {/* Tombol View Details (Visual) */}
+                        <div className="flex flex-1 items-center justify-center rounded-full border border-[#2A2F5B] py-2 text-xs font-bold text-[#2A2F5B] transition-colors hover:bg-gray-50">
+                            View Details
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+
+            {/* Dialog/Modal untuk menampilkan detail produk */}
+            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                <DialogContent className={dialogContentClasses}>
+                    {/* Menggunakan ProductDetail dan mengirimkan fungsi penutup */}
+                    <ProductDetail product={product} closeModal={() => setIsDetailOpen(false)} inModal={true} />
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+};
 
 const ProductCardSkeleton = () => (
     <div className="space-y-3">
@@ -515,9 +565,9 @@ const ProductCardSkeleton = () => (
     </div>
 );
 
-const InfoLine = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-    <div className="flex items-center text-sm text-gray-600">
-        <span className="mr-2 text-gray-400">{icon}</span>
-        <span className="truncate">{text}</span>
-    </div>
-);
+// const InfoLine = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
+//     <div className="flex items-center text-sm text-gray-600">
+//         <span className="mr-2 text-gray-400">{icon}</span>
+//         <span className="truncate">{text}</span>
+//     </div>
+// );
