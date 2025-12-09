@@ -43,7 +43,7 @@ const ProductImageGraphic: React.FC<ProductImageGraphicProps> = ({ productName }
     const secondLine = nameParts.slice(1).join(' ');
 
     return (
-        <div className="flex h-28 w-28 flex-shrink-0 flex-col justify-between overflow-hidden rounded-md bg-indigo-800 p-2">
+        <div className="flex h-28 w-28 flex-col justify-between overflow-hidden rounded-md bg-indigo-800 p-2">
             <p className="font-mono text-[8px] tracking-wide text-white/80 uppercase">Espresso Roast 100% Arabica</p>
             <h3 className="text-lg leading-tight font-bold text-white uppercase">
                 {firstLine} <br /> {secondLine}

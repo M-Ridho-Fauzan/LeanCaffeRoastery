@@ -149,7 +149,8 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
                     setArticleToDelete(null);
-                    toast.success(Article "${articleToDelete.title}" deleted successfully.);
+                    // FIXED: Menambahkan backticks (`)
+                    toast.success(`Article "${articleToDelete.title}" deleted successfully.`);
                     router.reload();
                 },
                 onError: (errorResponse) => {
@@ -312,13 +313,16 @@ export default function ArticleIndex({ articles, filters, categories, statuses, 
                                         else params.delete('category');
                                         if (selectedStatus !== 'all') params.set('status', selectedStatus);
                                         else params.delete('status');
-                                        const fullHref = ${route('editor.articles.index')}?${params.toString()};
+
+                                        // FIXED: Menambahkan backticks (`)
+                                        const fullHref = `${route('editor.articles.index')}?${params.toString()}`;
 
                                         return link.url ? (
                                             <Link
                                                 key={index}
                                                 href={fullHref}
-                                                className={rounded-md border px-3 py-1 text-sm ${link.active ? 'border-[#2e236c] bg-[#2e236c] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}}
+                                                // FIXED: Menambahkan backticks (`)
+                                                className={`rounded-md border px-3 py-1 text-sm ${link.active ? 'border-[#2e236c] bg-[#2e236c] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
                                         ) : (

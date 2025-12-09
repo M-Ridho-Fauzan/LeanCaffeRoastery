@@ -46,12 +46,12 @@ export default function Location() {
                     </section>
 
                     <div className="container mx-auto flex flex-col items-center px-4 py-12 sm:py-16">
-                        <div className="mb-4 flex flex-col items-center gap-3">
+                        {/* <div className="mb-4 flex flex-col items-center gap-3">
                             <span className="flex-shrink-0 text-gray-600">
                                 <MapPin className="h-6 w-6" />
                             </span>
                             <h2 className="text-center text-2xl font-semibold text-gray-800">Lean Coffee Roastery</h2>
-                        </div>
+                        </div> */}
 
                         <AppLogoIcon width="150" className="my-5" />
 

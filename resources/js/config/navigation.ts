@@ -96,13 +96,6 @@ export const platformItems: NavItem[] = [
                 roles: ['admin', 'author'],
             },
             {
-                title: 'Charts', // Pindahkan ke sini untuk analisis admin/author
-                href: '/dashboard/charts',
-                icon: BarChart,
-                description: 'View sales and product performance charts.',
-                roles: ['admin', 'author'],
-            },
-            {
                 title: 'Manage Users',
                 href: '/admin/users',
                 icon: User,
