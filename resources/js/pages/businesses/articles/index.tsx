@@ -23,6 +23,7 @@ const longContent = `
 
 export default function Index() {
     // State untuk menyimpan artikel yang sedang dipilih (Modal)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedArticle, setSelectedArticle] = useState<any>(null);
 
     // --- State Pagination ---
