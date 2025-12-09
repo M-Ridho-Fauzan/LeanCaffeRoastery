@@ -89,14 +89,14 @@ export const platformItems: NavItem[] = [
         description: 'Access your administrative and author tools.',
         children: [
             {
-                title: 'Overview',
+                title: 'Track Sales',
                 href: '/dashboard',
                 icon: CornerDownRight,
                 description: 'See a quick summary of your site activity.',
                 roles: ['admin', 'author'],
             },
             {
-                title: 'Manage Users',
+                title: 'Order',
                 href: '/admin/users',
                 icon: User,
                 description: 'Add, edit, or delete user accounts.',

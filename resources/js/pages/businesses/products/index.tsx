@@ -12,17 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Ikon dari lucide-react
-
-// Komponen Filter Kustom
+// Komponen Filter & Detail
 import ProductDetail from '@/components/product-detail';
 import { ProductFilters } from '@/components/product-filters';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ShoppingCart } from 'lucide-react';
-
-// --- Definisi Tipe Data (Pastikan ini sesuai dengan ProductResource Anda) ---
-
-// const breadcrumbs: BreadcrumbItem[] = [{ title: 'Menu', href: route('products.index') }];
 
 export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }) {
     const { ziggy } = usePage().props as { ziggy?: ZiggyProps };
@@ -43,6 +37,7 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
         processes: [],
         types: [],
     });
+
     const [filters, setFilters] = useState<ActiveFilters>(() => {
         const initialFilters: ActiveFilters = {
             type: 'all',
@@ -50,6 +45,7 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
             process_id: 'all',
             brew_method_id: 'all',
         };
+        // Mapping query params ke state filter
         if (currentQuery.type && currentQuery.type !== 'all') initialFilters.type = String(currentQuery.type);
         if (currentQuery.origin_id && currentQuery.origin_id !== 'all') initialFilters.origin_id = String(currentQuery.origin_id);
         if (currentQuery.process_id && currentQuery.process_id !== 'all') initialFilters.process_id = String(currentQuery.process_id);
@@ -57,32 +53,28 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
         return initialFilters;
     });
 
+    // State untuk Search Bar manual di Hero Section
+    const [searchQuery, setSearchQuery] = useState(currentQuery.search || '');
+
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const isFiltersChanged = useRef(false);
     const hasFetchedInitialData = useRef(false);
 
     // --- Virtualization Setup ---
-    // const parentRef = useRef<HTMLDivElement>(null); // TIDAK LAGI DIGUNAKAN
-
     const itemsPerRow = 3;
     const rowCount = Math.ceil(allProducts.length / itemsPerRow);
 
     const rowVirtualizer = useVirtualizer({
         count: rowCount,
-        getScrollElement: () => document.documentElement, // <<< PENTING: Gunakan window sebagai scroll parent
-        estimateSize: useCallback(() => 850, []), // Estimasi tinggi rata-rata satu BARIS dari 3 produk + gap
+        getScrollElement: () => document.documentElement,
+        estimateSize: useCallback(() => 850, []),
         overscan: 3,
     });
-    // =======================================
 
-    // --- Efek untuk Mengambil Produk ---
+    // --- Fetch Logic ---
     const fetchProducts = useCallback(async () => {
-        if (isLoadingInitial || isLoadingMore) {
-            return;
-        }
-        if (!hasMore && pageToFetch > 1 && !isFiltersChanged.current) {
-            return;
-        }
+        if (isLoadingInitial || isLoadingMore) return;
+        if (!hasMore && pageToFetch > 1 && !isFiltersChanged.current) return;
 
         const isFilterOrInitialLoad = pageToFetch === 1 || isFiltersChanged.current;
 
@@ -94,54 +86,31 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
             setIsLoadingMore(true);
         }
 
-        // --- Perbedaan utama di sini: Dua set queryParams ---
-        // 1. queryParams untuk permintaan API (selalu sertakan `page`)
+        // Setup Query Params
         const apiQueryParams: Record<string, string | number> = { page: pageToFetch };
         if (filters.type !== 'all') apiQueryParams.type = filters.type;
         if (filters.origin_id !== 'all') apiQueryParams.origin_id = filters.origin_id;
-        if (filters.process_id !== 'all') apiQueryParams.process_id = filters.process_id;
+        if (searchQuery) apiQueryParams.search = String(searchQuery); // Include search
         if (filters.brew_method_id !== 'all') apiQueryParams.brew_method_id = filters.brew_method_id;
+        if (searchQuery) apiQueryParams.search = Array.isArray(searchQuery) ? searchQuery.join(' ') : searchQuery; // Ensure string
 
-        // 2. browserUrlParams untuk URL di browser (hilangkan `page=1` jika pageToFetch adalah 1)
-        const browserUrlParams: Record<string, string | number> = {};
-        if (filters.type !== 'all') browserUrlParams.type = filters.type;
-        if (filters.origin_id !== 'all') browserUrlParams.origin_id = filters.origin_id;
-        if (filters.process_id !== 'all') browserUrlParams.process_id = filters.process_id;
-        if (filters.brew_method_id !== 'all') browserUrlParams.brew_method_id = filters.brew_method_id;
-        // Hanya tambahkan `page` ke URL browser jika pageToFetch > 1
-        if (pageToFetch > 1) {
-            browserUrlParams.page = pageToFetch;
-        }
-        // --- Akhir perbedaan ---
+        const browserUrlParams = { ...apiQueryParams };
+        if (pageToFetch === 1) delete browserUrlParams.page; // Clean URL
 
         try {
             const res = await axios.get<PaginatedResponse<Product>>(route('products.index.api'), {
-                params: apiQueryParams, // Gunakan apiQueryParams untuk permintaan API
+                params: apiQueryParams,
             });
 
-            // setAllProducts((prevProducts) => {
-            //     const newProducts = isFilterOrInitialLoad ? res.data.data : [...prevProducts, ...res.data.data];
-            //     console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
-            //     console.log(`[Total Produk Dimuat] ${newProducts.length} produk.`);
-            //     return newProducts;
-            // });
-
-            // --- setAllProducts dengan pengecekan duplikat ---
             setAllProducts((prevProducts) => {
                 let updatedProducts: Product[];
-
                 if (isFilterOrInitialLoad) {
-                    updatedProducts = res.data.data; // Jika ini load awal/filter, mulai dari nol
+                    updatedProducts = res.data.data;
                 } else {
-                    // Jika ini load more, gabungkan dan pastikan unik
                     const existingProductIds = new Set(prevProducts.map((p) => p.id));
                     const newUniqueProducts = res.data.data.filter((p) => !existingProductIds.has(p.id));
                     updatedProducts = [...prevProducts, ...newUniqueProducts];
                 }
-
-                console.log(`[API Response] Halaman ${res.data.meta.current_page} dimuat. Tambahan ${res.data.data.length} produk.`);
-                console.log(`[Total Produk Dimuat] ${updatedProducts.length} produk.`);
-
                 return updatedProducts;
             });
 
@@ -156,44 +125,14 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                 setPageToFetch(res.data.meta.last_page + 1);
             }
 
-            // --- Inertia router.visit Logic (menggunakan browserUrlParams) ---
+            // Update URL Browser (Inertia) tanpa reload full page
             if (isFilterOrInitialLoad) {
-                const currentBrowserParams = new URLSearchParams(window.location.search);
-                const newBrowserUrlParams = new URLSearchParams(browserUrlParams as Record<string, string>);
-
-                let paramsChanged = false;
-                // Cek apakah ada parameter di currentBrowserParams yang tidak ada di newBrowserUrlParams
-                for (const [key, value] of currentBrowserParams.entries()) {
-                    if (newBrowserUrlParams.get(key) !== value) {
-                        paramsChanged = true;
-                        break;
-                    }
-                }
-                // Cek apakah ada parameter di newBrowserUrlParams yang tidak ada di currentBrowserParams
-                if (!paramsChanged) {
-                    for (const [key, value] of newBrowserUrlParams.entries()) {
-                        if (currentBrowserParams.get(key) !== value) {
-                            paramsChanged = true;
-                            break;
-                        }
-                    }
-                }
-                // Kondisi tambahan: Jika URL saat ini punya `?page=1` tapi kita mau menghilangkannya
-                if (!paramsChanged && currentBrowserParams.has('page') && currentBrowserParams.get('page') === '1' && pageToFetch === 1) {
-                    paramsChanged = true;
-                }
-
-                if (paramsChanged) {
-                    router.visit(route('products.index', browserUrlParams), {
-                        // Gunakan browserUrlParams di sini
-                        preserveScroll: true,
-                        replace: true,
-                        preserveState: true,
-                    });
-                }
-            }
-
-            if (isFilterOrInitialLoad) {
+                router.visit(route('products.index', browserUrlParams), {
+                    preserveScroll: true,
+                    replace: true,
+                    preserveState: true,
+                    only: ['products'], // Optimization
+                });
                 hasFetchedInitialData.current = true;
             }
         } catch (error) {
@@ -203,27 +142,18 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
             setIsLoadingMore(false);
             isFiltersChanged.current = false;
         }
-    }, [filters, pageToFetch, hasMore, isLoadingInitial, isLoadingMore]);
+    }, [filters, searchQuery, pageToFetch, hasMore, isLoadingInitial, isLoadingMore]);
 
-    // --- Efek untuk memicu fetchProducts saat `filters` atau `pageToFetch` berubah (BUKAN DARI SCROLL) ---
+    // Trigger Fetch saat Filter/Search berubah
     useEffect(() => {
-        // PERBAIKAN 4: Guard yang lebih spesifik untuk pemicu awal/filter
-        // Panggil fetchProducts hanya jika:
-        // 1. Ini adalah perubahan filter/tab (isFiltersChanged.current true)
-        // 2. Ini adalah load awal halaman 1 DAN belum pernah fetch data awal
-        // (Scroll akan ditangani oleh IntersectionObserver secara terpisah)
-
         if (isFiltersChanged.current) {
-            // console.log("useEffect: Filters changed, triggering fetch.");
-            fetchProducts(); // Ini akan fetch page 1 dengan filter baru
+            fetchProducts();
         } else if (pageToFetch === 1 && !hasFetchedInitialData.current && !isLoadingInitial && !isLoadingMore) {
-            // console.log("useEffect: Initial page 1 load, triggering fetch.");
-            fetchProducts(); // Ini akan fetch page 1 pertama kali
+            fetchProducts();
         }
-        // Jangan panggil fetchProducts di sini untuk pageToFetch > 1, itu urusan observer
-    }, [filters, pageToFetch, fetchProducts, hasFetchedInitialData, isLoadingInitial, isLoadingMore]);
+    }, [filters, searchQuery, pageToFetch, fetchProducts, hasFetchedInitialData, isLoadingInitial, isLoadingMore]);
 
-    // --- Efek untuk Mengambil Opsi Filter (hanya sekali saat mount) ---
+    // Ambil Filter Options
     useEffect(() => {
         const fetchFilterOptions = async () => {
             try {
@@ -236,78 +166,63 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
         fetchFilterOptions();
     }, []);
 
-    // --- Efek untuk Deteksi Scroll (IntersectionObserver) ---
+    // Infinite Scroll Observer
     useEffect(() => {
         if (!loadMoreRef.current) return;
-
-        const node = loadMoreRef.current; // Copy ref value to a variable
-
+        const node = loadMoreRef.current;
         const observer = new IntersectionObserver(
             (entries) => {
-                // PERBAIKAN 5: Logic IntersectionObserver yang lebih ketat
-                // Panggil fetchProducts HANYA jika:
-                // 1. Elemen terlihat (entries[0].isIntersecting)
-                // 2. Masih ada halaman berikutnya (hasMore)
-                // 3. Tidak sedang dalam proses loading (baik initial maupun more)
-                // 4. Data awal sudah berhasil diambil (hasFetchedInitialData.current)
-                // 5. Bukan karena filter/tab baru saja diubah (agar tidak konflik dengan pemicu fetchProducts lainnya)
                 if (
                     entries[0].isIntersecting &&
                     hasMore &&
                     !isLoadingInitial &&
                     !isLoadingMore &&
                     hasFetchedInitialData.current &&
-                    !isFiltersChanged.current // Tambahkan ini
+                    !isFiltersChanged.current
                 ) {
-                    // console.log("Observer: Triggering fetch for next page.");
-                    fetchProducts(); // Panggil tanpa argumen
+                    fetchProducts();
                 }
             },
-            {
-                root: null,
-                // PERBAIKAN 6: Sesuaikan rootMargin. Misalnya, picu 200px sebelum mencapai bagian bawah.
-                rootMargin: '0px 0px 200px 0px', // Top, Right, Bottom, Left. Bottom 200px berarti trigger lebih awal.
-                // threshold: 0.1, // Mungkin perlu diatur lebih rendah jika observer tidak terpicu sama sekali
-            },
+            { root: null, rootMargin: '0px 0px 200px 0px' },
         );
-
         observer.observe(node);
-
         return () => {
-            if (node) {
-                observer.unobserve(node);
-            }
+            if (node) observer.unobserve(node);
         };
-    }, [hasMore, isLoadingInitial, isLoadingMore, fetchProducts, hasFetchedInitialData]); // Tambahkan fetchProducts & hasFetchedInitialData
+    }, [hasMore, isLoadingInitial, isLoadingMore, fetchProducts, hasFetchedInitialData]);
 
-    // --- Handler untuk Perubahan Filter ---
+    // Handlers
     const handleFilterChange = (newFilters: ActiveFilters) => {
         setFilters(newFilters);
         setPageToFetch(1);
-        isFiltersChanged.current = true; // Set flag
-        hasFetchedInitialData.current = false; // Reset flag agar data pertama di-fetch ulang
-        // console.log("Filters changed, pageToFetch reset to 1.");
-        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat filter berubah
+        isFiltersChanged.current = true;
+        hasFetchedInitialData.current = false;
+        rowVirtualizer.scrollToOffset(0, { align: 'start' });
     };
 
-    // --- Handler untuk Perubahan Tab (Brew Method) ---
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setPageToFetch(1);
+        isFiltersChanged.current = true;
+        hasFetchedInitialData.current = false;
+        rowVirtualizer.scrollToOffset(0, { align: 'start' });
+    };
+
     const handleTabChange = (brewMethodId: string | 'all') => {
         setFilters((prev) => ({ ...prev, brew_method_id: String(brewMethodId) }));
         setPageToFetch(1);
-        isFiltersChanged.current = true; // Set flag
-        hasFetchedInitialData.current = false; // Reset flag
-        // console.log("Tab changed, pageToFetch reset to 1.");
-        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat tab berubah
+        isFiltersChanged.current = true;
+        hasFetchedInitialData.current = false;
+        rowVirtualizer.scrollToOffset(0, { align: 'start' });
     };
 
-    // --- Handler untuk Reset Semua Filter ---
     const resetAdvancedFilters = () => {
         setFilters({ type: 'all', origin_id: 'all', process_id: 'all', brew_method_id: 'all' });
+        setSearchQuery('');
         setPageToFetch(1);
-        isFiltersChanged.current = true; // Set flag
-        hasFetchedInitialData.current = false; // Reset flag
-        // console.log("Filters reset, pageToFetch reset to 1.");
-        rowVirtualizer.scrollToOffset(0, { align: 'start' }); // Scroll ke atas saat reset filter
+        isFiltersChanged.current = true;
+        hasFetchedInitialData.current = false;
+        rowVirtualizer.scrollToOffset(0, { align: 'start' });
     };
 
     return (
@@ -315,21 +230,63 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
             <Head title="Jelajahi Kopi" />
 
             <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                {/* --- HEADER & FILTER --- */}
-                <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Jelajahi Kopi Kami</h1>
+                {/* --- HERO SECTION (SESUAI DESAIN GAMBAR) --- */}
+                <div className="relative mb-10 h-[450px] w-full overflow-hidden rounded-[40px] bg-[#1a1a1a] shadow-2xl">
+                    {/* Background Image: Biji Kopi Gelap */}
+                    <img
+                        src="https://images.unsplash.com/photo-1447933601400-b8a9015329d3?q=80&w=2000&auto=format&fit=crop"
+                        alt="Coffee Background"
+                        className="absolute inset-0 h-full w-full object-cover opacity-60"
+                    />
+
+                    {/* Content Overlay */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+                        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-6xl lg:text-7xl">
+                            Our Coffee Menu
+                        </h1>
+                        <p className="mb-10 max-w-2xl text-lg font-light text-gray-200 drop-shadow-md md:text-xl">
+                            Discover our carefully curated selection of premium coffees from around the world
+                        </p>
+
+                        {/* Search Bar Capsule */}
+                        <div className="relative w-full max-w-xl">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-6">
+                                {/* Icon Search */}
+                                <svg className="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2.5"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={handleSearch}
+                                placeholder="Search Coffee.."
+                                className="block w-full rounded-full border-none bg-white py-5 pr-6 pl-16 text-lg text-gray-900 shadow-xl placeholder:text-gray-400 focus:ring-4 focus:ring-white/50 focus:outline-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- FILTER BAR (Moved Below Hero) --- */}
+                <div className="mb-8 flex justify-end">
                     <ProductFilters
                         filterOptions={filterOptions}
                         filters={filters}
                         setFilters={handleFilterChange}
                         onReset={resetAdvancedFilters}
                         resultCount={totalResults}
+                        // Note: Jika ProductFilters punya search bar sendiri, mungkin perlu disembunyikan via props atau CSS
                     />
                 </div>
 
                 {/* --- TABS METODE PENYAJIAN --- */}
                 <div className="relative mb-8 border-b border-gray-200">
-                    <div className="scrollbar-hide -mb-px flex space-x-4 overflow-x-auto sm:space-x-8">
+                    <div className="scrollbar-hide -mb-px flex justify-center space-x-4 overflow-x-auto sm:space-x-8">
                         <TabButton label="Semua" isActive={filters.brew_method_id === 'all'} onClick={() => handleTabChange('all')} />
                         {filterOptions.brewMethods.map((bm) => (
                             <TabButton
@@ -342,16 +299,11 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                     </div>
                 </div>
 
-                {/* --- DAFTAR PRODUK --- */}
-                {/* === BAGIAN INI UNTUK VIRTUALISASI === */}
-                {/* Inner container yang akan menampung item virtual.
-                    Ini adalah div yang akan membuat tinggi scrollbar halaman utama. */}
+                {/* --- PRODUCT LIST (VIRTUALIZED) --- */}
                 <div
-                    // Hapus `ref={parentRef}` dan styling `height`, `overflowY` dari sini
-                    // karena window adalah scroll parent sekarang.
                     style={{
-                        height: `${rowVirtualizer.getTotalSize()}px`, // Tinggi total sesuai virtualizer
-                        position: 'relative', // Penting untuk posisi absolut item
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                        position: 'relative',
                         width: '100%',
                     }}
                 >
@@ -399,21 +351,18 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                     ) : (
                         <div className="col-span-full mt-16 text-center">
                             <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Kopi yang Ditemukan</h3>
-                            <p className="mt-2 text-gray-500">Coba atur ulang atau ubah filter Anda untuk hasil yang lebih baik.</p>
+                            <p className="mt-2 text-gray-500">Coba atur ulang filter atau kata kunci pencarian Anda.</p>
                             <Button onClick={resetAdvancedFilters} className="mt-4">
                                 Atur Ulang Semua Filter
                             </Button>
                         </div>
                     )}
                 </div>
-                {/* === AKHIR PERUBAHAN VIRTUALISASI === */}
 
-                {/* --- LOADING INDICATOR / END OF LIST --- */}
-                {/* Pastikan div `loadMoreRef` hanya dirender jika ada potensi data lain */}
+                {/* --- LOADING INDICATOR --- */}
                 {hasMore && (
                     <div ref={loadMoreRef} className="mt-12 flex justify-center py-4">
                         {(isLoadingMore || (isLoadingInitial && allProducts.length > 0)) && <p className="text-gray-600">Loading more products...</p>}
-                        {/* Jika observer tidak pernah memicu, tapi hasMore masih true, ini akan tampil */}
                         {!isLoadingMore && !isLoadingInitial && allProducts.length > 0 && (
                             <p className="text-gray-500">Scroll down to load more...</p>
                         )}
@@ -429,9 +378,7 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
     );
 }
 
-// ... (Komponen pembantu ProductCard, ProductCardSkeleton, InfoLine, TabButton)
-
-// --- Komponen Pembantu (Tidak berubah signifikan) ---
+// --- SUB-COMPONENTS ---
 
 const TabButton = ({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) => (
     <button
@@ -448,25 +395,19 @@ const truncateText = (text: string, maxLength: number) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// --- KOMPONEN PRODUCT CARD BARU DENGAN MODAL ---
+// Component ProductCard (Dengan Modal)
 const ProductCard = ({ product }: { product: Product }) => {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-    // Kelas DialogContent yang kompleks, diambil dari ProductDetail
+    // Style Dialog Content (Full height responsive)
     const dialogContentClasses =
         'm-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 ' +
         'sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl';
 
     return (
         <>
-            {/* Mengganti Link dengan DIV, dan menambahkan onClick untuk membuka modal */}
-            <div
-                onClick={() => setIsDetailOpen(true)}
-                className="group h-full cursor-pointer" // Tambahkan cursor-pointer
-            >
-                {/* Card Container: Rounded lebih besar, shadow halus */}
+            <div onClick={() => setIsDetailOpen(true)} className="group h-full cursor-pointer">
                 <Card className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                    {/* --- Bagian Gambar --- */}
                     <CardHeader className="p-0">
                         <div className="aspect-h-1 aspect-w-1 relative overflow-hidden bg-[#2A2F5B]">
                             <img
@@ -478,8 +419,6 @@ const ProductCard = ({ product }: { product: Product }) => {
                                 alt={product.product_name}
                                 className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                             />
-
-                            {/* Badge: Dipindah ke Kiri Atas & Warna Hijau sesuai desain */}
                             {product.is_specialty && (
                                 <Badge className="absolute top-4 left-4 border-none bg-[#22C55E] px-3 py-1 text-xs font-bold text-white hover:bg-[#16a34a]">
                                     Best Seller
@@ -488,22 +427,15 @@ const ProductCard = ({ product }: { product: Product }) => {
                         </div>
                     </CardHeader>
 
-                    {/* --- Bagian Konten --- */}
                     <CardContent className="flex flex-grow flex-col px-5 pt-5 pb-4">
-                        {/* Tag Tipe (House Blend) */}
                         <div className="mb-2">
                             <span className="inline-block rounded-full border border-gray-300 px-3 py-0.5 text-[10px] font-semibold tracking-wide text-gray-500 uppercase">
                                 {product.type}
                             </span>
                         </div>
-
-                        {/* Judul Produk */}
                         <CardTitle className="mb-1 line-clamp-1 text-lg font-bold text-gray-900">{product.product_name}</CardTitle>
-
-                        {/* Deskripsi Singkat */}
                         <p className="mb-4 line-clamp-2 min-h-[2.5em] text-xs leading-relaxed text-gray-500">{product.flavor_notes}</p>
 
-                        {/* Informasi Detail (Origin & Roast/Process) */}
                         <div className="mt-auto space-y-2 border-t border-dashed border-gray-100 pt-3 text-xs">
                             <div className="flex items-center justify-between">
                                 <span className="font-medium text-gray-400">Origin:</span>
@@ -519,22 +451,16 @@ const ProductCard = ({ product }: { product: Product }) => {
                             </div>
                         </div>
 
-                        {/* Harga */}
                         <div className="mt-4">
                             <span className="text-lg font-bold text-gray-900">Rp . {product.price.toLocaleString('id-ID')}</span>
                         </div>
                     </CardContent>
 
-                    {/* --- Footer / Tombol --- */}
-                    {/* Tombol-tombol ini sekarang hanya visual, klik utama di Card Container */}
                     <CardFooter className="flex gap-3 px-5 pt-0 pb-5">
-                        {/* Tombol Add to Cart (Visual) */}
                         <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#2A2F5B] py-2 text-xs font-bold text-white transition-colors group-hover:bg-[#1e2345]">
                             <ShoppingCart size={14} />
                             <span>Add To Cart</span>
                         </div>
-
-                        {/* Tombol View Details (Visual) */}
                         <div className="flex flex-1 items-center justify-center rounded-full border border-[#2A2F5B] py-2 text-xs font-bold text-[#2A2F5B] transition-colors hover:bg-gray-50">
                             View Details
                         </div>
@@ -542,10 +468,8 @@ const ProductCard = ({ product }: { product: Product }) => {
                 </Card>
             </div>
 
-            {/* Dialog/Modal untuk menampilkan detail produk */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
                 <DialogContent className={dialogContentClasses}>
-                    {/* Menggunakan ProductDetail dan mengirimkan fungsi penutup */}
                     <ProductDetail product={product} closeModal={() => setIsDetailOpen(false)} inModal={true} />
                 </DialogContent>
             </Dialog>
@@ -564,10 +488,3 @@ const ProductCardSkeleton = () => (
         </div>
     </div>
 );
-
-// const InfoLine = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-//     <div className="flex items-center text-sm text-gray-600">
-//         <span className="mr-2 text-gray-400">{icon}</span>
-//         <span className="truncate">{text}</span>
-//     </div>
-// );

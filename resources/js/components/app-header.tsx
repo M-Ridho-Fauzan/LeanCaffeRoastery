@@ -40,7 +40,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
             <div
                 className={cn(
-                    'fixed top-0 z-50 w-full border-b border-sidebar-border/80 bg-background transition-transform duration-300 ease-in-out',
+                    'fixed top-0 z-50 flex w-full border-b border-sidebar-border/80 bg-background transition-transform duration-300 ease-in-out',
                     {
                         'translate-y-0': isAtTop || scrollDirection === 'up',
                         '-translate-y-full': scrollDirection === 'down' && !isAtTop,
@@ -48,20 +48,20 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 )}
             >
                 {/* Bagian utama header */}
-                <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+                <div className="mx-auto flex h-16 w-full items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu Trigger & Content */}
                     <div className="lg:hidden">
                         <MobileNavSheet />
                     </div>
 
-                    <Link href="/" className="flex items-center space-x-2">
+                    <Link href="/" className="flex items-center space-x-5">
                         {' '}
                         {/* Link ke home, bukan dashboard */}
                         <AppLogoOnly className="size-10 fill-current text-[#303182]" />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
+                    <div className="mx-auto hidden h-full space-x-6 lg:flex lg:pl-36">
                         <DesktopNavMenu />
                     </div>
 
