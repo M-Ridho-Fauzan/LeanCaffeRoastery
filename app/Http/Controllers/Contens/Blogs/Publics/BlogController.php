@@ -53,7 +53,7 @@ class BlogController extends Controller
         return Inertia::render('businesses/articles/index', [
             'articles' => ArticleSummaryResource::collection($articles), // Gunakan ArticleSummaryResource
             'filters' => $request->only(['search', 'category', 'tag']), // Kirim filter ke frontend
-            'categories' => CategoryResource::collection(Category::all(['id', 'name', 'slug'])->toArray()), // Semua kategori untuk filter
+            'categories' => CategoryResource::collection(Category::all(['id', 'name', 'slug'])), // Semua kategori untuk filter
             'tags' => TagResource::collection(Tag::all(['id', 'name', 'slug'])), // Semua tag untuk filter
         ]);
     }
