@@ -106,7 +106,7 @@ export default function Location() {
                                 </div>
                             </div>
 
-                            <button className="flex w-full items-center justify-center rounded-lg bg-[#6B4F3A] px-6 py-3 text-white shadow-md transition-all duration-300 hover:bg-[#8D6B58]">
+                            <button className="flex w-full items-center justify-center rounded-lg bg-[#1324a4] px-6 py-3 text-white shadow-md transition-all duration-300 hover:bg-[#3326c1]">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="20"

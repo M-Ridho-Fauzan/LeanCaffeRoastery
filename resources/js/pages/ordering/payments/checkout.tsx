@@ -1,17 +1,31 @@
 // resources/js/pages/ordering/payments/checkout.tsx
-import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Sesuaikan path ini jika berbeda
-import type { Product } from '@/types'; // Import tipe Product Anda
-import React, { useState } from 'react';
+import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { Product } from '@/types';
+import React, { useMemo, useState } from 'react'; // Tambahkan useMemo
 
-// Import ikon yang diperlukan
-// Pastikan semua ikon yang digunakan diimpor di sini
 import { ArrowLeft, Banknote, CheckCircle, CreditCard, Landmark, MapPin, QrCode, ShoppingCart, Wallet } from 'lucide-react';
+
+// --- GANTI: Interface untuk item cart ---
+interface CartItem {
+    name: string;
+    price: number;
+    qty: number;
+    primary_image_url?: string | null; // Tambahkan properti gambar
+}
+// --------------------------------------------------------------------
 
 // Definisikan props untuk komponen Checkout
 interface CheckoutProps {
-    product: Product; // Produk yang akan di-checkout
-    onClose: () => void; // Fungsi untuk menutup seluruh dialog
+    product: Product;
+    cartItems?: CartItem[]; // Properti opsional untuk checkout keranjang
+    onClose: () => void;
 }
+
+// Utility function (disalin dari ProductDetail)
+// const truncateText = (text: string | null | undefined, maxLength: number): string => {
+//     if (!text) return '';
+//     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+// };
 
 // Biaya ongkir tetap
 const SHIPPING_COST = 15000;
@@ -25,7 +39,6 @@ interface PaymentOptionProps {
     onSelect: () => void;
     disabled?: boolean; // Tambahkan prop disabled
 }
-
 const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, description, isSelected, onSelect, disabled }) => (
     <button
         type="button"
@@ -49,7 +62,6 @@ const PaymentOption: React.FC<PaymentOptionProps> = ({ icon, title, description,
         )}
     </button>
 );
-
 // Dummy data untuk metode pembayaran, Dihapus: Credit Card
 const paymentMethods = [
     { id: 'bank_transfer', name: 'Bank Transfer', description: 'Transfer Ke Rekening Bank Kami', icon: <Banknote className="h-5 w-5" /> },
@@ -58,56 +70,63 @@ const paymentMethods = [
     { id: 'qr_code', name: 'QRIS', description: 'Scan QR Code Untuk Membayar', icon: <QrCode className="h-5 w-5" /> },
 ];
 
-const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
+const Checkout: React.FC<CheckoutProps> = ({ product, cartItems, onClose }) => {
+    // Tambahkan cartItems di destrukturisasi
     // State untuk mengelola langkah saat ini dalam proses checkout
     const [currentStep, setCurrentStep] = useState<'checkout' | 'paymentDetails' | 'paymentSuccess'>('checkout');
     // State untuk menyimpan metode pembayaran yang dipilih, default ke yang pertama (Bank Transfer)
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(paymentMethods[0].id);
-    // State untuk jumlah produk
-    const [quantity, setQuantity] = useState<number>(1);
+    // State untuk jumlah produk. Jika Cart Checkout, qty tidak dapat diubah, jadi set default 1
+
+    const isCartCheckout = useMemo(() => cartItems && cartItems.length > 0, [cartItems]);
+    const initialQuantity = isCartCheckout ? 1 : 1;
     // State untuk menampilkan loading saat proses pembayaran
     const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
 
-    // State untuk informasi pengiriman (ditambahkan)
     const [fullName, setFullName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [phoneNumber, setPhoneNumber] = useState<string>('');
+    const [quantity, setQuantity] = useState<number>(initialQuantity);
     const [city, setCity] = useState<string>('');
     const [postalCode, setPostalCode] = useState<string>('');
     const [address, setAddress] = useState<string>('');
     const [orderNotes, setOrderNotes] = useState<string>('');
 
-    // Perhitungan harga
+    const subtotalPrice = useMemo(() => {
+        if (isCartCheckout && cartItems) {
+            return cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+        }
+        return product.price * quantity;
+    }, [isCartCheckout, cartItems, product.price, quantity]);
+
     const formattedProductPrice = product.price.toLocaleString('id-ID');
-    const subtotalPrice = product.price * quantity;
     const formattedSubtotalPrice = subtotalPrice.toLocaleString('id-ID');
-    const totalAmount = subtotalPrice + SHIPPING_COST; // Total dengan ongkir
+    const totalAmount = subtotalPrice + SHIPPING_COST;
     const formattedTotalAmount = totalAmount.toLocaleString('id-ID');
 
-    // Handler untuk melanjutkan dari pemilihan metode pembayaran ke detail pembayaran (diperbarui)
+    const productNameForDisplay = isCartCheckout ? product.product_name : product.product_name;
+
     const handleProceedToPayment = () => {
         // Validasi informasi pengiriman
         if (!fullName || !email || !phoneNumber || !city || !postalCode || !address) {
             alert('Harap lengkapi semua informasi pengiriman.');
             return;
         }
-
         if (!selectedPaymentMethod) {
             alert('Mohon pilih metode pembayaran terlebih dahulu.');
             return;
         }
-        if (quantity < 1) {
+        // Hapus atau modifikasi validasi quantity jika Cart Checkout
+        if (!isCartCheckout && quantity < 1) {
+            // Hanya validasi qty jika BUKAN cart checkout
             alert('Jumlah produk harus minimal 1.');
             return;
         }
         setCurrentStep('paymentDetails');
     };
-
-    // Handler untuk kembali dari detail pembayaran ke pemilihan metode pembayaran
     const handleGoBackToCheckout = () => {
         setCurrentStep('checkout');
     };
-
     // Handler untuk menyelesaikan pembayaran (simulasi)
     const handleFinalizePayment = () => {
         setIsProcessingPayment(true); // Mulai loading
@@ -119,9 +138,9 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
             setCurrentStep('paymentSuccess'); // Lanjut ke langkah sukses
         }, 2500); // Simulasi waktu proses 2.5 detik
     };
-
-    // Fungsi untuk merender detail pembayaran berdasarkan metode yang dipilih
+    // Fungsi untuk merender detail pembayaran berdasarkan metode yang dipilih (TIDAK ADA PERUBAHAN)
     const renderPaymentDetailsContent = () => {
+        // ... (kode yang sudah ada) ...
         if (isProcessingPayment) {
             return (
                 <div className="py-10 text-center">
@@ -133,7 +152,7 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
         }
         switch (selectedPaymentMethod) {
             case 'bank_transfer':
-            case 'virtual_account': // Gunakan detail bank transfer untuk virtual account
+            case 'virtual_account':
                 return (
                     <div className="space-y-4">
                         <p className="text-gray-700">Transfer ke rekening berikut:</p>
@@ -161,13 +180,10 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                     <div className="space-y-4 text-center">
                         <p className="text-gray-700">Anda akan diarahkan ke aplikasi E-Wallet Anda untuk menyelesaikan pembayaran.</p>
                         <div className="mt-4 flex flex-wrap justify-center gap-4">
-                            {' '}
-                            {/* Menggunakan flex-wrap dan gap untuk responsivitas */}
-                            {/* Gambar dummy untuk logo e-wallet */}
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_OVO.svg/1200px-Logo_OVO.svg.png"
                                 alt="OVO"
-                                className="h-8 max-w-[80px] object-contain" // max-w untuk kontrol ukuran
+                                className="h-8 max-w-[80px] object-contain"
                             />
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/DANA_logo_new.svg/1200px-DANA_logo_new.svg.png"
@@ -194,25 +210,28 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                         <p className="text-gray-700">Scan QRIS ini dengan aplikasi pembayaran Anda.</p>
                         {/* Gambar QRIS dummy */}
                         <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PembayaranQRISuntukProduk${product.id}-Rp${totalAmount}`} // Menggunakan totalAmount
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PembayaranQRISuntukProduk${product.id}-Rp${totalAmount}`}
                             alt="QRIS Code"
-                            className="mx-auto mt-4 w-48 max-w-full rounded-lg border shadow-md" // Menambahkan max-w-full
-                            style={{ height: 'auto' }} // Tinggi otomatis agar proporsional
+                            className="mx-auto mt-4 w-48 max-w-full rounded-lg border shadow-md"
+                            style={{ height: 'auto' }}
                         />
                         <p className="text-sm text-gray-600">
                             Berlaku selama 15 menit. Total: <span className="font-bold text-gray-800">Rp {formattedTotalAmount}</span>
                         </p>
                     </div>
                 );
-            /* Kasus 'credit_card' telah dihapus */
             default:
                 return <p className="text-gray-500">Pilih metode pembayaran untuk melihat detail.</p>;
         }
     };
+    const truncateText = (text: string, maxLength: number) => {
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    };
 
     return (
         <div className="flex h-full flex-col p-0">
-            {/* Header Dialog */}
+            {/* ... (Header Dialog) ... */}
+
             <DialogHeader className="relative border-b px-6 py-4">
                 {/* Tombol kembali, hanya muncul di langkah 'paymentDetails' */}
                 {currentStep === 'paymentDetails' && (
@@ -235,15 +254,13 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                     {currentStep === 'checkout'
                         ? 'Lengkapi pesanan Anda.' // Deskripsi untuk tampilan awal
                         : currentStep === 'paymentDetails'
-                          ? `Pembayaran untuk "${product.product_name}"`
+                          ? `Pembayaran untuk "${productNameForDisplay}"` // GANTI: Gunakan productNameForDisplay
                           : 'Terima kasih telah berbelanja dengan kami.'}
                 </DialogDescription>
             </DialogHeader>
 
             {/* Konten Utama yang Dapat Di-scroll - Untuk Langkah Checkout */}
             {currentStep === 'checkout' && (
-                // Tambahkan max-h-[calc(100vh-180px)] untuk membatasi tinggi konten agar responsif
-                // dan overflow-y-auto untuk mengaktifkan scroll jika konten melebihi tinggi
                 <div className="m-0 max-h-[calc(100vh-180px)] flex-1 space-y-4 overflow-y-auto p-6">
                     {/* Bagian Ringkasan Pesanan (Order Summary) */}
                     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -251,38 +268,78 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                             <ShoppingCart className="mr-2 h-5 w-5 text-gray-600" />
                             Order Summary
                         </h3>
-                        <div className="flex flex-col items-start space-y-3 border-b border-gray-100 pb-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-                            {product.primary_image_url && (
-                                <img
-                                    src={product.primary_image_url}
-                                    alt={product.product_name}
-                                    className="h-16 w-16 flex-shrink-0 rounded-md object-cover shadow-sm"
-                                />
-                            )}
-                            {!product.primary_image_url && (
-                                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-400 shadow-sm">
-                                    <ShoppingCart className="h-8 w-8" />
+
+                        {/* GANTI: Logic untuk menampilkan daftar item atau single product */}
+                        {isCartCheckout ? (
+                            // RENDER DAFTAR ITEM DARI KERANJANG DENGAN GAMBAR
+                            <div className="space-y-3">
+                                {cartItems!.map((item, index) => (
+                                    <div key={index} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-b-0">
+                                        {/* Bagian Kiri: Gambar, Nama, Harga */}
+                                        <div className="flex items-center space-x-3">
+                                            {/* Gambar Produk / Placeholder yang diminta */}
+                                            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                                <img
+                                                    src={
+                                                        item.primary_image_url
+                                                            ? item.primary_image_url
+                                                            : `https://placehold.co/600x600/2A2F5B/FFFFFF?text=${encodeURIComponent(truncateText(item.name, 10))}` // Placeholder dark blue
+                                                    }
+                                                    alt={item.name}
+                                                    className="h-full w-full object-cover object-center"
+                                                />
+                                            </div>
+
+                                            <div className="flex-1">
+                                                <p className="text-base font-medium text-gray-800">{item.name}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.qty} x Rp {item.price.toLocaleString('id-ID')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Bagian Kanan: Total Harga Item */}
+                                        <div className="text-right">
+                                            <span className="font-semibold text-gray-800">Rp {(item.price * item.qty).toLocaleString('id-ID')}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            // RENDER SINGLE PRODUCT - MODIFIKASI: Gunakan logika gambar yang sama
+                            <div className="flex flex-col items-start space-y-3 border-b border-gray-100 pb-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                    <img
+                                        src={
+                                            product.primary_image_url
+                                                ? product.primary_image_url
+                                                : `https://placehold.co/600x600/2A2F5B/FFFFFF?text=${encodeURIComponent(truncateText(product.product_name, 10))}`
+                                        }
+                                        alt={product.product_name}
+                                        className="h-full w-full object-cover object-center"
+                                    />
                                 </div>
-                            )}
-                            <div className="flex-1">
-                                <p className="text-base font-medium text-gray-800">{product.product_name}</p>
-                                <p className="text-sm text-gray-500">Harga Satuan: Rp {formattedProductPrice}</p>
+                                <div className="flex-1">
+                                    <p className="text-base font-medium text-gray-800">{product.product_name}</p>
+                                    <p className="text-sm text-gray-500">Harga Satuan: Rp {formattedProductPrice}</p>
+                                </div>
+                                <div className="text-left sm:text-right">
+                                    <label htmlFor="quantity" className="mb-1 block text-sm font-medium text-gray-700">
+                                        Jumlah:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="quantity"
+                                        value={quantity}
+                                        min="1"
+                                        onChange={(e) => setQuantity(Number(e.target.value))}
+                                        className="block w-20 rounded-md border-gray-300 p-2 text-center shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        disabled={isProcessingPayment}
+                                    />
+                                </div>
                             </div>
-                            <div className="text-left sm:text-right">
-                                <label htmlFor="quantity" className="mb-1 block text-sm font-medium text-gray-700">
-                                    Jumlah:
-                                </label>
-                                <input
-                                    type="number"
-                                    id="quantity"
-                                    value={quantity}
-                                    min="1"
-                                    onChange={(e) => setQuantity(Number(e.target.value))}
-                                    className="block w-20 rounded-md border-gray-300 p-2 text-center shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    disabled={isProcessingPayment}
-                                />
-                            </div>
-                        </div>
+                        )}
+                        {/* AKHIR LOGIC SINGLE/MULTI ITEM */}
 
                         <div className="mt-4 space-y-2 text-sm">
                             <div className="flex justify-between">
@@ -294,14 +351,11 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                                 <span className="font-medium text-gray-800">Rp {SHIPPING_COST.toLocaleString('id-ID')}</span>
                             </div>
                         </div>
-
                         <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-900">
                             <span>Total</span>
                             <span>Rp {formattedTotalAmount}</span>
                         </div>
                     </div>
-
-                    {/* Bagian Informasi Pengiriman (Shipping Information) */}
                     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                         <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-800">
                             <MapPin className="mr-2 h-5 w-5 text-gray-600" />
@@ -341,7 +395,7 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                                     Phone Number
                                 </label>
                                 <input
-                                    type="tel" // Menggunakan type="tel" untuk nomor telepon
+                                    type="tel"
                                     id="phoneNumber"
                                     placeholder="Enter Your Phone Number"
                                     value={phoneNumber}
@@ -365,7 +419,6 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                                 />
                             </div>
                             <div className="sm:col-span-2">
-                                {/* Menggunakan sm:col-span-2 agar memenuhi lebar penuh di layar kecil */}
                                 <label htmlFor="postalCode" className="mb-1 block text-sm font-medium text-gray-700">
                                     Postal Code
                                 </label>
@@ -397,9 +450,9 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                                 <label htmlFor="orderNotes" className="mb-1 block text-sm font-medium text-gray-700">
                                     Order Notes (Opsional)
                                 </label>
-                                <textarea // Menggunakan textarea untuk catatan yang lebih panjang
+                                <textarea
                                     id="orderNotes"
-                                    rows={3} // Menentukan jumlah baris
+                                    rows={3}
                                     placeholder="Any Special Instructions or Requests"
                                     value={orderNotes}
                                     onChange={(e) => setOrderNotes(e.target.value)}
@@ -409,8 +462,8 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Bagian Metode Pembayaran (Payment Method) */}
+                    {/* Bagian Metode Pembayaran (Payment Method) - TIDAK ADA PERUBAHAN */}
+                    {/* ... (kode Payment Method) ... */}
                     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                         <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-800">
                             <CreditCard className="mr-2 h-5 w-5 text-gray-600" />
@@ -432,59 +485,47 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                     </div>
                 </div>
             )}
-
-            {/* Footer untuk tombol "Continue To Payment" (Hanya tampil di langkah checkout) */}
+            {/* Footer untuk tombol "Continue To Payment" (Hanya tampil di langkah checkout) - TIDAK ADA PERUBAHAN */}
             {currentStep === 'checkout' && (
                 <div className="w-full border-t border-gray-200 bg-white p-6 shadow-md">
                     <button
                         type="button"
                         className="w-full rounded-md bg-indigo-700 px-6 py-3 text-lg font-medium text-white shadow-sm transition-colors duration-200 hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-indigo-400"
                         onClick={handleProceedToPayment}
-                        disabled={isProcessingPayment || !selectedPaymentMethod || quantity < 1} // Nonaktifkan jika sedang proses atau belum memilih atau qty < 1
+                        disabled={isProcessingPayment || !selectedPaymentMethod || (!isCartCheckout && quantity < 1)} // Modifikasi disable qty
                     >
                         Continue To Payment - Rp {formattedTotalAmount}
                     </button>
                 </div>
             )}
-
             {/* Langkah 2: Detail Pembayaran */}
             {currentStep === 'paymentDetails' && (
-                // Tambahkan max-h-[calc(100vh-180px)] untuk membatasi tinggi konten agar responsif
-                // dan overflow-y-auto untuk mengaktifkan scroll jika konten melebihi tinggi
                 <div className="max-h-[calc(100vh-180px)] flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                    <div className="flex flex-col items-start space-y-3 border-b pb-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-                        {product.primary_image_url && (
-                            <img
-                                src={product.primary_image_url}
-                                alt={product.product_name}
-                                className="h-20 w-20 flex-shrink-0 rounded-md object-cover shadow-sm"
-                            />
-                        )}
-                        {!product.primary_image_url && (
-                            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-400 shadow-sm">
-                                <ShoppingCart className="h-10 w-10" />
-                            </div>
-                        )}
-                        <div className="flex-1">
-                            <p className="text-lg font-semibold text-gray-800">{product.product_name}</p>
-                            <p className="text-gray-600">Harga Satuan: Rp {formattedProductPrice}</p>
-                        </div>
-                        <div className="text-left sm:text-right">
-                            <label htmlFor="quantity" className="mb-1 block text-sm font-medium text-gray-700">
-                                Jumlah:
-                            </label>
-                            <input
-                                type="number"
-                                id="quantity"
-                                value={quantity}
-                                min="1"
-                                onChange={(e) => setQuantity(Number(e.target.value))}
-                                className="block w-20 rounded-md border-gray-300 p-2 text-center shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                disabled={true} // Nonaktifkan di langkah detail pembayaran
-                            />
-                        </div>
+                    {/* GANTI: Tampilkan ringkasan yang sesuai */}
+                    <div className="space-y-3 border-b pb-4">
+                        <p className="text-xl font-bold text-gray-800">{productNameForDisplay}</p>
+                        <ul className="text-sm text-gray-600">
+                            {isCartCheckout ? (
+                                cartItems!.map((item, index) => (
+                                    <li key={index} className="flex justify-between">
+                                        <span>
+                                            {item.qty}x {item.name}
+                                        </span>
+                                        <span>Rp {(item.price * item.qty).toLocaleString('id-ID')}</span>
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="flex justify-between">
+                                    <span>
+                                        {quantity}x {product.product_name}
+                                    </span>
+                                    <span>Rp {formattedSubtotalPrice}</span>
+                                </li>
+                            )}
+                        </ul>
                     </div>
-                    {/* Ringkasan Harga di langkah detail pembayaran */}
+                    {/* AKHIR GANTI */}
+                    {/* Ringkasan Harga di langkah detail pembayaran - TIDAK ADA PERUBAHAN */}
                     <div className="border-t pt-4">
                         <div className="flex items-center justify-between text-lg font-bold text-gray-900">
                             <span>Sub Total:</span>
@@ -499,30 +540,24 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                             <span>Rp {formattedTotalAmount}</span>
                         </div>
                     </div>
-
                     <div className="space-y-4 rounded-lg border bg-gray-50 p-4 shadow-inner">
                         <h3 className="text-xl font-bold text-gray-800">
                             Detail Pembayaran {paymentMethods.find((m) => m.id === selectedPaymentMethod)?.name}
                         </h3>
                         {renderPaymentDetailsContent()}
                     </div>
-
                     <div className="mt-6 flex justify-center sm:justify-end">
-                        {' '}
-                        {/* Menyesuaikan justify untuk responsivitas */}
                         <button
                             type="button"
                             className="w-full rounded-md border border-transparent bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
                             onClick={handleFinalizePayment}
-                            disabled={isProcessingPayment} // Nonaktifkan saat proses pembayaran
+                            disabled={isProcessingPayment}
                         >
                             {isProcessingPayment ? 'Memproses...' : 'Bayar Sekarang'}
                         </button>
                     </div>
                 </div>
             )}
-
-            {/* Langkah 3: Pembayaran Berhasil */}
             {currentStep === 'paymentSuccess' && (
                 <div className="max-h-[calc(100vh-180px)] flex-1 space-y-4 overflow-y-auto px-6 py-8 text-center">
                     <CheckCircle className="mx-auto h-20 w-20 text-green-500" />
@@ -535,7 +570,7 @@ const Checkout: React.FC<CheckoutProps> = ({ product, onClose }) => {
                     <button
                         type="button"
                         className="mt-6 rounded-md border border-transparent bg-blue-600 px-6 py-3 text-lg font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-                        onClick={onClose} // Menutup seluruh dialog
+                        onClick={onClose}
                     >
                         Selesai
                     </button>
