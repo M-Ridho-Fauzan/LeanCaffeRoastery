@@ -80,8 +80,10 @@ interface ArticlesIndexSpecificProps {
 
 type ArticlesIndexPageProps = PageProps & ArticlesIndexSpecificProps;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ArticleIndex({ articles, filters, categories, statuses, breadcrumbs, flash }: ArticlesIndexPageProps) {
     const [search, setSearch] = useState(filters.search || '');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
     const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
 

@@ -1,18 +1,15 @@
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
-import { FileMinus, FilePlus, Trash } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
 
-// --- Interfaces untuk Data ---
+// --- Interfaces ---
 
 interface CartItem {
     id: string;
     name: string;
     price: number;
     quantity: number;
-    // imageUrl?: string; // Opsional jika Anda ingin menggunakan gambar asli
 }
-
-// --- Interfaces untuk Props Komponen ---
 
 interface HeadProps {
     title?: string;
@@ -28,79 +25,70 @@ interface CartItemProps {
     onRemove: (itemId: string) => void;
 }
 
-// --- Placeholder Components (Sesuaikan dengan proyek Anda) ---
-// Jika AppHeaderLayout dan Head sudah ada, Anda bisa menghapus ini.
-// const AppHeaderLayout: React.FC<AppHeaderLayoutProps> = ({ children }) => <div className="min-h-screen bg-gray-100">{children}</div>;
-
+// --- Placeholder Components ---
+// Jika project Anda menggunakan Inertia, bisa ganti dengan: import { Head } from '@inertiajs/react';
 const Head: React.FC<HeadProps> = ({ title }) => <title>{title || 'Default Title'}</title>;
-// --- Akhir Placeholder Components ---
 
-// Komponen untuk menampilkan grafik produk di dalam keranjang
+// --- Sub-Components ---
+
+// 1. Gambar Produk (Grafik Kotak Biru)
 const ProductImageGraphic: React.FC<ProductImageGraphicProps> = ({ productName }) => {
-    // Memisahkan nama produk untuk layout dua baris seperti di gambar
+    // Memecah nama produk agar tampilan teks estetik (baris 1 & baris 2)
     const nameParts = productName.split(' ');
     const firstLine = nameParts[0];
     const secondLine = nameParts.slice(1).join(' ');
 
     return (
-        <div className="flex h-28 w-28 flex-shrink-0 flex-col justify-between overflow-hidden rounded-md bg-indigo-800 p-2">
-            <p className="font-mono text-[8px] tracking-wide text-white/80 uppercase">Espresso Roast 100% Arabica</p>
-            <h3 className="text-lg leading-tight font-bold text-white uppercase">
+        <div className="flex h-20 w-24 flex-shrink-0 flex-col justify-between overflow-hidden rounded-md bg-[#30307e] p-2 shadow-sm">
+            <p className="font-mono text-[6px] tracking-wide text-white/80 uppercase">Espresso Roast 100% Arabica</p>
+            <h3 className="text-sm leading-tight font-bold text-white uppercase">
                 {firstLine} <br /> {secondLine}
             </h3>
-            <p className="text-right font-mono text-[6px] tracking-wide text-white/70 uppercase">
-                Espresso Roasted By: <span className="font-semibold text-white">lean</span>
+            <p className="text-right font-mono text-[5px] tracking-wide text-white/70 uppercase">
+                Roasted By: <span className="font-semibold text-white">lean</span>
             </p>
         </div>
     );
 };
 
-// Komponen individual untuk setiap item di keranjang
-const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove }) => {
-    const formatPrice = (price: number): string => {
-        return `Rp. ${price.toLocaleString('id-ID')}`; // Format harga ke IDR
-    };
+// 2. Baris Item (Row) di dalam List Keranjang
+const CartItemRow: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove }) => {
+    const formatPrice = (price: number) => `Rp. ${price.toLocaleString('id-ID')}`;
 
     return (
-        <div className="flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
-            {/* Gambar/Grafik Produk */}
+        <div className="flex items-start gap-4 border-b border-gray-100 py-4 last:border-0">
+            {/* Component Gambar */}
             <ProductImageGraphic productName={item.name} />
-            {/* Jika Anda ingin menggunakan gambar URL asli:
-            <img src={item.imageUrl || 'https://via.placeholder.com/100'} alt={item.name} className="w-24 h-24 object-cover rounded-md flex-shrink-0" />
-            */}
 
-            <div className="flex-1">
-                <h3 className="mb-1 text-lg font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-md mb-2 text-gray-600">{formatPrice(item.price)}</p>
+            {/* Detail Produk & Kontrol */}
+            <div className="flex h-20 flex-1 flex-col justify-between">
+                <div>
+                    <h3 className="text-sm font-bold text-[#30307e] uppercase">{item.name}</h3>
+                    <p className="mt-1 text-xs text-gray-400">{formatPrice(item.price)}</p>
+                </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                    {/* Kontrol Kuantitas */}
-                    <div className="flex items-center rounded-md bg-gray-100 p-1">
+                <div className="flex items-center justify-between">
+                    {/* Tombol Plus/Minus */}
+                    <div className="flex items-center rounded border border-gray-200 bg-gray-50 px-1 py-0.5">
                         <button
                             onClick={() => onQuantityChange(item.id, item.quantity - 1)}
                             disabled={item.quantity <= 1}
-                            className="rounded-md p-1 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                            aria-label={`Decrease quantity of ${item.name}`}
+                            className="cursor-pointer p-1 text-gray-500 transition-colors hover:text-[#30307e] disabled:opacity-30"
                         >
-                            <FileMinus className="h-4 w-4" />
+                            <Minus size={14} />
                         </button>
-                        <span className="px-3 text-lg font-medium text-gray-800">{item.quantity}</span>
+                        <span className="min-w-[2rem] px-3 text-center text-sm font-semibold text-[#30307e]">{item.quantity}</span>
                         <button
                             onClick={() => onQuantityChange(item.id, item.quantity + 1)}
-                            className="rounded-md p-1 text-gray-600 hover:bg-gray-200"
-                            aria-label={`Increase quantity of ${item.name}`}
+                            className="cursor-pointer p-1 text-gray-500 transition-colors hover:text-[#30307e]"
                         >
-                            <FilePlus className="h-4 w-4" />
+                            <Plus size={14} />
                         </button>
                     </div>
 
                     {/* Tombol Hapus */}
-                    <button
-                        onClick={() => onRemove(item.id)}
-                        className="rounded-md p-2 text-red-500 transition-colors hover:bg-red-100"
-                        aria-label={`Remove ${item.name} from cart`}
-                    >
-                        <Trash className="h-5 w-5" />
+                    <button onClick={() => onRemove(item.id)} className="cursor-pointer p-1 text-gray-400 transition-colors hover:text-red-500">
+                        <Trash2 size={18} />
                     </button>
                 </div>
             </div>
@@ -108,121 +96,88 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove })
     );
 };
 
+// --- Main Page Component ---
+
 const Charts: React.FC = () => {
-    // Data dummy untuk item keranjang
+    // Data Dummy Awal
     const [cartItems, setCartItems] = useState<CartItem[]>([
-        {
-            id: 'prod_1',
-            name: 'THE SAGARA 1999',
-            price: 120000,
-            quantity: 1,
-            // imageUrl: '/images/sagara-coffee.png'
-        },
-        {
-            id: 'prod_2',
-            name: 'SUMATRA MANDHELING',
-            price: 95000,
-            quantity: 2,
-            // imageUrl: '/images/mandheling-coffee.png'
-        },
-        {
-            id: 'prod_3',
-            name: 'JAVA ARABICA KINTAMANI',
-            price: 110000,
-            quantity: 1,
-            // imageUrl: '/images/kintamani-coffee.png'
-        },
-        {
-            id: 'prod_4',
-            name: 'ETHIOPIA SIDAMO',
-            price: 135000,
-            quantity: 1,
-            // imageUrl: '/images/sidamo-coffee.png'
-        },
-        {
-            id: 'prod_5',
-            name: 'COLOMBIA SUPREMO',
-            price: 105000,
-            quantity: 1,
-            // imageUrl: '/images/supremo-coffee.png'
-        },
+        { id: 'prod_1', name: 'THE SAGARA 1999', price: 120000, quantity: 1 },
+        { id: 'prod_2', name: 'SUMATRA MANDHELING', price: 95000, quantity: 2 },
+        { id: 'prod_3', name: 'JAVA ARABICA', price: 110000, quantity: 1 },
     ]);
 
-    // Fungsi untuk memformat harga ke IDR
-    const formatPrice = (price: number): string => {
-        return `Rp. ${price.toLocaleString('id-ID')}`;
-    };
+    // Format Rupiah
+    const formatPrice = (price: number) => `Rp. ${price.toLocaleString('id-ID')}`;
 
-    // Menghitung total harga keranjang
-    const calculateTotal = (): number => {
-        return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    };
+    // Hitung Total
+    const calculateTotal = () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // Mengubah kuantitas item
-    const handleQuantityChange = (itemId: string, newQuantity: number): void => {
+    // Handler Ubah Jumlah
+    const handleQuantityChange = (itemId: string, newQuantity: number) => {
         if (newQuantity < 1) return;
-        setCartItems((prevItems) => prevItems.map((item) => (item.id === itemId ? { ...item, quantity: newQuantity } : item)));
+        setCartItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, quantity: newQuantity } : item)));
     };
 
-    // Menghapus item dari keranjang
-    const handleRemoveItem = (itemId: string): void => {
-        setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-    };
-
-    // Fungsi untuk menutup keranjang (misalnya, jika ini modal)
-    const handleCloseCart = (): void => {
-        console.log('Cart closed!');
-        // Di aplikasi nyata, Anda mungkin akan memanggil fungsi dari parent component
-        // untuk menyembunyikan atau menonaktifkan modal ini.
+    // Handler Hapus Item
+    const handleRemoveItem = (itemId: string) => {
+        setCartItems((prev) => prev.filter((item) => item.id !== itemId));
     };
 
     return (
         <AppHeaderLayout>
-            <Head title="Charts" />
-            {/* Overlay untuk modal cart */}
-            <div className="flex items-center justify-center p-4">
-                {/* Container utama cart */}
-                <div className="relative flex h-[90vh] w-full flex-col rounded-lg bg-white p-5 shadow-xl">
-                    {/* Tombol Tutup */}
-                    <button
-                        onClick={handleCloseCart}
-                        className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-700"
-                        aria-label="Close cart"
-                    >
-                        <Trash className="h-6 w-6" />
-                    </button>
+            <Head title="Cart Simulation" />
 
-                    {/* Header Cart */}
-                    <div className="border-b border-gray-100 p-6 pb-4">
-                        <h2 className="mb-2 text-3xl font-bold text-gray-800">Your cart is brewing with goodness</h2>
-                        <p className="text-gray-600">ready to check out?</p>
+            {/* Container Utama: Mengatur posisi Card agar di tengah layar */}
+            <div className="flex min-h-[calc(100vh-64px)] w-full items-center justify-center bg-gray-100/50 p-4">
+                {/* --- KARTU POPUP / DIALOG --- */}
+                <div className="relative flex w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 animate-in zoom-in-95">
+                    {/* HEADER: Judul & Tombol Close */}
+                    <div className="flex items-start justify-between p-6 pb-2">
+                        <div>
+                            <h2 className="text-2xl leading-tight font-bold text-[#30307e]">
+                                Your cart is brewing
+                                <br />
+                                with goodness
+                            </h2>
+                            <p className="mt-2 text-sm text-[#30307e]/80">ready to check out?</p>
+                        </div>
+                        {/* Tombol Close (Hanya visual karena ini halaman demo) */}
+                        <button className="cursor-pointer rounded-full p-1 text-[#30307e] transition-colors hover:bg-indigo-50">
+                            <X size={24} strokeWidth={2.5} />
+                        </button>
                     </div>
 
-                    {/* Daftar Item Keranjang (Scrollable) */}
-                    <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-6">
+                    {/* BODY: Daftar Item (Bisa di-scroll) */}
+                    <div className="custom-scrollbar max-h-[50vh] flex-1 space-y-2 overflow-y-auto px-6 py-2">
                         {cartItems.length === 0 ? (
-                            <p className="py-8 text-center text-lg text-gray-500">Your cart is empty! Add some coffee.</p>
+                            <div className="flex flex-col items-center justify-center space-y-4 py-10 text-gray-400">
+                                <ShoppingBag size={48} className="opacity-20" />
+                                <p>Keranjang Anda kosong.</p>
+                            </div>
                         ) : (
                             cartItems.map((item) => (
-                                <CartItem key={item.id} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} />
+                                <CartItemRow key={item.id} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} />
                             ))
                         )}
                     </div>
 
-                    {/* Footer Cart - Total dan Tombol Checkout */}
+                    {/* FOOTER: Total & Tombol Checkout */}
                     <div className="border-t border-gray-100 bg-white p-6 pt-4">
-                        <div className="mb-4 flex items-center justify-between text-xl">
-                            <span className="font-semibold text-gray-800">Total :</span>
-                            <span className="font-bold text-gray-900">{formatPrice(calculateTotal())}</span>
+                        <div className="mb-6 flex items-center justify-between">
+                            <span className="text-lg font-bold text-[#30307e]">Total :</span>
+                            <span className="text-lg font-bold text-[#30307e]">{formatPrice(calculateTotal())}</span>
                         </div>
+
                         <button
-                            onClick={() => console.log('Proceed to Checkout with items:', cartItems)}
-                            className="w-full rounded-md bg-indigo-800 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-indigo-900"
+                            disabled={cartItems.length === 0}
+                            className="w-full rounded-full bg-[#30307e] py-4 font-bold text-white shadow-lg transition-transform hover:bg-[#252563] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() => alert('Proceeding to checkout with amount: ' + formatPrice(calculateTotal()))}
                         >
                             Checkout
                         </button>
                     </div>
                 </div>
+                {/* --- END KARTU POPUP --- */}
             </div>
         </AppHeaderLayout>
     );

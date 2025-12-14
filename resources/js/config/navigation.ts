@@ -1,10 +1,8 @@
 import { NavItem } from '@/types';
 import {
-    BarChart,
     Building2,
     CornerDownRight,
     FileEdit,
-    Heart,
     Home,
     LayoutGrid,
     MapPinned,
@@ -13,6 +11,7 @@ import {
     ScrollText,
     Settings,
     ShieldAlert,
+    ShoppingCart,
     User,
 } from 'lucide-react';
 
@@ -52,17 +51,17 @@ export const platformItems: NavItem[] = [
             //     description: 'Place your order for pickup or delivery.',
             //     roles: ['user', 'admin', 'author'],
             // },
-            {
-                title: 'Wishlist',
-                href: '/products/wishlist',
-                icon: Heart,
-                description: 'Save your favorite items for later.',
-                roles: ['user', 'admin', 'author'],
-            },
+            // {
+            //     title: 'Wishlist',
+            //     href: '/products/wishlist',
+            //     icon: Heart,
+            //     description: 'Save your favorite items for later.',
+            //     roles: ['user', 'admin', 'author'],
+            // },
             {
                 title: 'Charts',
                 href: '/product/charts',
-                icon: BarChart,
+                icon: ShoppingCart,
                 description: 'View sales and product performance charts.',
                 roles: ['admin', 'author'],
             },

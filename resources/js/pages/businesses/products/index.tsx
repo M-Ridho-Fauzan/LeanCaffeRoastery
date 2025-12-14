@@ -16,7 +16,39 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ProductDetail from '@/components/product-detail';
 import { ProductFilters } from '@/components/product-filters';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { ShoppingCart } from 'lucide-react';
+
+// Import Icon Tambahan
+
+// --- LOGIC ADD TO CART (GLOBAL HELPER) ---
+// Fungsi ini menjembatani ProductIndex dan HeaderActions via LocalStorage & Window Event
+// const addToCartLogic = (product: Product) => {
+//     // 1. Ambil data cart yang ada
+//     const saved = localStorage.getItem('cart-storage');
+//     let items = saved ? JSON.parse(saved) : [];
+
+//     // 2. Cek apakah produk sudah ada di cart
+//     const existingIndex = items.findIndex((item: any) => item.id === product.id);
+
+//     if (existingIndex >= 0) {
+//         // Jika ada, tambah quantity
+//         items[existingIndex].qty += 1;
+//     } else {
+//         // Jika belum, buat object baru sesuai struktur di HeaderActions
+//         items.push({
+//             id: product.id,
+//             name: product.product_name,
+//             price: product.price,
+//             qty: 1,
+//             image_url: product.primary_image_url,
+//         });
+//     }
+
+//     // 3. Simpan kembali ke LocalStorage
+//     localStorage.setItem('cart-storage', JSON.stringify(items));
+
+//     // 4. KIRIM SINYAL AGAR HEADER ACTIONS REFRESH OTOMATIS
+//     window.dispatchEvent(new Event('cart-updated'));
+// };
 
 export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }) {
     const { ziggy } = usePage().props as { ziggy?: ZiggyProps };
@@ -230,16 +262,14 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
             <Head title="Jelajahi Kopi" />
 
             <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                {/* --- HERO SECTION (SESUAI DESAIN GAMBAR) --- */}
+                {/* --- HERO SECTION --- */}
                 <div className="relative mb-10 h-[450px] w-full overflow-hidden rounded-[40px] bg-[#1a1a1a] shadow-2xl">
-                    {/* Background Image: Biji Kopi Gelap */}
                     <img
                         src="https://images.unsplash.com/photo-1447933601400-b8a9015329d3?q=80&w=2000&auto=format&fit=crop"
                         alt="Coffee Background"
                         className="absolute inset-0 h-full w-full object-cover opacity-60"
                     />
 
-                    {/* Content Overlay */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
                         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-6xl lg:text-7xl">
                             Our Coffee Menu
@@ -248,10 +278,8 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                             Discover our carefully curated selection of premium coffees from around the world
                         </p>
 
-                        {/* Search Bar Capsule */}
                         <div className="relative w-full max-w-xl">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-6">
-                                {/* Icon Search */}
                                 <svg className="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
@@ -272,7 +300,7 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                     </div>
                 </div>
 
-                {/* --- FILTER BAR (Moved Below Hero) --- */}
+                {/* --- FILTER BAR --- */}
                 <div className="mb-8 flex justify-end">
                     <ProductFilters
                         filterOptions={filterOptions}
@@ -280,11 +308,10 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
                         setFilters={handleFilterChange}
                         onReset={resetAdvancedFilters}
                         resultCount={totalResults}
-                        // Note: Jika ProductFilters punya search bar sendiri, mungkin perlu disembunyikan via props atau CSS
                     />
                 </div>
 
-                {/* --- TABS METODE PENYAJIAN --- */}
+                {/* --- TABS --- */}
                 <div className="relative mb-8 border-b border-gray-200">
                     <div className="scrollbar-hide -mb-px flex justify-center space-x-4 overflow-x-auto sm:space-x-8">
                         <TabButton label="Semua" isActive={filters.brew_method_id === 'all'} onClick={() => handleTabChange('all')} />
@@ -395,7 +422,7 @@ const truncateText = (text: string, maxLength: number) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// Component ProductCard (Dengan Modal)
+// Component ProductCard (Dengan Modal & Tombol Add to Cart)
 const ProductCard = ({ product }: { product: Product }) => {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
 
@@ -456,11 +483,9 @@ const ProductCard = ({ product }: { product: Product }) => {
                         </div>
                     </CardContent>
 
+                    {/* --- UPDATE BAGIAN FOOTER --- */}
                     <CardFooter className="flex gap-3 px-5 pt-0 pb-5">
-                        <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#2A2F5B] py-2 text-xs font-bold text-white transition-colors group-hover:bg-[#1e2345]">
-                            <ShoppingCart size={14} />
-                            <span>Add To Cart</span>
-                        </div>
+                        {/* Tombol View Detail */}
                         <div className="flex flex-1 items-center justify-center rounded-full border border-[#2A2F5B] py-2 text-xs font-bold text-[#2A2F5B] transition-colors hover:bg-gray-50">
                             View Details
                         </div>
