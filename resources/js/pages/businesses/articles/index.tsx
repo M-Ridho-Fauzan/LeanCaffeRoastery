@@ -1,169 +1,64 @@
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
-import { Head } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'; // Import icon panah dan X
+import { Head, Link } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// --- Dummy Data Content (Teks Panjang untuk simulasi) ---
-const longContent = `
-    <h3 class="text-lg font-bold mb-2">The Art of Perfect Coffee Brewing</h3>
-    <p class="mb-4 text-gray-600">Brewing the perfect cup of coffee is both an art and a science. It requires understanding the fundamental principles that govern extraction, timing, and technique.</p>
-    
-    <h4 class="font-bold mb-1">Essential Equipment</h4>
-    <p class="mb-2 text-gray-600">Before diving into brewing techniques, let's discuss the essential equipment you'll need:</p>
-    <ul class="list-disc pl-5 mb-4 text-gray-600 space-y-1">
-        <li><strong>Coffee Grinder:</strong> A burr grinder is preferred for consistent particle size.</li>
-        <li><strong>Scale:</strong> Precision is key – measure both coffee and water.</li>
-        <li><strong>Timer:</strong> Timing your extraction is crucial.</li>
-        <li><strong>Quality Water:</strong> Use filtered water for the best taste.</li>
-    </ul>
+// --- 1. Definisi Tipe (SAMA PERSIS DENGAN DASHBOARD) ---
+interface Article {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string;
+    featured_image_url: string | null;
+    published_at: string | null;
+    status: 'draft' | 'published' | 'archived';
+    views_count: number;
+    created_at: string;
+    updated_at: string;
+    category: {
+        id: number;
+        name: string;
+        slug: string;
+    } | null;
+    author: {
+        id: number;
+        name: string;
+        email: string;
+    };
+    tags: {
+        id: number;
+        name: string;
+        slug: string;
+    }[];
+}
 
-    <h4 class="font-bold mb-1">The Golden Ratio</h4>
-    <p class="mb-4 text-gray-600">The standard coffee-to-water ratio is 1:15 to 1:17. This means for every gram of coffee, use 15-17 grams of water. Start with 1:16 and adjust to your taste preference.</p>
-`;
+// Struktur Pagination Laravel (Sesuai Dashboard)
+interface PageProps {
+    articles: {
+        data: Article[];
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        current_page: number;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        next_page_url: string | null;
+        path: string;
+        per_page: number;
+        prev_page_url: string | null;
+        to: number;
+        total: number;
+    };
+}
 
-export default function Index() {
+export default function Index({ articles }: PageProps) {
     // State untuk menyimpan artikel yang sedang dipilih (Modal)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [selectedArticle, setSelectedArticle] = useState<any>(null);
-
-    // --- State Pagination ---
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6; // Menampilkan 6 artikel per halaman
-
-    // --- 12 Dummy Data ---
-    const articles = [
-        {
-            id: 1,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Brewing+101',
-            category: 'TUTORIAL',
-            date: 'Sep 15, 2024',
-            author: 'Eko Ahmad',
-            title: '1. Brewing the Perfect Cup',
-            description: 'Master the essential tips and techniques to brew your perfect cup of coffee every time.',
-            content: longContent,
-        },
-        {
-            id: 2,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Coffee+Origins',
-            category: 'GUIDE',
-            date: 'Sep 10, 2024',
-            author: 'Sarah Jenkins',
-            title: '2. Coffee Origins Around the World',
-            description: 'Explore the fascinating journey of coffee and how different regions create unique flavors.',
-            content: longContent,
-        },
-        {
-            id: 3,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Roasting+Art',
-            category: 'TECHNIQUE',
-            date: 'Sep 05, 2024',
-            author: 'Michael Chen',
-            title: '3. The Art of Coffee Roasting',
-            description: 'Learn about the intricate process of coffee roasting and how it transforms flavor profiles.',
-            content: longContent,
-        },
-        {
-            id: 4,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Advanced+Brew',
-            category: 'TUTORIAL',
-            date: 'Aug 20, 2024',
-            author: 'Eko Ahmad',
-            title: '4. Advanced Brewing Techniques',
-            description: 'Take your brewing skills to the next level with these pro tips.',
-            content: longContent,
-        },
-        {
-            id: 5,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=African+Coffee',
-            category: 'GUIDE',
-            date: 'Aug 18, 2024',
-            author: 'Sarah Jenkins',
-            title: '5. Exploring African Coffee',
-            description: 'Deep dive into Ethiopian and Kenyan beans and their distinct profiles.',
-            content: longContent,
-        },
-        {
-            id: 6,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Roast+Levels',
-            category: 'TECHNIQUE',
-            date: 'Aug 15, 2024',
-            author: 'Michael Chen',
-            title: '6. Understanding Roast Levels',
-            description: 'From light to dark: what you need to know about roast differences.',
-            content: longContent,
-        },
-        {
-            id: 7,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Espresso+Mastery',
-            category: 'TUTORIAL',
-            date: 'Aug 10, 2024',
-            author: 'Davina Rose',
-            title: '7. Espresso Mastery',
-            description: 'How to pull the perfect shot of espresso at home.',
-            content: longContent,
-        },
-        {
-            id: 8,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Latte+Art',
-            category: 'ART',
-            date: 'Aug 05, 2024',
-            author: 'Davina Rose',
-            title: '8. Latte Art for Beginners',
-            description: 'Simple steps to create hearts and tulips in your milk coffee.',
-            content: longContent,
-        },
-        {
-            id: 9,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Water+Science',
-            category: 'SCIENCE',
-            date: 'Jul 30, 2024',
-            author: 'Dr. Bean',
-            title: '9. The Science of Water',
-            description: 'Why water chemistry matters more than you think.',
-            content: longContent,
-        },
-        {
-            id: 10,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Grinder+Guide',
-            category: 'GEAR',
-            date: 'Jul 25, 2024',
-            author: 'Gear Head',
-            title: '10. Choosing the Right Grinder',
-            description: 'Burr vs Blade? Conical vs Flat? We explain it all.',
-            content: longContent,
-        },
-        {
-            id: 11,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Cold+Brew',
-            category: 'RECIPE',
-            date: 'Jul 20, 2024',
-            author: 'Summer Vibes',
-            title: '11. Ultimate Cold Brew Recipe',
-            description: 'Refreshing, smooth, and easy to make overnight.',
-            content: longContent,
-        },
-        {
-            id: 12,
-            image: 'https://placehold.co/400x250/E0E0E0/303182?text=Coffee+Sustainability',
-            category: 'ETHICS',
-            date: 'Jul 15, 2024',
-            author: 'Green Earth',
-            title: '12. Sustainability in Coffee',
-            description: 'How to support ethical farming and eco-friendly practices.',
-            content: longContent,
-        },
-    ];
-
-    // --- Logika Pagination ---
-    const totalPages = Math.ceil(articles.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentArticles = articles.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Fungsi pindah halaman
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-    const nextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+    const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
     // Disable scroll background saat modal terbuka
     useEffect(() => {
@@ -173,6 +68,14 @@ export default function Index() {
             document.body.style.overflow = 'unset';
         }
     }, [selectedArticle]);
+
+    // Helper untuk decode HTML entities pada label pagination (misal: &laquo;)
+    const decodeHtml = (html: string) => {
+        if (typeof window === 'undefined') return html; // Server-side guard
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
+    };
 
     return (
         <AppHeaderLayout breadcrumbs={[{ title: 'Articles', href: '/blog' }]}>
@@ -195,6 +98,8 @@ export default function Index() {
                             <p className="mb-6 text-lg">
                                 Discover the world of coffee through expert insights, brewing guides, and industry knowledge
                             </p>
+
+                            {/* Search Input Visual Only */}
                             <div className="relative mx-auto w-full max-w-lg">
                                 <input
                                     type="text"
@@ -220,101 +125,164 @@ export default function Index() {
                         </div>
                     </section>
 
-                    {/* Articles Grid (Menampilkan currentArticles berdasarkan halaman) */}
-                    <div className="container mx-auto grid grid-cols-1 gap-8 px-4 py-16 md:grid-cols-2 lg:grid-cols-3">
-                        {currentArticles.map((article) => (
-                            <div key={article.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                                <div className="group aspect-video overflow-hidden rounded-t-xl">
-                                    <img
-                                        src={article.image}
-                                        alt={article.title}
-                                        className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                </div>
-                                <div className="p-6 text-gray-800">
-                                    <div className="mb-2 text-sm text-gray-500">
-                                        <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium">{article.category}</span>
-                                        <span className="ml-2">{article.date}</span>
-                                    </div>
-                                    <h3 className="mb-3 text-xl font-semibold">{article.title}</h3>
-                                    <p className="mb-4 text-gray-600">{article.description}</p>
-
-                                    {/* Action Button: Opens Modal */}
-                                    <button
-                                        onClick={() => setSelectedArticle(article)}
-                                        className="inline-flex items-center rounded-lg border border-[#303182] bg-white px-4 py-2 text-sm font-semibold text-[#303182] transition-colors hover:bg-[#303182] hover:text-white"
+                    {/* Articles Grid */}
+                    <div className="container mx-auto px-4 py-16">
+                        {articles.data.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                {articles.data.map((article) => (
+                                    <div
+                                        key={article.id}
+                                        className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg transition-all hover:shadow-xl"
                                     >
-                                        Read More
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="18"
-                                            height="18"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="lucide lucide-arrow-right ml-1"
-                                        >
-                                            <path d="M5 12h14" />
-                                            <path d="m12 5 7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                        <div className="group aspect-video overflow-hidden rounded-t-xl bg-gray-100">
+                                            {/* Logic Gambar: Menggunakan featured_image_url */}
+                                            {article.featured_image_url ? (
+                                                <img
+                                                    src={article.featured_image_url}
+                                                    alt={article.title}
+                                                    className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center bg-[#2e236c]/10 text-sm text-[#2e236c]/40">
+                                                    No Image
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-6 text-gray-800">
+                                            {/* Metadata: Category & Date */}
+                                            <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
+                                                {article.category ? (
+                                                    <span className="rounded bg-gray-100 px-2 py-1 text-xs font-bold text-[#303182] uppercase">
+                                                        {article.category.name}
+                                                    </span>
+                                                ) : (
+                                                    <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium">Uncategorized</span>
+                                                )}
+                                                <span>•</span>
+                                                <span>
+                                                    {article.published_at
+                                                        ? format(new Date(article.published_at), 'MMM dd, yyyy')
+                                                        : format(new Date(article.created_at), 'MMM dd, yyyy')}
+                                                </span>
+                                            </div>
+
+                                            {/* Title */}
+                                            <h3 className="mb-3 line-clamp-2 text-xl font-bold text-[#303182]" title={article.title}>
+                                                {article.title}
+                                            </h3>
+
+                                            {/* Excerpt */}
+                                            <p className="mb-4 line-clamp-3 text-gray-600">{article.excerpt || 'No description available.'}</p>
+
+                                            {/* Action Button: Opens Modal */}
+                                            <button
+                                                onClick={() => setSelectedArticle(article)}
+                                                className="inline-flex items-center rounded-lg border border-[#303182] bg-white px-4 py-2 text-sm font-semibold text-[#303182] transition-colors hover:bg-[#303182] hover:text-white"
+                                            >
+                                                Read More
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="lucide lucide-arrow-right ml-1"
+                                                >
+                                                    <path d="M5 12h14" />
+                                                    <path d="m12 5 7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        ) : (
+                            <div className="py-20 text-center">
+                                <h3 className="text-xl font-medium text-gray-500">No articles found.</h3>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Pagination Controls */}
-                    <div className="flex items-center justify-center space-x-4 py-8">
-                        {/* Tombol Previous */}
-                        <button
-                            onClick={prevPage}
-                            disabled={currentPage === 1}
-                            className={`flex items-center justify-center p-2 text-[#303182] transition-transform hover:scale-110 disabled:opacity-50 disabled:hover:scale-100`}
-                        >
-                            <ChevronLeft className="h-10 w-10 fill-[#303182]" />
-                        </button>
+                    {/* Pagination Controls (Menggunakan Link dari Laravel) */}
+                    {/* Perbaikan: Mengakses articles.links langsung, bukan articles.meta.links */}
+                    {articles.links && articles.links.length > 3 && (
+                        <div className="flex items-center justify-center space-x-2 py-8 pb-16">
+                            {articles.links.map((link, index) => {
+                                // Logic untuk mengubah label default Laravel (&laquo; Previous) menjadi Icon
+                                // eslint-disable-next-line prefer-const
+                                let label = decodeHtml(link.label);
+                                const isPrev = label.includes('Previous');
+                                const isNext = label.includes('Next');
 
-                        {/* Page Numbers */}
-                        <div className="flex space-x-3">
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <button
-                                    key={i + 1}
-                                    onClick={() => paginate(i + 1)}
-                                    className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 text-lg font-bold transition-colors ${
-                                        currentPage === i + 1
-                                            ? 'border-[#303182] bg-[#303182] text-white' // Style Aktif (Biru Solid)
-                                            : 'border-gray-300 bg-white text-[#303182] hover:border-[#303182]' // Style Inaktif (Putih)
-                                    }`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                                if (isPrev) {
+                                    return (
+                                        <Link
+                                            key={index}
+                                            href={link.url || '#'}
+                                            as="button"
+                                            disabled={!link.url}
+                                            className={`flex items-center justify-center p-2 text-[#303182] transition-transform hover:scale-110 disabled:opacity-50 disabled:hover:scale-100 ${!link.url ? 'cursor-not-allowed' : ''}`}
+                                        >
+                                            <ChevronLeft className="h-10 w-10 fill-[#303182]" />
+                                        </Link>
+                                    );
+                                }
+
+                                if (isNext) {
+                                    return (
+                                        <Link
+                                            key={index}
+                                            href={link.url || '#'}
+                                            as="button"
+                                            disabled={!link.url}
+                                            className={`flex items-center justify-center p-2 text-[#303182] transition-transform hover:scale-110 disabled:opacity-50 disabled:hover:scale-100 ${!link.url ? 'cursor-not-allowed' : ''}`}
+                                        >
+                                            <ChevronRight className="h-10 w-10 fill-[#303182]" />
+                                        </Link>
+                                    );
+                                }
+
+                                // Tombol Angka
+                                return link.url ? (
+                                    <Link
+                                        key={index}
+                                        href={link.url}
+                                        className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 text-lg font-bold transition-colors ${
+                                            link.active
+                                                ? 'border-[#303182] bg-[#303182] text-white' // Style Aktif
+                                                : 'border-gray-300 bg-white text-[#303182] hover:border-[#303182]' // Style Inaktif
+                                        }`}
+                                    >
+                                        {label}
+                                    </Link>
+                                ) : (
+                                    // Separator (...)
+                                    <span key={index} className="flex h-10 w-10 items-center justify-center text-gray-400">
+                                        ...
+                                    </span>
+                                );
+                            })}
                         </div>
-
-                        {/* Tombol Next */}
-                        <button
-                            onClick={nextPage}
-                            disabled={currentPage === totalPages}
-                            className={`flex items-center justify-center p-2 text-[#303182] transition-transform hover:scale-110 disabled:opacity-50 disabled:hover:scale-100`}
-                        >
-                            <ChevronRight className="h-10 w-10 fill-[#303182]" />
-                        </button>
-                    </div>
+                    )}
                 </main>
 
-                {/* --- ARTICLE DETAIL MODAL / POPUP (Sama seperti sebelumnya) --- */}
+                {/* --- ARTICLE DETAIL MODAL / POPUP --- */}
                 {selectedArticle && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        {/* Backdrop */}
                         <div
                             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
                             onClick={() => setSelectedArticle(null)}
                         ></div>
 
+                        {/* Modal Content */}
                         <div className="relative z-10 flex h-full max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
                             <div className="flex-1 overflow-y-auto p-8">
+                                {/* Header Modal */}
                                 <div className="mb-6 flex items-start justify-between">
                                     <h2 className="w-full text-center text-3xl font-bold text-[#303182]">{selectedArticle.title}</h2>
                                     <button
@@ -325,51 +293,85 @@ export default function Index() {
                                     </button>
                                 </div>
 
+                                {/* Meta Info (Author & Date) */}
                                 <div className="mb-8 flex items-center justify-between border-b border-gray-100 pb-4 text-xs font-medium tracking-wider text-gray-500 uppercase">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#303182] font-bold text-white">
-                                            {selectedArticle.author ? selectedArticle.author.charAt(0) : 'A'}
+                                            {selectedArticle.author.name.charAt(0)}
                                         </div>
-                                        <span>{selectedArticle.author || 'Lean Author'}</span>
+                                        <span>{selectedArticle.author.name}</span>
                                     </div>
-                                    <span>{selectedArticle.date}</span>
+                                    <span>
+                                        {selectedArticle.published_at
+                                            ? format(new Date(selectedArticle.published_at), 'MMM dd, yyyy')
+                                            : format(new Date(selectedArticle.created_at), 'MMM dd, yyyy')}
+                                    </span>
                                 </div>
 
-                                <div className="mb-8 flex justify-center">
-                                    <div className="w-full max-w-lg overflow-hidden rounded-lg shadow-md">
-                                        <img src={selectedArticle.image} alt={selectedArticle.title} className="h-auto w-full object-cover" />
+                                {/* Main Image Modal */}
+                                {selectedArticle.featured_image_url && (
+                                    <div className="mb-8 flex justify-center">
+                                        <div className="w-full max-w-lg overflow-hidden rounded-lg shadow-md">
+                                            <img
+                                                src={selectedArticle.featured_image_url}
+                                                alt={selectedArticle.title}
+                                                className="h-auto w-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Article Body Text */}
+                                <div className="prose max-w-none leading-relaxed text-gray-700">
+                                    {/* 
+                                        CATATAN PENTING:
+                                        Di 'interface Article' dashboard yang Anda kirim, tidak ada field 'content' atau 'body'.
+                                        Hanya ada 'excerpt'. Jadi saya menampilkan excerpt di sini.
+                                        Jika backend Anda mengirim konten full, silakan tambahkan field 'content: string' di interface Article.
+                                    */}
+                                    <p className="text-lg">{selectedArticle.excerpt}</p>
+
+                                    {/* Placeholder jika konten tidak tersedia di API List */}
+                                    <div className="mt-8 rounded-lg bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                        <p>
+                                            To view the full content, please ensure the backend API includes a 'content' field, or fetch the single
+                                            article details.
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div
-                                    className="prose max-w-none leading-relaxed text-gray-700"
-                                    dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-                                ></div>
-
+                                {/* Related Articles (Ambil dari list 'articles.data' yang ada) */}
                                 <div className="mt-12 border-t border-gray-200 pt-8">
                                     <h3 className="mb-6 text-center text-2xl font-bold text-[#303182]">Another Articles</h3>
                                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        {articles
-                                            .filter((a) => a.id !== selectedArticle.id)
-                                            .slice(0, 2)
+                                        {articles.data
+                                            .filter((a) => a.id !== selectedArticle?.id) // Jangan tampilkan artikel yang sedang dibuka
+                                            .slice(0, 2) // Ambil 2 saja
                                             .map((related, idx) => (
                                                 <div
                                                     key={idx}
                                                     className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
                                                 >
-                                                    <div className="h-48 overflow-hidden">
-                                                        <img
-                                                            src={related.image}
-                                                            alt={related.title}
-                                                            className="h-full w-full object-cover object-center"
-                                                        />
+                                                    <div className="h-48 overflow-hidden bg-gray-100">
+                                                        {related.featured_image_url ? (
+                                                            <img
+                                                                src={related.featured_image_url}
+                                                                alt={related.title}
+                                                                className="h-full w-full object-cover object-center"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                                                                No Image
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="flex flex-1 flex-col p-4">
                                                         <div className="mb-2 text-xs text-gray-500">
-                                                            <span className="font-bold">{related.author || 'Author'}</span> • {related.date}
+                                                            <span className="font-bold">{related.author.name}</span> •{' '}
+                                                            {related.published_at ? format(new Date(related.published_at), 'MMM dd, yyyy') : 'Recent'}
                                                         </div>
-                                                        <h4 className="mb-2 text-sm font-bold text-[#303182]">{related.title}</h4>
-                                                        <p className="mb-4 line-clamp-2 text-xs text-gray-600">{related.description}</p>
+                                                        <h4 className="mb-2 line-clamp-1 text-sm font-bold text-[#303182]">{related.title}</h4>
+                                                        <p className="mb-4 line-clamp-2 text-xs text-gray-600">{related.excerpt}</p>
                                                         <button
                                                             onClick={() => setSelectedArticle(related)}
                                                             className="mt-auto self-start rounded-full bg-[#303182] px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#202160]"

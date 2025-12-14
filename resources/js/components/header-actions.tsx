@@ -1,15 +1,13 @@
-// components/HeaderActions.tsx
-
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronDown, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import { useEffect, useState } from 'react'; // Wajib ada
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 import { UserMenuContent } from '@/components/user-menu-content';
 import { Icon } from './icon';
@@ -19,57 +17,14 @@ import { useInitials } from '@/hooks/use-initials';
 import Checkout from '@/pages/ordering/payments/checkout';
 import { Product, SharedData } from '@/types';
 
-// --- NEW: Interface untuk item cart (disamakan dengan mockCartData) ---
+// Definisi Interface CartItem disini saja agar mandiri
 interface CartItem {
+    id: number;
     name: string;
     price: number;
     qty: number;
+    image_url: string | null;
 }
-// --------------------------------------------------------------------
-
-// Komponen Placeholder CartItem yang sesuai dengan gambar (TIDAK ADA PERUBAHAN)
-const CartItemPlaceholder = ({ name, price, qty }: CartItem) => {
-    // ... (kode CartItemPlaceholder yang sudah ada) ...
-    // Fungsi untuk memformat harga ke format Rupiah (Rp.)
-    const formatRupiah = (number: number) => {
-        return `Rp. ${number.toLocaleString('id-ID')}`;
-    };
-
-    return (
-        <div className="flex items-start justify-between py-4">
-            <div className="flex items-start space-x-4">
-                {/* Gambar/Kartu Produk (Meniru desain kartu biru) */}
-                <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-md bg-indigo-800 p-2 text-white shadow-lg sm:h-20 sm:w-32">
-                    <p className="text-[8px] font-light uppercase opacity-70">Espresso Roast 100% Arabica</p>
-                    <p className="text-lg leading-none font-bold sm:text-xl">THE SAGARA</p>
-                    <p className="text-lg leading-none font-bold sm:text-xl">1999</p>
-                </div>
-
-                <div className="flex flex-col space-y-1">
-                    <p className="text-base font-semibold text-foreground">{name}</p>
-                    <p className="text-sm font-medium text-muted-foreground">{formatRupiah(price)}</p>
-
-                    {/* Quantity Control dan Tombol Hapus */}
-                    <div className="mt-2 flex items-center space-x-2">
-                        <div className="flex items-center rounded-md border text-sm">
-                            <Button variant="outline" size="icon" className="h-7 w-7 rounded-r-none border-y-0 border-l-0">
-                                <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="px-3 font-medium">{qty}</span>
-                            <Button variant="outline" size="icon" className="h-7 w-7 rounded-l-none border-y-0 border-r-0">
-                                <Plus className="h-3 w-3" />
-                            </Button>
-                        </div>
-                        {/* Tombol Hapus */}
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-500">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 export function HeaderActions() {
     const page = usePage<SharedData>();
@@ -80,28 +35,75 @@ export function HeaderActions() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-    // Data simulasi (Group semua item untuk perhitungan total yang benar)
-    // --- GANTI: Tambahkan tipe CartItem ke mockCartData ---
-    const mockCartData: CartItem[] = [
-        { name: 'THE SAGARA 1999', price: 120000, qty: 1 },
-        { name: 'Another Great Coffee', price: 85000, qty: 2 },
-        { name: 'Coffee Grinder Portable', price: 350000, qty: 1 },
-        { name: 'Luxury Gadget Pro X', price: 1999999, qty: 1 },
-        { name: 'Ergonomic Keyboard Mechanical', price: 599999, qty: 2 },
-    ];
-    // -------------------------------------------------------
+    // --- STATE KERANJANG REAL ---
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-    // Hitung total dari semua mock item
-    const totalAmount = mockCartData.reduce((sum, item) => sum + item.price * item.qty, 0);
+    // Fungsi: Baca data dari Local Storage
+    const loadCartFromStorage = () => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('cart-storage');
+            if (saved) {
+                try {
+                    setCartItems(JSON.parse(saved));
+                } catch (e) {
+                    console.error('Error parsing cart', e);
+                    setCartItems([]);
+                }
+            } else {
+                setCartItems([]);
+            }
+        }
+    };
+
+    // Fungsi: Update Local Storage & Trigger Event agar sinkron
+    const updateStorage = (newItems: CartItem[]) => {
+        localStorage.setItem('cart-storage', JSON.stringify(newItems));
+        setCartItems(newItems);
+        // Dispatch event agar tab lain/komponen lain tahu ada update (opsional tapi bagus)
+        window.dispatchEvent(new Event('cart-updated'));
+    };
+
+    // --- EFFECT: MENDENGARKAN PERUBAHAN ---
+    useEffect(() => {
+        loadCartFromStorage(); // Load awal
+
+        // Event Listener: Jika ada komponen lain (Index) trigger 'cart-updated'
+        const handleCartUpdate = () => loadCartFromStorage();
+
+        window.addEventListener('cart-updated', handleCartUpdate);
+
+        // Bersihkan listener saat component unmount
+        return () => window.removeEventListener('cart-updated', handleCartUpdate);
+    }, []);
+
+    // --- LOGIKA KERANJANG (Tambah/Kurang/Hapus) ---
+    const updateQty = (id: number, type: 'plus' | 'minus') => {
+        const updated = cartItems.map((item) => {
+            if (item.id === id) {
+                const newQty = type === 'plus' ? item.qty + 1 : item.qty - 1;
+                return { ...item, qty: Math.max(1, newQty) };
+            }
+            return item;
+        });
+        updateStorage(updated);
+    };
+
+    const removeItem = (id: number) => {
+        const updated = cartItems.filter((item) => item.id !== id);
+        updateStorage(updated);
+    };
+
+    // Hitung Total
+    const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
     const formatRupiah = (number: number) => `Rp. ${number.toLocaleString('id-ID')}`;
 
-    // NEW: Mock Product object untuk dikirim ke komponen Checkout (untuk memenuhi tipe Product)
+    // Mock Product untuk Checkout
     const mockProductForCheckout: Product = {
         id: 999,
         slug: 'cart-summary',
-        product_name: `Your Cart (${mockCartData.length} items)`, // Judul untuk layar Checkout
-        price: totalAmount, // Total Harga
-        flavor_notes: `Total Items: ${mockCartData.length}. Total Price: ${formatRupiah(totalAmount)}`,
+        product_name: `Your Cart (${cartItems.length} items)`,
+        price: totalAmount,
+        flavor_notes: `Total Items: ${cartItems.length}`,
         type: 'CART',
         is_specialty: false,
         primary_image_url: null,
@@ -110,7 +112,6 @@ export function HeaderActions() {
         brew_methods: [],
     };
 
-    // Kelas DialogContent yang kompleks (disalin dari ProductDetail/ProductCard)
     const dialogContentClasses =
         'm-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 ' +
         'sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl';
@@ -118,51 +119,154 @@ export function HeaderActions() {
     return (
         <div className="ml-auto flex items-center space-x-2">
             <div className="relative flex items-center space-x-1">
+                {/* --- MODAL KERANJANG --- */}
                 <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
                     <DialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer" aria-label="Shopping Cart">
-                            <ShoppingCart className="!size-5 opacity-80 group-hover:opacity-100" />
+                            {/* Tampilkan Badge jumlah item jika ada */}
+                            <div className="relative">
+                                <ShoppingCart className="!size-5 opacity-80 group-hover:opacity-100" />
+                                {cartItems.length > 0 && (
+                                    <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                        {cartItems.length}
+                                    </span>
+                                )}
+                            </div>
                         </Button>
                     </DialogTrigger>
 
                     <DialogContent className="flex h-[80vh] max-h-[800px] flex-col p-0 sm:max-w-[580px]">
-                        <DialogHeader className="p-6 pb-0">
-                            <DialogTitle className="text-2xl font-extrabold tracking-tight text-primary">
-                                Your cart is brewing <br /> with goodness
-                            </DialogTitle>
-                            <p className="mt-1 text-sm font-medium text-foreground/80">ready to check out?</p>
-                        </DialogHeader>
-
-                        <div className="flex-1 overflow-y-auto border-b px-6 py-4">
-                            <div className="space-y-2">
-                                {/* Map semua item mockCartData */}
-                                {mockCartData.map((item, index) => (
-                                    <CartItemPlaceholder key={index} {...item} />
-                                ))}
+                        {!user ? (
+                            <div className="flex h-full w-full flex-col">
+                                <div className="p-6">
+                                    <DialogClose className="rounded-full p-2 hover:bg-gray-100">
+                                        <ArrowLeft className="h-6 w-6 text-[#2A2F5B]" />
+                                    </DialogClose>
+                                </div>
+                                <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+                                    <h2 className="mb-2 text-3xl font-extrabold text-[#2A2F5B]">No orders yet</h2>
+                                    <Link href={route('login')} onClick={() => setIsCartOpen(false)}>
+                                        <Button className="h-12 min-w-[200px] rounded-full bg-[#2A2F5B] text-white hover:bg-[#1e2345]">
+                                            Find Product
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                {cartItems.length === 0 ? (
+                                    <div className="flex h-full w-full flex-col">
+                                        <div className="flex justify-end p-6">
+                                            <DialogClose className="rounded-full p-1 hover:bg-gray-100">
+                                                <X className="h-6 w-6 text-gray-500" />
+                                            </DialogClose>
+                                        </div>
+                                        <div className="-mt-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
+                                            <h2 className="mb-2 text-3xl font-extrabold text-[#2A2F5B]">Your cart is empty</h2>
+                                            <p className="mb-8 text-sm font-medium text-indigo-900/60">but the aroma of great coffee awaits.</p>
+                                            <Button
+                                                onClick={() => setIsCartOpen(false)}
+                                                className="h-12 min-w-[200px] rounded-full bg-[#2A2F5B] text-lg font-bold text-white hover:bg-[#1e2345]"
+                                            >
+                                                Find Product
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <DialogHeader className="p-6 pb-0">
+                                            <DialogTitle className="text-2xl font-extrabold tracking-tight text-primary">
+                                                Your cart is brewing <br /> with goodness
+                                            </DialogTitle>
+                                            <p className="mt-1 text-sm font-medium text-foreground/80">ready to check out?</p>
+                                        </DialogHeader>
 
-                        <div className="flex flex-col space-y-4 px-6 py-4">
-                            <div className="flex items-center justify-between text-base font-bold">
-                                <span>Total :</span>
-                                <span className="text-foreground">{formatRupiah(totalAmount)}</span>
-                            </div>
+                                        <div className="flex-1 overflow-y-auto border-b px-6 py-4">
+                                            <div className="space-y-2">
+                                                {/* LOOP DATA KERANJANG REAL */}
+                                                {cartItems.map((item) => (
+                                                    <div key={item.id} className="flex items-start justify-between py-4">
+                                                        <div className="flex items-start space-x-4">
+                                                            <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-md bg-indigo-800 p-0 text-white shadow-lg sm:h-20 sm:w-32">
+                                                                {item.image_url ? (
+                                                                    <img
+                                                                        src={item.image_url}
+                                                                        alt={item.name}
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="flex h-full items-center justify-center bg-gray-200 text-gray-500">
+                                                                        <span className="text-xs">No Image</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
-                            <Button
-                                className="h-12 w-full bg-indigo-900 text-lg font-bold text-white shadow-lg hover:bg-indigo-800"
-                                onClick={() => {
-                                    setIsCartOpen(false); // 1. Tutup Cart Dialog
-                                    setIsCheckoutOpen(true); // 2. Buka Checkout Dialog
-                                }}
-                            >
-                                Checkout
-                            </Button>
-                        </div>
+                                                            <div className="flex flex-col space-y-1">
+                                                                <p className="text-base font-semibold text-foreground">{item.name}</p>
+                                                                <p className="text-sm font-medium text-muted-foreground">
+                                                                    {formatRupiah(item.price)}
+                                                                </p>
+
+                                                                <div className="mt-2 flex items-center space-x-2">
+                                                                    <div className="flex items-center rounded-md border text-sm">
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 rounded-r-none border-y-0 border-l-0"
+                                                                            onClick={() => updateQty(item.id, 'minus')}
+                                                                        >
+                                                                            <Minus className="h-3 w-3" />
+                                                                        </Button>
+                                                                        <span className="px-3 font-medium">{item.qty}</span>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 rounded-l-none border-y-0 border-r-0"
+                                                                            onClick={() => updateQty(item.id, 'plus')}
+                                                                        >
+                                                                            <Plus className="h-3 w-3" />
+                                                                        </Button>
+                                                                    </div>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                                                                        onClick={() => removeItem(item.id)}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col space-y-4 px-6 py-4">
+                                            <div className="flex items-center justify-between text-base font-bold">
+                                                <span>Total :</span>
+                                                <span className="text-foreground">{formatRupiah(totalAmount)}</span>
+                                            </div>
+
+                                            <Button
+                                                className="h-12 w-full bg-indigo-900 text-lg font-bold text-white shadow-lg hover:bg-indigo-800"
+                                                onClick={() => {
+                                                    setIsCartOpen(false);
+                                                    setIsCheckoutOpen(true);
+                                                }}
+                                            >
+                                                Checkout
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        )}
                     </DialogContent>
                 </Dialog>
 
-                {/* ... (kode Tooltip & Navigasi lainnya) ... */}
-
+                {/* Navigation Icons (Sama seperti sebelumnya) */}
                 <div className="hidden lg:flex">
                     {rightNavItems.map((item) => (
                         <TooltipProvider key={item.title} delayDuration={0}>
@@ -172,10 +276,10 @@ export function HeaderActions() {
                                         href={item.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium text-accent-foreground ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                                        className="group ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium opacity-80 hover:bg-accent hover:opacity-100"
                                     >
                                         <span className="sr-only">{item.title}</span>
-                                        {item.icon && <Icon iconNode={item.icon} className="size-5 opacity-80 group-hover:opacity-100" />}
+                                        {item.icon && <Icon iconNode={item.icon} className="size-5" />}
                                     </a>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -187,16 +291,14 @@ export function HeaderActions() {
                 </div>
             </div>
 
-            {/* Tampilkan menu user atau tombol login/register */}
+            {/* Auth Buttons */}
             {user ? (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="flex h-auto items-center gap-x-2 rounded-full p-1 pr-2">
                             <Avatar className="size-8 overflow-hidden rounded-full">
                                 <AvatarImage src={user.avatar_url} alt={user.name} />
-                                <AvatarFallback className="rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                    {getInitials(user.name)}
-                                </AvatarFallback>
+                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                             </Avatar>
                             <ChevronDown className="h-4 w-4" />
                         </Button>
@@ -216,14 +318,12 @@ export function HeaderActions() {
                 </div>
             )}
 
-            {/* --- Implementasi Checkout Dialog dari Cart --- */}
+            {/* Checkout Dialog */}
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
                 <DialogContent className={dialogContentClasses}>
-                    {/* GANTI: Tambahkan prop cartItems */}
-                    <Checkout product={mockProductForCheckout} cartItems={mockCartData} onClose={() => setIsCheckoutOpen(false)} />
+                    <Checkout product={mockProductForCheckout} cartItems={cartItems} onClose={() => setIsCheckoutOpen(false)} />
                 </DialogContent>
             </Dialog>
-            {/* ------------------------------------------------ */}
         </div>
     );
 }

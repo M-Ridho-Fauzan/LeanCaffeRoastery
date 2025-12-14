@@ -1,14 +1,24 @@
-import { Button } from '@/components/ui/button'; // Sesuaikan path jika menggunakan shadcn/ui
-import { Dialog, DialogContent } from '@/components/ui/dialog'; // Sesuaikan path
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Checkout from '@/pages/ordering/payments/checkout';
 import type { Product } from '@/types';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// 1. IMPORT DARI INERTIA
+import { router, usePage } from '@inertiajs/react';
 
 interface ProductDetailsProps {
     product: Product;
     closeModal?: () => void;
     inModal?: boolean;
+}
+
+// Interface untuk menangani tipe data auth dari Inertia Shared Props
+interface PageProps {
+    auth: {
+        user: any | null; // Ganti 'any' dengan tipe User Anda jika ada
+    };
+    [key: string]: any;
 }
 
 const truncateText = (text: string | null | undefined, maxLength: number): string => {
@@ -18,6 +28,9 @@ const truncateText = (text: string | null | undefined, maxLength: number): strin
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
+    // 2. AMBIL DATA AUTH USER
+    const { auth } = usePage<PageProps>().props;
+
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
@@ -32,7 +45,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
         [product.price],
     );
 
-    // Mengubah string flavor notes "Coklat, Kacang, ..." menjadi array untuk ditampilkan sebagai badges
     const flavorTags = useMemo(() => {
         if (!product.flavor_notes) return [];
         return product.flavor_notes.split(',').map((note) => note.trim());
@@ -61,10 +73,49 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
         setQuantity((prev) => (type === 'decrement' && prev > 1 ? prev - 1 : type === 'increment' ? prev + 1 : prev));
     };
 
+    // 3. LOGIKA UTAMA DISINI (UPDATE)
     const handleAddToCart = () => {
-        // Logika Add to Cart disini (misal: panggil API atau Context)
-        console.log('Added to cart:', product.product_name, 'Qty:', quantity);
-        setIsCheckoutOpen(true); // Membuka checkout sebagai simulasi
+        // A. Cek apakah user SUDAH login
+        if (!auth.user) {
+            router.get(route('login'));
+            return;
+        }
+
+        // B. Logika Simpan ke Local Storage (Agar Header Update)
+        const saved = localStorage.getItem('cart-storage');
+        let items = saved ? JSON.parse(saved) : [];
+
+        // Cek apakah produk sudah ada di cart
+        const existingIndex = items.findIndex((item: any) => item.id === product.id);
+
+        if (existingIndex >= 0) {
+            // Jika ada, tambahkan qty sesuai yang dipilih user
+            items[existingIndex].qty += quantity;
+        } else {
+            // Jika baru, push data baru
+            items.push({
+                id: product.id,
+                name: product.product_name,
+                price: product.price,
+                qty: quantity, // Gunakan quantity dari state
+                image_url: product.primary_image_url,
+            });
+        }
+
+        // Simpan Balik
+        localStorage.setItem('cart-storage', JSON.stringify(items));
+
+        // C. Trigger Event agar Header Action bereaksi
+        window.dispatchEvent(new Event('cart-updated'));
+
+        // D. Tutup Modal Detail setelah berhasil add to cart (Optional)
+        // Agar user bisa melihat perubahan di header
+        if (closeModal) {
+            closeModal();
+        }
+
+        // Note: Saya menghapus setIsCheckoutOpen(true) karena ini tombol "Add to Cart",
+        // bukan "Buy Now". Data masuk keranjang, user lanjut belanja.
     };
 
     return (
@@ -88,7 +139,7 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                     </div>
                 </div>
 
-                {/* Thumbnails Gallery (Hanya muncul jika gambar > 1) */}
+                {/* Thumbnails Gallery */}
                 {allImages.length > 1 && (
                     <div className="relative mt-4">
                         <button
@@ -124,14 +175,14 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
 
             {/* --- KOLOM KANAN: INFORMASI --- */}
             <div className="flex flex-col p-6 pt-0 lg:w-1/2 lg:p-10 lg:pl-0">
-                {/* Header: Title & Close Button */}
+                {/* Header */}
                 <div className="mb-4 flex items-start justify-between">
                     <div>
                         <h1 className="text-3xl font-extrabold text-[#2A2F5B] lg:text-4xl">{product.product_name}</h1>
                     </div>
                 </div>
 
-                {/* Tags (Type) */}
+                {/* Type */}
                 <div className="mb-4">
                     <span className="inline-block rounded-full border border-[#2A2F5B] px-4 py-1 text-sm font-semibold text-[#2A2F5B]">
                         {product.type || 'Espresso Based'}
@@ -143,16 +194,12 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                     <span className="text-2xl font-bold text-[#2A2F5B]">Rp . {formattedPrice}</span>
                 </div>
 
-                {/* Scrollable Content Area */}
+                {/* Content */}
                 <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-grow space-y-6 overflow-y-auto pr-2">
-                    {/* Description */}
                     <p className="text-base leading-relaxed text-gray-600">
-                        {/* Menggunakan flavor notes sebagai deskripsi jika tidak ada field deskripsi panjang, 
-                            atau static text sesuai gambar jika ingin persis */}
                         Our flagship blend with rich chocolate and caramel notes. Perfect for daily espresso.
                     </p>
 
-                    {/* Origin */}
                     {product.origins && product.origins.length > 0 && (
                         <div>
                             <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Origin</h3>
@@ -160,7 +207,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                         </div>
                     )}
 
-                    {/* Process / Roast Level (Mapped from Process for now as logic tweak) */}
                     {product.processes && product.processes.length > 0 && (
                         <div>
                             <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Process</h3>
@@ -174,7 +220,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                         </div>
                     )}
 
-                    {/* Flavor Notes */}
                     {flavorTags.length > 0 && (
                         <div>
                             <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Flavor Notes</h3>
@@ -188,7 +233,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                         </div>
                     )}
 
-                    {/* Recommended Brewing */}
                     {product.brew_methods && product.brew_methods.length > 0 && (
                         <div>
                             <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Recommended Brewing</h3>
@@ -205,7 +249,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
 
                 {/* Footer Actions */}
                 <div className="mt-8 flex items-center gap-4 border-t pt-6">
-                    {/* Quantity Selector */}
                     <div className="flex items-center rounded-lg bg-gray-100 p-1">
                         <button
                             onClick={() => handleQuantityChange('decrement')}
@@ -223,7 +266,6 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                         </button>
                     </div>
 
-                    {/* Add to Cart Button */}
                     <Button
                         onClick={handleAddToCart}
                         className="h-12 flex-1 rounded-full bg-[#2A2F5B] text-base font-bold text-white hover:bg-[#1e2345]"
@@ -234,7 +276,7 @@ function ProductDetail({ product, closeModal, inModal }: ProductDetailsProps) {
                 </div>
             </div>
 
-            {/* Modal Checkout (Hidden Logic) */}
+            {/* Modal Checkout */}
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
                 <DialogContent className="m-0 flex h-[95vh] w-full max-w-full flex-col overflow-y-auto rounded-none border p-0 sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl">
                     <Checkout product={product} onClose={() => setIsCheckoutOpen(false)} />
