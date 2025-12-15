@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, ChevronDown, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import { ChevronDown, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react'; // Wajib ada
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -139,9 +139,7 @@ export function HeaderActions() {
                         {!user ? (
                             <div className="flex h-full w-full flex-col">
                                 <div className="p-6">
-                                    <DialogClose className="rounded-full p-2 hover:bg-gray-100">
-                                        <ArrowLeft className="h-6 w-6 text-[#2A2F5B]" />
-                                    </DialogClose>
+                                    <DialogClose className="rounded-full p-2 hover:bg-gray-100"></DialogClose>
                                 </div>
                                 <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
                                     <h2 className="mb-2 text-3xl font-extrabold text-[#2A2F5B]">No orders yet</h2>
@@ -157,9 +155,7 @@ export function HeaderActions() {
                                 {cartItems.length === 0 ? (
                                     <div className="flex h-full w-full flex-col">
                                         <div className="flex justify-end p-6">
-                                            <DialogClose className="rounded-full p-1 hover:bg-gray-100">
-                                                <X className="h-6 w-6 text-gray-500" />
-                                            </DialogClose>
+                                            <DialogClose className="rounded-full p-1 hover:bg-gray-100"></DialogClose>
                                         </div>
                                         <div className="-mt-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
                                             <h2 className="mb-2 text-3xl font-extrabold text-[#2A2F5B]">Your cart is empty</h2>
