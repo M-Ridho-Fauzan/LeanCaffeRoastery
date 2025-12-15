@@ -11,7 +11,6 @@ import {
     ScrollText,
     Settings,
     ShieldAlert,
-    ShoppingCart,
     User,
 } from 'lucide-react';
 
@@ -36,37 +35,8 @@ export const platformItems: NavItem[] = [
         icon: ScrollText,
         roles: 'public',
         description: 'Explore our delicious food and beverage options.',
-        children: [
-            {
-                title: 'All Products',
-                href: '/products',
-                icon: CornerDownRight,
-                description: 'Browse all available items in our menu.',
-                roles: 'public',
-            },
-            // {
-            //     title: 'Ordering',
-            //     href: '/product/ordering',
-            //     icon: ShoppingCart,
-            //     description: 'Place your order for pickup or delivery.',
-            //     roles: ['user', 'admin', 'author'],
-            // },
-            // {
-            //     title: 'Wishlist',
-            //     href: '/products/wishlist',
-            //     icon: Heart,
-            //     description: 'Save your favorite items for later.',
-            //     roles: ['user', 'admin', 'author'],
-            // },
-            {
-                title: 'Charts',
-                href: '/product/charts',
-                icon: ShoppingCart,
-                description: 'View sales and product performance charts.',
-                roles: ['admin', 'author'],
-            },
-        ],
     },
+
     {
         title: 'Articles',
         href: '/blog',
