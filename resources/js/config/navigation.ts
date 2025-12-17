@@ -94,7 +94,7 @@ export const platformItems: NavItem[] = [
             },
             {
                 title: 'Settings',
-                href: '/settings/profile',
+                href: '/settings/appearance',
                 icon: Settings,
                 description: 'Configure application settings and preferences.',
                 roles: ['admin'],

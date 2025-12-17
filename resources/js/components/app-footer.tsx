@@ -24,27 +24,27 @@ export default function AppFooter() {
                         <h3 className="mb-6 text-sm font-bold tracking-widest text-white uppercase">Quick Links</h3>
                         <ul className="flex flex-col gap-3 text-sm text-gray-300">
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('home')} className="transition-colors hover:text-white">
                                     Home
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('about')} className="transition-colors hover:text-white">
                                     About
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('products.index')} className="transition-colors hover:text-white">
                                     Menu
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('blog.index')} className="transition-colors hover:text-white">
                                     Articles
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('location')} className="transition-colors hover:text-white">
                                     Location
                                 </Link>
                             </li>
@@ -56,17 +56,17 @@ export default function AppFooter() {
                         <h3 className="mb-6 text-sm font-bold tracking-widest text-white uppercase">Product</h3>
                         <ul className="flex flex-col gap-3 text-sm text-gray-300">
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('products.index')} className="transition-colors hover:text-white">
                                     Coffee Beans
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('products.index')} className="transition-colors hover:text-white">
                                     Ground Coffee
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="transition-colors hover:text-white">
+                                <Link href={route('products.index')} className="transition-colors hover:text-white">
                                     Cold Brew
                                 </Link>
                             </li>
@@ -78,7 +78,7 @@ export default function AppFooter() {
                         <h3 className="mb-6 text-sm font-bold tracking-widest text-white uppercase">Follow Us</h3>
                         <div className="flex">
                             <a
-                                href="#"
+                                href="https://www.instagram.com/leancoffee.roastery/"
                                 className="rounded-xl border border-white/10 bg-[#241b57] p-3 shadow-lg transition-colors hover:bg-[#3d3185]"
                                 aria-label="Instagram"
                             >
