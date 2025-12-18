@@ -9,6 +9,7 @@ use App\Http\Controllers\Contens\Blogs\Editors\TagController;
 use App\Http\Controllers\Contens\Blogs\Publics\BlogController;
 use App\Http\Controllers\Contens\Blogs\Editors\ArticleController;
 use App\Http\Controllers\Contens\Blogs\Editors\CategoryController;
+use App\Http\Controllers\Contens\Menus\Editors\ProductController as ProductAdminController;
 // Tidak perlu RobertBoes\InertiaBreadcrumbs\Breadcrumb di sini, karena Diglactic\Breadcrumbs sudah cukup
 // use RobertBoes\InertiaBreadcrumbs\Breadcrumb;
 
@@ -149,10 +150,13 @@ Route::middleware(['auth', 'verified'])
 
                 // Product Management (jika 'products' di sini adalah untuk admin mengelola,
                 // berbeda dengan products publik di atas)
-                Route::get('products', function () {
-                    Breadcrumbs::render('admin.products.index');
-                    return Inertia::render('editors/products/index');
-                })->name('products.index');
+
+                Route::resource('products', ProductAdminController::class);
+
+                // Route::get('products', function () {
+                //     Breadcrumbs::render('admin.products.index');
+                //     return Inertia::render('editors/products/index');
+                // })->name('products.index');
 
                 // Catatan: Route::resource('categories', ...) dan Route::resource('tags', ...)
                 // yang sebelumnya ada di grup 'admin' telah DIPINDAHKAN ke grup 'editor'
@@ -169,8 +173,7 @@ Route::middleware(['auth', 'verified'])
             return Inertia::render('ordering/payments/charts');
         })->name('product.payments.charts');
 
-        Route::get('product/wishlist', function () {
-        })->name('product.persona.wishlist');
+        Route::get('product/wishlist', function () {})->name('product.persona.wishlist');
     });
 
 // =========================================================================
@@ -180,6 +183,3 @@ Route::middleware(['auth', 'verified'])
 require __DIR__ . '/editors.php'; // Mungkin berisi rute yang spesifik untuk editor
 require __DIR__ . '/settings.php'; // Mungkin berisi rute pengaturan umum
 require __DIR__ . '/auth.php'; // Rute autentikasi (login, register, dll.)
-
-
-

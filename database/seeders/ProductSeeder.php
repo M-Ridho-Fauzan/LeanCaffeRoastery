@@ -65,6 +65,9 @@ class ProductSeeder extends Seeder
         $image2 = '';
         $image3 = '';
 
+        // $status = (bool) random_int(0, 1);
+        // $status = fake()->boolean(60);
+
         // --- 3. DEKLARASI DATA PRODUK ---
         $productsData = [
             [
@@ -72,6 +75,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Single Origin',
                 'price' => 120000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Fruity, Winey, Chocolate, Brown Sugar',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -87,6 +91,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Single Origin',
                 'price' => 150000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Floral, Lemon, Black Tea, Jasmine',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -102,6 +107,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 95000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Balanced, Nutty, Caramel, Low Acidity',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -117,6 +123,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Microlot',
                 'price' => 135000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Sweet, Orange Peel, Maple Syrup, Clean Finish',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -132,6 +139,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Single Origin',
                 'price' => 115000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Citrus, Orange, Tamarind, Herbal',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -147,6 +155,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Single Origin',
                 'price' => 165000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Blackcurrant, Tomato, Bright Acidity, Juicy',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -162,6 +171,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Microlot',
                 'price' => 180000,
                 'is_specialty' => true,
+                // 'status' => $status,
                 'flavor_notes' => 'Cinnamon, Tropical Fruit, Winey, Complex',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -177,6 +187,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Commercial',
                 'price' => 85000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Dark Chocolate, Roasted Nuts, Full Body',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -192,6 +203,7 @@ class ProductSeeder extends Seeder
                 'type' => 'Single Origin',
                 'price' => 110000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Earthy, Spicy, Cedar, Bold Body',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -207,6 +219,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -222,6 +235,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -237,6 +251,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -252,6 +267,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -267,6 +283,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -282,6 +299,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -297,6 +315,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -312,6 +331,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -327,6 +347,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -342,6 +363,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -357,6 +379,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -372,6 +395,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -387,6 +411,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -402,6 +427,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -417,6 +443,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -432,6 +459,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -447,6 +475,7 @@ class ProductSeeder extends Seeder
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
+                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
                 'images' => [
                     ['image_url' => $image1, 'is_primary' => true],
@@ -462,7 +491,8 @@ class ProductSeeder extends Seeder
 
         // --- 4. LOOP DAN BUAT PRODUK BESERTA RELASINYA ---
         foreach ($productsData as $productData) {
-            // DIBENARKAN: Tambahkan pembuatan slug secara otomatis
+            $stock = random_int(0, 100);
+
             $product = Product::create([
                 'product_name' => $productData['product_name'],
                 'slug' => Str::slug($productData['product_name']), // INI YANG DITAMBAHKAN
@@ -470,6 +500,8 @@ class ProductSeeder extends Seeder
                 'price' => $productData['price'],
                 'flavor_notes' => $productData['flavor_notes'],
                 'is_specialty' => $productData['is_specialty'],
+                'stock' => $stock,
+                'status' => $stock > 0,
             ]);
 
             // Buat relasi gambar

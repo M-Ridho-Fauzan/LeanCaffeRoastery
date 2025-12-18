@@ -28,7 +28,7 @@ class MiniResource extends JsonResource
             $data[$nameKey] = $this->{$nameKey};
         }
 
-        // --- TAMBAHKAN INI UNTUK MENYERTANAKAN FIELD LAIN SECARA KONDISIONAL ---
+        // --- INI UNTUK MENYERTANAKAN FIELD LAIN SECARA KONDISIONAL ---
         // Jika ada field 'description', sertakan
         if (isset($this->description)) {
             $data['description'] = $this->description;
@@ -41,7 +41,7 @@ class MiniResource extends JsonResource
         if (isset($this->country)) {
             $data['country'] = $this->country;
         }
-        // --- AKHIR TAMBAHAN ---
+        // --- AKHIR ---
 
         return $data;
     }

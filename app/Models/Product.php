@@ -22,6 +22,8 @@ class Product extends Model
         'price',
         'flavor_notes',
         'is_specialty',
+        'status',
+        'stock',
     ];
 
     public const TYPES = ['Single Origin', 'House Blend', 'Microlot', 'Commercial'];

@@ -112,6 +112,8 @@ interface Product {
     slug: string;
     product_name: string;
     price: number;
+    stock: number;
+    status: boolean;
     flavor_notes: string;
     type: string;
     is_specialty: boolean;
