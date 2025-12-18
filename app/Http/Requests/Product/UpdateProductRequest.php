@@ -34,6 +34,14 @@ class UpdateProductRequest extends FormRequest
             'processes.*' => 'required|integer|exists:processes,id',
             'brew_methods' => 'sometimes|required|array',
             'brew_methods.*' => 'required|integer|exists:brew_methods,id',
+
+            // File Upload BARU
+            'image_files' => ['nullable', 'array', 'max:5'],
+            'image_files.*' => ['file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+
+            // ID Gambar yang akan dihapus
+            'images_to_delete_ids' => ['nullable', 'array'],
+            'images_to_delete_ids.*' => ['integer', 'exists:product_images,id'], // Pastikan ID ini ada di tabel product_images
         ];
     }
 }

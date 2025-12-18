@@ -35,6 +35,10 @@ class StoreProductRequest extends FormRequest
             'processes.*' => 'required|integer|exists:processes,id',
             'brew_methods' => 'required|array',
             'brew_methods.*' => 'required|integer|exists:brew_methods,id',
+
+            // File Upload BARU
+            'image_files' => ['nullable', 'array', 'max:5'],
+            'image_files.*' => ['file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ];
     }
 }

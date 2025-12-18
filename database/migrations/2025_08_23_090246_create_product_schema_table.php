@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('type', ['Single Origin', 'House Blend', 'Microlot', 'Commercial']);
             $table->unsignedInteger('price');
             $table->text('flavor_notes');
+            $table->integer('stock')->default(0);
+            $table->boolean('status')->default(true);
             $table->boolean('is_specialty')->default(false);
             $table->timestamps();
         });
