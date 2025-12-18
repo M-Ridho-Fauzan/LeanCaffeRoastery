@@ -32,7 +32,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-
             {/* --- MENU KHUSUS USER BIASA (Bukan Admin) --- */}
             {!isAdmin && (
                 <>

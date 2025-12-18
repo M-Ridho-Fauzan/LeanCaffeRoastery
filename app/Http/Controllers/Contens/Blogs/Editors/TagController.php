@@ -54,7 +54,17 @@ class TagController extends Controller
     {
         Tag::create($request->validated());
 
-        return redirect()->route('editor.tags.index')
+        // PERUBAHAN: Jika ini adalah permintaan XHR (Inertia), kembalikan respon Inertia/JSON sederhana.
+        // Inertia secara default menganggap request POST/PUT/DELETE sebagai permintaan Inertia/AJAX.
+        // if ($request->expectsJson() || $request->header('X-Inertia')) {
+        //     // Mengembalikan TagResource dari tag yang baru dibuat
+        //     return response()->json([
+        //         'success' => 'Tag created successfully.',
+        //         'tag' => new TagResource($tag),
+        //     ], 201);
+        // }
+
+        return redirect()->route('editor.articles.index')
             ->with('success', 'Tag created successfully.');
     }
 
