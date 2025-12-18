@@ -8,6 +8,7 @@ use App\Traits\Articles\HasSlug;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 
 #[UsePolicy(ArticlePolicy::class)]
 class Article extends Model
@@ -45,6 +46,19 @@ class Article extends Model
                 $article->slug = Str::slug($article->title);
             }
         });
+    }
+
+    public function getFeaturedImageUrlAttribute()
+    {
+        if (!$this->attributes['featured_image_url']) {
+            return null;
+        }
+
+        if (str_starts_with($this->attributes['featured_image_url'], 'http')) {
+            return $this->attributes['featured_image_url'];
+        }
+
+        return Storage::url($this->attributes['featured_image_url']);
     }
 
     /**

@@ -16,6 +16,7 @@ use App\Http\Requests\Blogs\UpdateArticleRequest;
 use App\Http\Resources\Blogs\Editors\TagResource;
 use App\Http\Resources\Blogs\Editors\CategoryResource;
 use App\Http\Resources\Blogs\Editors\ArticleDetailResource;
+use Illuminate\Support\Facades\Auth;
 
 class ArticleController extends Controller
 {
@@ -114,14 +115,21 @@ class ArticleController extends Controller
             $imagePath = $request->file('featured_image')->store('articles', 'public'); // Simpan di storage/app/public/articles
         }
 
+        $content = $validatedData['content'];
+
+        $sentences = preg_split('/(?<=[.!?])\s+/', strip_tags($content));
+        $excerpt = implode(' ', array_slice($sentences, 0, 5));
+
         $article = Article::create([
-            'user_id' => Auth(),
-            'category_id' => $validatedData['category_id'] ?? null, // Default null jika tidak ada
+            'user_id' => Auth::id(),
+            'category_id' => $validatedData['category_id'] ?? null,
             'title' => $validatedData['title'],
-            'excerpt' => $validatedData['excerpt'] ?? null, // Default null jika tidak ada
-            'content' => $validatedData['content'],
-            'featured_image_url' => $imagePath,
-            'published_at' => $validatedData['published_at'] ?? null, // Default null jika tidak ada
+            'excerpt' => $validatedData['excerpt'] ?? $excerpt,
+            'content' => $content,
+            'featured_image_url' => !empty($imagePath)
+                ? $imagePath
+                : 'https://placehold.co/600x400?text=No+Image',
+            'published_at' => $validatedData['published_at'] ?? now(),
             'status' => $validatedData['status'],
         ]);
 

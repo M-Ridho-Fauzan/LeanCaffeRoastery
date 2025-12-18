@@ -26,35 +26,34 @@ class BlogController extends Controller
             ->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->with(['category', 'user']); // Eager load category dan user untuk summary
+            ->with(['category', 'user', 'tags']); // Tambahkan eager load untuk tags
 
-        // Filter berdasarkan pencarian
+        // Handle search
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('excerpt', 'like', "%{$search}%");
+                    ->orWhere('excerpt', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
-        // Filter berdasarkan kategori
         if ($categorySlug = $request->input('category')) {
             $query->whereHas('category', fn($q) => $q->where('slug', $categorySlug));
         }
 
-        // Filter berdasarkan tag
         if ($tagSlug = $request->input('tag')) {
             $query->whereHas('tags', fn($q) => $q->where('slug', $tagSlug));
         }
 
-        $articles = $query->latest('published_at') // Urutkan berdasarkan tanggal publikasi terbaru
-            ->paginate(10) // Paginasi 10 artikel per halaman
+        $articles = $query->latest('published_at')
+            ->paginate(10)
             ->withQueryString(); // Pertahankan query string untuk navigasi paginasi
 
         return Inertia::render('businesses/articles/index', [
-            'articles' => ArticleSummaryResource::collection($articles), // Gunakan ArticleSummaryResource
-            'filters' => $request->only(['search', 'category', 'tag']), // Kirim filter ke frontend
-            'categories' => CategoryResource::collection(Category::all(['id', 'name', 'slug'])), // Semua kategori untuk filter
-            'tags' => TagResource::collection(Tag::all(['id', 'name', 'slug'])), // Semua tag untuk filter
+            'articles' => ArticleSummaryResource::collection($articles),
+            'filters' => $request->only(['search', 'category', 'tag']),
+            'categories' => CategoryResource::collection(Category::all(['id', 'name', 'slug'])),
+            'tags' => TagResource::collection(Tag::all(['id', 'name', 'slug'])),
         ]);
     }
 
@@ -64,14 +63,14 @@ class BlogController extends Controller
             ->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->with(['user', 'category', 'tags']) // Eager load semua relasi untuk detail
-            ->firstOrFail(); // Akan throw 404 jika tidak ditemukan atau tidak memenuhi kriteria
+            ->with(['user', 'category', 'tags'])
+            ->firstOrFail();
 
         // Opsional: Tingkatkan view count
         $article->increment('views_count');
 
         return Inertia::render('businesses/articles/show', [
-            'article' => new ArticleDetailResource($article), // Gunakan ArticleDetailResource
+            'article' => new ArticleDetailResource($article),
         ]);
     }
 }

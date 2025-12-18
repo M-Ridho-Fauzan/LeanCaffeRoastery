@@ -55,7 +55,16 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        return redirect()->route('admin.categories.index')
+        // Jika ini adalah permintaan XHR (Inertia), kembalikan respon Inertia/JSON sederhana.
+        // if ($request->expectsJson() || $request->header('X-Inertia')) {
+        //     // Mengembalikan CategoryResource dari category yang baru dibuat
+        //     return response()->json([
+        //         'success' => 'Category created successfully.',
+        //         'category' => new CategoryResource($category),
+        //     ], 201);
+        // }
+
+        return redirect()->route('editor.articles.index')
             ->with('success', 'Category created successfully.');
     }
 
@@ -90,7 +99,7 @@ class CategoryController extends Controller
     {
         $category->update($request->validated());
 
-        return redirect()->route('admin.categories.index')
+        return redirect()->route('editor.categories.index')
             ->with('success', 'Category updated successfully.');
     }
 
@@ -103,7 +112,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return redirect()->route('admin.categories.index')
+        return redirect()->route('editor.categories.index')
             ->with('success', 'Category deleted successfully.');
     }
 }

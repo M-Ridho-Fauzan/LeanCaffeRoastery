@@ -24,9 +24,10 @@ class ArticleSummaryResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
-            'featured_image_url' => $this->featured_image_url
-                ? Storage::url($this->featured_image_url) // Ubah path menjadi URL publik
-                : null,
+            'featured_image_url' => $this->featured_image_url,
+            // 'featured_image_url' => $this->featured_image_url
+            //     ? Storage::url($this->featured_image_url)
+            //     : null,
             'published_at' => $this->published_at ? $this->published_at->format('Y-m-d H:i:s') : null,
             'status' => $this->status,
             'views_count' => $this->views_count,
