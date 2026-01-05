@@ -8,7 +8,7 @@
  * - Version         : 1.0.0
  * - Date            : 10/09/2025
  * - Author          : Ridho Fauzan
- * - Modification    :
+ * - Modification    : Changed logo color to match brand identity
  **/
 import AppLogoIcon from '@/components/app-logo-icon';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
@@ -46,14 +46,8 @@ export default function Location() {
                     </section>
 
                     <div className="container mx-auto flex flex-col items-center px-4 py-12 sm:py-16">
-                        {/* <div className="mb-4 flex flex-col items-center gap-3">
-                            <span className="flex-shrink-0 text-gray-600">
-                                <MapPin className="h-6 w-6" />
-                            </span>
-                            <h2 className="text-center text-2xl font-semibold text-gray-800">Lean Coffee Roastery</h2>
-                        </div> */}
-
-                        <AppLogoIcon width="150" className="my-5" />
+                        {/* Perubahan ada di baris di bawah ini: menambahkan class text-[#1324a4] */}
+                        <AppLogoIcon width="150" className="my-5 text-[#1324a4]" />
 
                         <div className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-lg sm:p-8">
                             <div className="mb-6 h-full w-full overflow-hidden rounded-lg" style={{ aspectRatio: '16 / 9' }}>
@@ -85,7 +79,6 @@ export default function Location() {
                                     <span className="flex-shrink-0 text-gray-600">
                                         <Clock />
                                     </span>
-                                    {/* <span className="flex-shrink-0 font-medium text-gray-600">Operating Hours:</span> */}
                                     <ul className="flex flex-col text-gray-700">
                                         <li className="font-medium">
                                             <b>Mon - Fri:</b>

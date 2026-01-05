@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 05/09/2025 - 00:27:20
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 05/09/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
