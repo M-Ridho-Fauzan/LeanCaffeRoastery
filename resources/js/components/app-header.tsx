@@ -40,7 +40,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
             <div
                 className={cn(
-                    'fixed top-0 z-50 flex w-full border-b border-sidebar-border/80 bg-background transition-transform duration-300 ease-in-out',
+                    'fixed top-0 z-50 flex w-full border-b border-sidebar-border/80 bg-[#D2D3D5] transition-transform duration-300 ease-in-out',
                     {
                         'translate-y-0': isAtTop || scrollDirection === 'up',
                         '-translate-y-full': scrollDirection === 'down' && !isAtTop,
