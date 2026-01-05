@@ -7,7 +7,7 @@ use App\Models\Origin;
 use App\Models\Process;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str; // DITAMBAHKAN: Untuk membuat slug
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -17,8 +17,6 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         // --- 1. DEKLARASI DATA MASTER ---
-        // Menggunakan createMany untuk efisiensi dan kebersihan kode.
-
         $originsData = [
             // Indonesia
             ['origin_name' => 'Gayo', 'region' => 'Aceh', 'country' => 'Indonesia'],
@@ -42,16 +40,19 @@ class ProductSeeder extends Seeder
             ['process_name' => 'Giling Basah', 'description' => 'Metode khas Indonesia (Wet-Hulled).'],
         ];
 
+        // HANYA 2 BREW METHOD: Single Origin dan Espresso Based
         $brewMethodsData = [
-            ['brew_name' => 'Espresso', 'description' => 'Ekstraksi dengan tekanan tinggi.'],
-            ['brew_name' => 'V60', 'description' => 'Metode seduh manual pour-over.'],
-            ['brew_name' => 'Aeropress', 'description' => 'Metode seduh manual dengan tekanan.'],
-            ['brew_name' => 'French Press', 'description' => 'Metode seduh dengan perendaman.'],
-            ['brew_name' => 'Kalita Wave', 'description' => 'Metode seduh manual pour-over dengan dasar datar.'],
-            ['brew_name' => 'Cold Brew', 'description' => 'Metode perendaman dengan air dingin.'],
+            ['brew_name' => 'Single Origin', 'description' => 'Kopi yang berasal dari satu daerah atau perkebunan tertentu.'],
+            ['brew_name' => 'Espresso Based', 'description' => 'Kopi yang diformulasikan khusus untuk ekstraksi espresso.'],
         ];
 
         // --- 2. BUAT DATA MASTER DI DATABASE ---
+        // Hapus data yang ada terlebih dahulu untuk menghindari duplikasi
+        Origin::query()->delete();
+        Process::query()->delete();
+        BrewMethod::query()->delete();
+        Product::query()->delete();
+
         Origin::query()->insert($originsData);
         Process::query()->insert($processesData);
         BrewMethod::query()->insert($brewMethodsData);
@@ -61,461 +62,177 @@ class ProductSeeder extends Seeder
         $processes = Process::all();
         $brewMethods = BrewMethod::all();
 
-        $image1 = '';
-        $image2 = '';
-        $image3 = '';
-
-        // $status = (bool) random_int(0, 1);
-        // $status = fake()->boolean(60);
-
-        // --- 3. DEKLARASI DATA PRODUK ---
+        // --- 3. DEKLARASI DATA PRODUK YANG LEBIH MODULAR ---
+        // SESUAIKAN DENGAN ENUM YANG ADA DI DATABASE
+        // Diasumsikan ENUM values untuk 'type' adalah: 'Single Origin', 'House Blend', 'Microlot', 'Commercial'
         $productsData = [
+            // Single Origin Coffees
             [
                 'product_name' => 'Aceh Gayo Natural',
                 'type' => 'Single Origin',
                 'price' => 120000,
                 'is_specialty' => true,
-                // 'status' => $status,
                 'flavor_notes' => 'Fruity, Winey, Chocolate, Brown Sugar',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Gayo'],
                 'processes' => ['Natural'],
-                'brew_methods' => ['V60', 'Aeropress', 'Kalita Wave'],
+                'brew_methods' => ['Single Origin'],
             ],
             [
                 'product_name' => 'Ethiopia Sidamo Washed',
                 'type' => 'Single Origin',
                 'price' => 150000,
                 'is_specialty' => true,
-                // 'status' => $status,
                 'flavor_notes' => 'Floral, Lemon, Black Tea, Jasmine',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Sidamo'],
                 'processes' => ['Full Washed'],
-                'brew_methods' => ['V60', 'Espresso'],
-            ],
-            [
-                'product_name' => 'Lean Coffee House Blend',
-                'type' => 'House Blend',
-                'price' => 95000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Balanced, Nutty, Caramel, Low Acidity',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Gayo', 'Brazil Cerrado'],
-                'processes' => ['Full Washed'],
-                'brew_methods' => ['Espresso', 'French Press', 'Cold Brew'],
-            ],
-            [
-                'product_name' => 'Guatemala Antigua Honey Process',
-                'type' => 'Microlot',
-                'price' => 135000,
-                'is_specialty' => true,
-                // 'status' => $status,
-                'flavor_notes' => 'Sweet, Orange Peel, Maple Syrup, Clean Finish',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Antigua'],
-                'processes' => ['Honey'],
-                'brew_methods' => ['V60', 'French Press'],
+                'brew_methods' => ['Single Origin'],
             ],
             [
                 'product_name' => 'Bali Kintamani Natural',
                 'type' => 'Single Origin',
                 'price' => 115000,
                 'is_specialty' => true,
-                // 'status' => $status,
                 'flavor_notes' => 'Citrus, Orange, Tamarind, Herbal',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Kintamani'],
                 'processes' => ['Natural'],
-                'brew_methods' => ['V60', 'Aeropress'],
+                'brew_methods' => ['Single Origin'],
             ],
             [
                 'product_name' => 'Kenya AA Washed',
                 'type' => 'Single Origin',
                 'price' => 165000,
                 'is_specialty' => true,
-                // 'status' => $status,
                 'flavor_notes' => 'Blackcurrant, Tomato, Bright Acidity, Juicy',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Kenya AA'],
                 'processes' => ['Full Washed'],
-                'brew_methods' => ['V60', 'Kalita Wave'],
+                'brew_methods' => ['Single Origin'],
+            ],
+            [
+                'product_name' => 'Guatemala Antigua Honey Process',
+                'type' => 'Single Origin',
+                'price' => 135000,
+                'is_specialty' => true,
+                'flavor_notes' => 'Sweet, Orange Peel, Maple Syrup, Clean Finish',
+                'origins' => ['Antigua'],
+                'processes' => ['Honey'],
+                'brew_methods' => ['Single Origin'],
             ],
             [
                 'product_name' => 'Colombia Supremo Anaerobic',
                 'type' => 'Microlot',
                 'price' => 180000,
                 'is_specialty' => true,
-                // 'status' => $status,
                 'flavor_notes' => 'Cinnamon, Tropical Fruit, Winey, Complex',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Colombia Supremo'],
                 'processes' => ['Anaerobic'],
-                'brew_methods' => ['V60', 'Aeropress'],
-            ],
-            [
-                'product_name' => 'Brazil Cerrado Espresso Roast',
-                'type' => 'Commercial',
-                'price' => 85000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Dark Chocolate, Roasted Nuts, Full Body',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Espresso', 'French Press'],
+                'brew_methods' => ['Single Origin'],
             ],
             [
                 'product_name' => 'Sumatra Toraja Giling Basah',
                 'type' => 'Single Origin',
                 'price' => 110000,
                 'is_specialty' => false,
-                // 'status' => $status,
                 'flavor_notes' => 'Earthy, Spicy, Cedar, Bold Body',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Toraja'],
                 'processes' => ['Giling Basah'],
-                'brew_methods' => ['French Press', 'V60'],
+                'brew_methods' => ['Single Origin'],
+            ],
+
+            // House Blend / Espresso Based Coffees
+            [
+                'product_name' => 'Lean Coffee House Blend',
+                'type' => 'House Blend',
+                'price' => 95000,
+                'is_specialty' => false,
+                'flavor_notes' => 'Balanced, Nutty, Caramel, Low Acidity',
+                'origins' => ['Gayo', 'Brazil Cerrado'],
+                'processes' => ['Full Washed'],
+                'brew_methods' => ['Espresso Based'],
+            ],
+            [
+                'product_name' => 'Brazil Cerrado Espresso Roast',
+                'type' => 'House Blend',
+                'price' => 85000,
+                'is_specialty' => false,
+                'flavor_notes' => 'Dark Chocolate, Roasted Nuts, Full Body',
+                'origins' => ['Brazil Cerrado'],
+                'processes' => ['Natural'],
+                'brew_methods' => ['Espresso Based'],
+            ],
+            [
+                'product_name' => 'Morning Espresso Blend',
+                'type' => 'House Blend',
+                'price' => 100000,
+                'is_specialty' => false,
+                'flavor_notes' => 'Sweet, Cocoa, Red Berries, Smooth Finish',
+                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
+                'processes' => ['Natural'],
+                'brew_methods' => ['Espresso Based'],
+            ],
+
+            // Microlot / Premium Coffees (cocok untuk keduanya)
+            [
+                'product_name' => 'Ethiopia Yirgacheffe Washed',
+                'type' => 'Microlot',
+                'price' => 175000,
+                'is_specialty' => true,
+                'flavor_notes' => 'Bergamot, Jasmine, Peach, Tea-like',
+                'origins' => ['Yirgacheffe'],
+                'processes' => ['Full Washed'],
+                'brew_methods' => ['Single Origin', 'Espresso Based'],
+            ],
+            [
+                'product_name' => 'Premium House Blend',
+                'type' => 'Microlot',
+                'price' => 125000,
+                'is_specialty' => true,
+                'flavor_notes' => 'Complex, Dark Chocolate, Cherry, Long Aftertaste',
+                'origins' => ['Sidamo', 'Antigua', 'Brazil Cerrado'],
+                'processes' => ['Full Washed', 'Natural'],
+                'brew_methods' => ['Single Origin', 'Espresso Based'],
             ],
             [
                 'product_name' => 'Midnight Cold Brew Blend',
                 'type' => 'House Blend',
                 'price' => 105000,
                 'is_specialty' => false,
-                // 'status' => $status,
                 'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
                 'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
                 'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
-            ],
-            [
-                'product_name' => 'Midnight Cold Brew Blend',
-                'type' => 'House Blend',
-                'price' => 105000,
-                'is_specialty' => false,
-                // 'status' => $status,
-                'flavor_notes' => 'Smooth, Chocolate, Low Acidity, Sweet',
-                'images' => [
-                    ['image_url' => $image1, 'is_primary' => true],
-                    ['image_url' => $image2],
-                    ['image_url' => $image3],
-                ],
-                'origins' => ['Colombia Supremo', 'Brazil Cerrado'],
-                'processes' => ['Natural'],
-                'brew_methods' => ['Cold Brew'],
+                'brew_methods' => ['Espresso Based'],
             ],
         ];
 
-
-        // --- 4. LOOP DAN BUAT PRODUK BESERTA RELASINYA ---
+        // --- 4. GENERATE IMAGES DAN BUAT PRODUK ---
         foreach ($productsData as $productData) {
-            $stock = random_int(0, 100);
-
+            $stock = random_int(10, 100); // Minimal 10 stock agar status aktif
+            $status = $stock > 0;
+            
             $product = Product::create([
                 'product_name' => $productData['product_name'],
-                'slug' => Str::slug($productData['product_name']), // INI YANG DITAMBAHKAN
+                'slug' => Str::slug($productData['product_name']),
                 'type' => $productData['type'],
                 'price' => $productData['price'],
                 'flavor_notes' => $productData['flavor_notes'],
                 'is_specialty' => $productData['is_specialty'],
                 'stock' => $stock,
-                'status' => $stock > 0,
+                'status' => $status,
             ]);
 
-            // Buat relasi gambar
-            if (!empty($productData['images'])) {
-                foreach ($productData['images'] as $imageData) {
-                    $product->images()->create([
-                        'image_url' => $imageData['image_url'],
-                        // DIBENARKAN: Hapus key 'product' yang tidak perlu
-                        'alt_text' => 'Image of ' . $productData['product_name'],
-                        'is_primary' => $imageData['is_primary'] ?? false,
-                    ]);
-                }
-            }
+            // Buat gambar dummy untuk produk
+            $imageUrls = [
+                'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80',
+                'https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ];
 
+            foreach ($imageUrls as $index => $imageUrl) {
+                $product->images()->create([
+                    'image_url' => $imageUrl,
+                    'alt_text' => 'Image of ' . $productData['product_name'],
+                    'is_primary' => $index === 0, // Gambar pertama sebagai primary
+                ]);
+            }
 
             // Ambil ID dari relasi berdasarkan nama
             $originIds = $origins->whereIn('origin_name', $productData['origins'])->pluck('id');
@@ -523,6 +240,70 @@ class ProductSeeder extends Seeder
             $brewMethodIds = $brewMethods->whereIn('brew_name', $productData['brew_methods'])->pluck('id');
 
             // Hubungkan relasi many-to-many
+            $product->origins()->attach($originIds);
+            $product->processes()->attach($processIds);
+            $product->brewMethods()->attach($brewMethodIds);
+        }
+
+        // --- 5. TAMBAHKAN DATA EXTRA UNTUK VARIASI ---
+        // Buat beberapa data tambahan untuk variasi
+        $extraProducts = [
+            [
+                'product_name' => 'Brazil Santos Natural',
+                'type' => 'Commercial',
+                'price' => 75000,
+                'is_specialty' => false,
+                'flavor_notes' => 'Nutty, Milk Chocolate, Low Acidity',
+                'origins' => ['Brazil Cerrado'],
+                'processes' => ['Natural'],
+                'brew_methods' => ['Espresso Based'],
+            ],
+            [
+                'product_name' => 'Rwandan Natural Process',
+                'type' => 'Microlot',
+                'price' => 140000,
+                'is_specialty' => true,
+                'flavor_notes' => 'Berry, Wine, Sweet, Full Body',
+                'origins' => ['Kenya AA'], // Gunakan origin yang sudah ada
+                'processes' => ['Natural'],
+                'brew_methods' => ['Single Origin'],
+            ],
+        ];
+
+        foreach ($extraProducts as $productData) {
+            $stock = random_int(10, 100);
+            $status = $stock > 0;
+            
+            $product = Product::create([
+                'product_name' => $productData['product_name'],
+                'slug' => Str::slug($productData['product_name']),
+                'type' => $productData['type'],
+                'price' => $productData['price'],
+                'flavor_notes' => $productData['flavor_notes'],
+                'is_specialty' => $productData['is_specialty'],
+                'stock' => $stock,
+                'status' => $status,
+            ]);
+
+            // Gambar untuk produk tambahan
+            $imageUrls = [
+                'https://images.unsplash.com/photo-1570196911496-66bd58a5b7b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1570196911496-66bd58a5b7b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            ];
+
+            foreach ($imageUrls as $index => $imageUrl) {
+                $product->images()->create([
+                    'image_url' => $imageUrl,
+                    'alt_text' => 'Image of ' . $productData['product_name'],
+                    'is_primary' => $index === 0,
+                ]);
+            }
+
+            // Hubungkan relasi
+            $originIds = $origins->whereIn('origin_name', $productData['origins'])->pluck('id');
+            $processIds = $processes->whereIn('process_name', $productData['processes'])->pluck('id');
+            $brewMethodIds = $brewMethods->whereIn('brew_name', $productData['brew_methods'])->pluck('id');
+
             $product->origins()->attach($originIds);
             $product->processes()->attach($processIds);
             $product->brewMethods()->attach($brewMethodIds);

@@ -545,10 +545,10 @@ export function HeaderActions() {
             ) : (
                 <div className="flex items-center space-x-1">
                     <Link href={route('login')}>
-                        <Button variant="ghost">Log in</Button>
+                        <Button variant="ghost text-[#303182]">Log In</Button>
                     </Link>
                     <Link href={route('register')}>
-                        <Button>Register</Button>
+                        <Button className="bg-[#303182]">Sing Up</Button>
                     </Link>
                 </div>
             )}
