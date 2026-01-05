@@ -1,10 +1,10 @@
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { Head, Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowRight, Play, X } from 'lucide-react'; // Tambah Play & ArrowRight
 import { useEffect, useState } from 'react';
 
-// --- 1. Perbaiki Tipe Data untuk Pagination ---
+// --- 1. Tipe Data (TIDAK BERUBAH) ---
 interface Article {
     id: number;
     title: string;
@@ -33,7 +33,6 @@ interface Article {
     }[];
 }
 
-// Struktur Pagination yang sesuai dengan data dari backend
 interface PageProps {
     articles: {
         data: Article[];
@@ -61,12 +60,11 @@ interface PageProps {
 
 interface ArticleDetailModalProps {
     article: Article | null;
-    allArticles: Article[]; // Digunakan untuk menampilkan "Another Articles"
+    allArticles: Article[];
     onClose: () => void;
     onViewRelated: (article: Article) => void;
 }
 
-// --- COMPONENT: Pagination dengan shadcn/ui style ---
 interface PaginationProps {
     links: {
         first: string | null;
@@ -80,22 +78,21 @@ interface PaginationProps {
     };
 }
 
+// --- COMPONENT: Pagination (Logic SAMA, Tampilan disesuaikan Gambar) ---
 function PaginationComponent({ links, meta }: PaginationProps) {
     const { current_page, last_page } = meta;
 
-    // Generate array of page numbers
+    // Logic generate halaman (TIDAK BERUBAH)
     const generatePageNumbers = () => {
         const pages = [];
-        const maxVisible = 5; // Jumlah halaman yang ditampilkan
+        const maxVisible = 5;
         let start = Math.max(1, current_page - 2);
         const end = Math.min(last_page, start + maxVisible - 1);
 
-        // Adjust start if we're near the end
         if (end - start + 1 < maxVisible) {
             start = Math.max(1, end - maxVisible + 1);
         }
 
-        // Add first page with ellipsis if needed
         if (start > 1) {
             pages.push(1);
             if (start > 2) {
@@ -103,12 +100,10 @@ function PaginationComponent({ links, meta }: PaginationProps) {
             }
         }
 
-        // Add middle pages
         for (let i = start; i <= end; i++) {
             pages.push(i);
         }
 
-        // Add last page with ellipsis if needed
         if (end < last_page) {
             if (end < last_page - 1) {
                 pages.push('...');
@@ -120,22 +115,24 @@ function PaginationComponent({ links, meta }: PaginationProps) {
     };
 
     return (
-        <div className="flex items-center justify-center py-8 pb-16">
-            <div className="flex items-center space-x-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
-                {/* Previous Button */}
-                <Link
-                    href={links.prev || '#'}
-                    as="button"
-                    preserveScroll
-                    disabled={!links.prev}
-                    className={`flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-sm font-medium transition-colors ${
-                        !links.prev ? 'cursor-not-allowed text-gray-400 opacity-50' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    } `}
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Link>
+        // Mengubah container agar tombol terpisah (gap-2) sesuai gambar, bukan menyatu
+        <div className="flex items-center justify-center gap-3 py-10 pb-20">
+            {/* Previous Button (Triangle Left) */}
+            <Link
+                href={links.prev || '#'}
+                as="button"
+                preserveScroll
+                disabled={!links.prev}
+                className={`flex items-center justify-center transition-opacity ${
+                    !links.prev ? 'cursor-not-allowed opacity-30' : 'hover:opacity-75'
+                }`}
+            >
+                {/* Icon Play diputar 180 derajat agar jadi segitiga kiri */}
+                <Play className="h-5 w-5 rotate-180 fill-[#303182] text-[#303182]" />
+            </Link>
 
-                {/* Page Numbers */}
+            {/* Page Numbers */}
+            <div className="flex items-center gap-2">
                 {generatePageNumbers().map((page, index) => {
                     if (page === '...') {
                         return (
@@ -152,69 +149,54 @@ function PaginationComponent({ links, meta }: PaginationProps) {
                             key={`page-${page}`}
                             href={`/blog?page=${page}`}
                             preserveScroll
-                            className={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                            // Style kotak: Border solid jika aktif, rounded kecil
+                            className={`flex h-9 w-9 items-center justify-center rounded border text-sm font-semibold transition-colors ${
                                 isActive
-                                    ? 'border border-[#303182] bg-[#303182] text-white shadow-sm'
-                                    : 'border border-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                            } `}
+                                    ? 'border-[#303182] bg-[#303182] text-white shadow-sm'
+                                    : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
                         >
                             {page}
                         </Link>
                     );
                 })}
-
-                {/* Next Button */}
-                <Link
-                    href={links.next || '#'}
-                    as="button"
-                    preserveScroll
-                    disabled={!links.next}
-                    className={`flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-sm font-medium transition-colors ${
-                        !links.next ? 'cursor-not-allowed text-gray-400 opacity-50' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    } `}
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Link>
             </div>
 
-            {/* Optional: Show page info */}
-            {last_page > 1 && (
-                <div className="ml-4 text-sm text-gray-500">
-                    Page <span className="font-medium">{current_page}</span> of <span className="font-medium">{last_page}</span>
-                </div>
-            )}
+            {/* Next Button (Triangle Right) */}
+            <Link
+                href={links.next || '#'}
+                as="button"
+                preserveScroll
+                disabled={!links.next}
+                className={`flex items-center justify-center transition-opacity ${
+                    !links.next ? 'cursor-not-allowed opacity-30' : 'hover:opacity-75'
+                }`}
+            >
+                <Play className="h-5 w-5 fill-[#303182] text-[#303182]" />
+            </Link>
         </div>
     );
 }
 
-// --- ARTICLE DETAIL MODAL / POPUP COMPONENT (Dipisahkan) ---
+// --- ARTICLE DETAIL MODAL (TIDAK BERUBAH) ---
 function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: ArticleDetailModalProps) {
     if (!article) return null;
 
-    const relatedArticles = allArticles
-        .filter((a) => a.id !== article.id) // Jangan tampilkan artikel yang sedang dibuka
-        .slice(0, 2); // Ambil 2 saja
+    const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 2);
 
     const resolveImageUrl = (url: string) => {
         if (!url) return '';
-
-        // Jika salah: /storage/https://...
         if (url.includes('/storage/https://') || url.includes('/storage/http://')) {
             return url.replace('/storage/', '');
         }
-
         return url;
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-
-            {/* Modal Content */}
             <div className="relative z-10 flex h-full max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
                 <div className="flex-1 overflow-y-auto p-8">
-                    {/* Header Modal */}
                     <div className="mb-6 flex items-start justify-between">
                         <h2 className="w-full text-center text-3xl font-bold text-[#303182]">{article.title}</h2>
                         <button
@@ -225,7 +207,6 @@ function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: Ar
                         </button>
                     </div>
 
-                    {/* Meta Info (Author & Date) */}
                     <div className="mb-8 flex items-center justify-between border-b border-gray-100 pb-4 text-xs font-medium tracking-wider text-gray-500 uppercase">
                         <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#303182] font-bold text-white">
@@ -240,40 +221,21 @@ function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: Ar
                         </span>
                     </div>
 
-                    {/* Main Image Modal */}
                     {article.featured_image_url && (
-                        // (console.log(resolveImageUrl(article.featured_image_url)))
                         <div className="mb-8 flex justify-center">
                             <div className="w-full max-w-lg overflow-hidden rounded-lg shadow-md">
-                                {article.featured_image_url ? (
-                                    <img
-                                        // src={
-                                        //     article.featured_image_url?.startsWith('/storage/http')
-                                        //         ? article.featured_image_url.replace('/storage/', '')
-                                        //         : article.featured_image_url
-                                        // }
-                                        src={resolveImageUrl(article.featured_image_url)}
-                                        alt={article.title}
-                                        className="h-auto w-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.src = 'https://placehold.co/640x480/5c5e5e/transparent?text=image+error';
-                                        }}
-                                    />
-                                ) : (
-                                    <img
-                                        src="https://placehold.co/640x480/5c5e5e/transparent?text=No+Image"
-                                        alt="No Image"
-                                        className="h-auto w-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.src = 'https://placehold.co/640x480/5c5e5e/transparent?text=image+error';
-                                        }}
-                                    />
-                                )}
+                                <img
+                                    src={resolveImageUrl(article.featured_image_url)}
+                                    alt={article.title}
+                                    className="h-auto w-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = 'https://placehold.co/640x480/5c5e5e/transparent?text=image+error';
+                                    }}
+                                />
                             </div>
                         </div>
                     )}
 
-                    {/* Article Body Text */}
                     <div className="prose max-w-none leading-relaxed text-gray-700">
                         <p className="text-lg">{article.excerpt}</p>
 
@@ -285,7 +247,6 @@ function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: Ar
                         </div>
                     </div>
 
-                    {/* Related Articles */}
                     {relatedArticles.length > 0 && (
                         <div className="mt-12 border-t border-gray-200 pt-8">
                             <h3 className="mb-6 text-center text-2xl font-bold text-[#303182]">Another Articles</h3>
@@ -330,25 +291,21 @@ function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: Ar
         </div>
     );
 }
-// --- AKHIR ARTICLE DETAIL MODAL COMPONENT ---
+
+// --- MAIN PAGE COMPONENT ---
 export default function Index({ articles }: PageProps) {
-    // State untuk menyimpan artikel yang sedang dipilih (Modal)
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
-    // DEBUG: Log links ke console untuk verifikasi data paginasi
     useEffect(() => {
         console.log('Articles Links Data from Inertia:', articles.links);
     }, [articles.links]);
 
-    // Disable scroll background saat modal terbuka
     useEffect(() => {
         if (selectedArticle) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
         }
-
-        // Cleanup function
         return () => {
             document.body.style.overflow = 'unset';
         };
@@ -362,7 +319,7 @@ export default function Index({ articles }: PageProps) {
             </Head>
             <div className="min-h-screen bg-white font-sans">
                 <main className="bg-white text-[#303182]">
-                    {/* Hero Section (omitted for brevity, no changes) */}
+                    {/* Hero Section (Tetap ada sesuai permintaan "tidak merubah yang sebelumnya") */}
                     <section
                         className="relative flex h-[300px] w-full flex-col items-center justify-center bg-cover bg-center p-4 text-white"
                         style={{
@@ -376,7 +333,6 @@ export default function Index({ articles }: PageProps) {
                                 Discover the world of coffee through expert insights, brewing guides, and industry knowledge
                             </p>
 
-                            {/* Search Input Visual Only */}
                             <div className="relative mx-auto w-full max-w-lg">
                                 <input
                                     type="text"
@@ -402,22 +358,24 @@ export default function Index({ articles }: PageProps) {
                         </div>
                     </section>
 
-                    {/* Articles Grid */}
-                    <div className="z-40 container mb-60 px-4 py-16">
+                    {/* Articles Grid (BAGIAN INI YANG DIUBAH MENJADI CARD STYLE BARU) */}
+                    <div className="container mx-auto px-4 py-16">
                         {articles.data.length > 0 ? (
+                            // Ubah gap agar lebih lega seperti gambar
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                                 {articles.data.map((article) => (
                                     <div
                                         key={article.id}
-                                        className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg transition-all hover:shadow-xl"
+                                        // Ubah style card wrapper: Rounded lebih besar (rounded-[2rem]), shadow lebih soft
+                                        className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-lg transition-all hover:shadow-xl"
                                     >
-                                        <div className="group aspect-video overflow-hidden rounded-t-xl bg-gray-100">
-                                            {/* Logic Gambar: Menggunakan featured_image_url */}
+                                        {/* Logic Gambar: Aspect ratio Portrait (3/4 atau 4/5) untuk vertikal */}
+                                        <div className="aspect-[3/4] overflow-hidden bg-gray-100">
                                             {article.featured_image_url ? (
                                                 <img
                                                     src={article.featured_image_url}
                                                     alt={article.title}
-                                                    className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                                    className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                                                 />
                                             ) : (
                                                 <div className="flex h-full w-full items-center justify-center bg-[#2e236c]/10 text-sm text-[#2e236c]/40">
@@ -425,53 +383,36 @@ export default function Index({ articles }: PageProps) {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-6 text-gray-800">
-                                            {/* Metadata: Category & Date */}
-                                            <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-                                                {article.category ? (
-                                                    <span className="rounded bg-gray-100 px-2 py-1 text-xs font-bold text-[#303182] uppercase">
-                                                        {article.category.name}
-                                                    </span>
-                                                ) : (
-                                                    <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium">Uncategorized</span>
-                                                )}
-                                                <span>•</span>
-                                                <span>
-                                                    {article.published_at
-                                                        ? format(new Date(article.published_at), 'MMM dd, yyyy')
-                                                        : format(new Date(article.created_at), 'MMM dd, yyyy')}
-                                                </span>
+
+                                        {/* Content: Layout diubah total agar sesuai gambar */}
+                                        <div className="flex flex-1 flex-col p-6">
+                                            {/* 1. Author Name (Kecil, Paling Atas) */}
+                                            <div className="mb-1 text-xs font-semibold text-gray-900">{article.author.name}</div>
+
+                                            {/* 2. Date (Kecil, di bawah Author) */}
+                                            <div className="mb-3 text-[10px] font-medium text-gray-500">
+                                                {article.published_at
+                                                    ? format(new Date(article.published_at), 'MMM dd, yyyy')
+                                                    : format(new Date(article.created_at), 'MMM dd, yyyy')}
                                             </div>
 
-                                            {/* Title */}
-                                            <h3 className="mb-3 line-clamp-2 text-xl font-bold text-[#303182]" title={article.title}>
+                                            {/* 3. Title (Bold) */}
+                                            <h3 className="mb-2 line-clamp-2 text-lg font-extrabold text-[#1a1a1a]" title={article.title}>
                                                 {article.title}
                                             </h3>
 
-                                            {/* Excerpt */}
-                                            <p className="mb-4 line-clamp-3 text-gray-600">{article.excerpt || 'No description available.'}</p>
+                                            {/* 4. Excerpt (Abu-abu, kecil) */}
+                                            <p className="mb-5 line-clamp-3 text-xs leading-relaxed text-gray-600">
+                                                {article.excerpt || 'No description available.'}
+                                            </p>
 
-                                            {/* Action Button: Opens Modal */}
+                                            {/* 5. Action Button (Pill Shape / Bulat Lonjong, Solid Color) */}
                                             <button
                                                 onClick={() => setSelectedArticle(article)}
-                                                className="inline-flex items-center rounded-lg border border-[#303182] bg-white px-4 py-2 text-sm font-semibold text-[#303182] transition-colors hover:bg-[#303182] hover:text-white"
+                                                className="mt-auto inline-flex w-fit items-center gap-2 rounded-full bg-[#303182] px-6 py-2.5 text-[10px] font-bold text-white transition-colors hover:bg-[#232360]"
                                             >
                                                 Read More
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="18"
-                                                    height="18"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="lucide lucide-arrow-right ml-1"
-                                                >
-                                                    <path d="M5 12h14" />
-                                                    <path d="m12 5 7 7-7 7" />
-                                                </svg>
+                                                <ArrowRight className="h-3 w-3" />
                                             </button>
                                         </div>
                                     </div>
@@ -484,7 +425,7 @@ export default function Index({ articles }: PageProps) {
                         )}
                     </div>
 
-                    {/* Pagination Controls (Menggunakan Link dari Laravel) */}
+                    {/* Pagination Controls */}
                     {articles.meta.last_page > 1 && (
                         <PaginationComponent
                             links={articles.links}
@@ -496,12 +437,11 @@ export default function Index({ articles }: PageProps) {
                     )}
                 </main>
 
-                {/* --- ARTICLE DETAIL MODAL / POPUP --- */}
                 <ArticleDetailModal
                     article={selectedArticle}
                     allArticles={articles.data}
                     onClose={() => setSelectedArticle(null)}
-                    onViewRelated={setSelectedArticle} // Ganti artikel yang sedang dilihat
+                    onViewRelated={setSelectedArticle}
                 />
             </div>
         </AppHeaderLayout>

@@ -16,39 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ProductDetail from '@/components/product-detail';
 import { ProductFilters } from '@/components/product-filters';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-
-// Import Icon Tambahan
-
-// --- LOGIC ADD TO CART (GLOBAL HELPER) ---
-// Fungsi ini menjembatani ProductIndex dan HeaderActions via LocalStorage & Window Event
-// const addToCartLogic = (product: Product) => {
-//     // 1. Ambil data cart yang ada
-//     const saved = localStorage.getItem('cart-storage');
-//     let items = saved ? JSON.parse(saved) : [];
-
-//     // 2. Cek apakah produk sudah ada di cart
-//     const existingIndex = items.findIndex((item: any) => item.id === product.id);
-
-//     if (existingIndex >= 0) {
-//         // Jika ada, tambah quantity
-//         items[existingIndex].qty += 1;
-//     } else {
-//         // Jika belum, buat object baru sesuai struktur di HeaderActions
-//         items.push({
-//             id: product.id,
-//             name: product.product_name,
-//             price: product.price,
-//             qty: 1,
-//             image_url: product.primary_image_url,
-//         });
-//     }
-
-//     // 3. Simpan kembali ke LocalStorage
-//     localStorage.setItem('cart-storage', JSON.stringify(items));
-
-//     // 4. KIRIM SINYAL AGAR HEADER ACTIONS REFRESH OTOMATIS
-//     window.dispatchEvent(new Event('cart-updated'));
-// };
+import { ShoppingCart } from 'lucide-react';
 
 export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbItem[] }) {
     const { ziggy } = usePage().props as { ziggy?: ZiggyProps };
@@ -422,17 +390,20 @@ const truncateText = (text: string, maxLength: number) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// Component ProductCard (Dengan Modal & Tombol Add to Cart)
+// ... imports tetap sama
+
 const ProductCard = ({ product }: { product: Product }) => {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
-    // Style Dialog Content (Full height responsive)
-    const dialogContentClasses =
+    // --- SATU CLASS CSS UNTUK KEDUA MODAL (AGAR UKURANNYA SAMA) ---
+    const modalClasses =
         'm-0 flex h-[95vh] w-full max-w-full flex-col rounded-none border p-0 ' +
         'sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl';
 
     return (
         <>
+            {/* KLIK CARD -> Buka Detail */}
             <div onClick={() => setIsDetailOpen(true)} className="group h-full cursor-pointer">
                 <Card className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <CardHeader className="p-0">
@@ -462,40 +433,44 @@ const ProductCard = ({ product }: { product: Product }) => {
                         </div>
                         <CardTitle className="mb-1 line-clamp-1 text-lg font-bold text-gray-900">{product.product_name}</CardTitle>
                         <p className="mb-4 line-clamp-2 min-h-[2.5em] text-xs leading-relaxed text-gray-500">{product.flavor_notes}</p>
-
-                        <div className="mt-auto space-y-2 border-t border-dashed border-gray-100 pt-3 text-xs">
-                            <div className="flex items-center justify-between">
-                                <span className="font-medium text-gray-400">Origin:</span>
-                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
-                                    {product.origins.map((o) => o.origin_name).join(', ')}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="font-medium text-gray-400">Process:</span>
-                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
-                                    {product.processes.map((p) => p.process_name).join(', ')}
-                                </span>
-                            </div>
-                        </div>
-
                         <div className="mt-4">
                             <span className="text-lg font-bold text-gray-900">Rp . {product.price.toLocaleString('id-ID')}</span>
                         </div>
                     </CardContent>
 
-                    {/* --- UPDATE BAGIAN FOOTER --- */}
-                    <CardFooter className="flex gap-3 px-5 pt-0 pb-5">
-                        {/* Tombol View Detail */}
-                        <div className="flex flex-1 items-center justify-center rounded-full border border-[#2A2F5B] py-2 text-xs font-bold text-[#2A2F5B] transition-colors hover:bg-gray-50">
+                    <CardFooter className="flex flex-col gap-3 px-5 pt-0 pb-5">
+                        <div className="flex w-full items-center justify-center rounded-full border border-[#2A2F5B] py-2 text-xs font-bold text-[#2A2F5B] transition-colors hover:bg-gray-50">
                             View Details
                         </div>
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsQuickAddOpen(true);
+                            }}
+                            className="w-full rounded-full bg-[#2A2F5B] text-xs font-bold text-white hover:bg-[#1e2245]"
+                        >
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Add To Cart
+                        </Button>
                     </CardFooter>
                 </Card>
             </div>
 
+            {/* MODAL 1: VIEW DETAILS */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className={dialogContentClasses}>
-                    <ProductDetail product={product} closeModal={() => setIsDetailOpen(false)} inModal={true} />
+                <DialogContent className={modalClasses}>
+                    {' '}
+                    {/* <-- MENGGUNAKAN CLASS YG SAMA */}
+                    <ProductDetail product={product} closeModal={() => setIsDetailOpen(false)} inModal={true} variant="detail" />
+                </DialogContent>
+            </Dialog>
+
+            {/* MODAL 2: QUICK ADD */}
+            <Dialog open={isQuickAddOpen} onOpenChange={setIsQuickAddOpen}>
+                <DialogContent className={modalClasses}>
+                    {' '}
+                    {/* <-- MENGGUNAKAN CLASS YG SAMA */}
+                    <ProductDetail product={product} closeModal={() => setIsQuickAddOpen(false)} inModal={true} variant="quick-add" />
                 </DialogContent>
             </Dialog>
         </>
