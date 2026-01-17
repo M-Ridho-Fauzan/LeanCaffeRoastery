@@ -375,12 +375,15 @@ export default function ProductIndex({ breadcrumbs }: { breadcrumbs: BreadcrumbI
 
 // --- SUB-COMPONENTS ---
 
+// Update style agar berbentuk Pill/Capsule sesuai gambar
 const TabButton = ({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className={`cursor-pointer border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors duration-200 hover:underline focus:outline-none ${
-            isActive ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-        }`}
+        className={`rounded-xl border px-6 py-2.5 text-sm font-bold shadow-sm transition-all duration-200 ${
+            isActive
+                ? 'border-[#2e305c] bg-[#2e305c] text-white' // Style Aktif: Background Biru Tua, Teks Putih
+                : 'border-slate-200 bg-white text-[#2e305c] hover:border-[#2e305c]/50 hover:bg-slate-50' // Style Tidak Aktif: Background Putih, Teks Biru Tua
+        } `}
     >
         {label}
     </button>
@@ -433,6 +436,22 @@ const ProductCard = ({ product }: { product: Product }) => {
                         </div>
                         <CardTitle className="mb-1 line-clamp-1 text-lg font-bold text-gray-900">{product.product_name}</CardTitle>
                         <p className="mb-4 line-clamp-2 min-h-[2.5em] text-xs leading-relaxed text-gray-500">{product.flavor_notes}</p>
+
+                        <div className="mt-auto space-y-2 border-t border-dashed border-gray-100 pt-3 text-xs">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-400">Origin:</span>
+                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
+                                    {product.origins.map((o) => o.origin_name).join(', ')}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-400">Process:</span>
+                                <span className="max-w-[60%] truncate text-right font-semibold text-gray-700">
+                                    {product.processes.map((p) => p.process_name).join(', ')}
+                                </span>
+                            </div>
+                        </div>
+
                         <div className="mt-4">
                             <span className="text-lg font-bold text-gray-900">Rp . {product.price.toLocaleString('id-ID')}</span>
                         </div>

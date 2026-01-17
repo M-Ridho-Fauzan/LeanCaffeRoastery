@@ -28,7 +28,7 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                     <div className="flex flex-col items-center gap-4">
                         <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
                             <div className="mb-1 flex h-24 w-24 items-center justify-center rounded-md">
-                                <AppLogoIcon className="fill-current text-[var(--foreground)] dark:text-white" />
+                                <AppLogoIcon className="fill-current text-[#1324a4]" />
                             </div>
                             <span className="sr-only">{title}</span>
                         </Link>

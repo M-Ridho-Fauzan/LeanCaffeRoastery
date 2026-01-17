@@ -87,7 +87,7 @@ export function DesktopNavMenu() {
                                     className={cn(
                                         navigationMenuTriggerStyle(),
                                         isItemActive(item, url) && activeItemStyles,
-                                        'h-9 cursor-pointer px-3',
+                                        'h-9 cursor-pointer bg-transparent px-3 text-[#303182] hover:bg-[#D2D3D5]',
                                     )}
                                 >
                                     {/* ICON UNTUK MENU UTAMA DI HEADER TIDAK DIGUNAKAN */}
