@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import Checkout from '@/pages/ordering/payments/checkout';
+import Checkout from '@/pages/ordering/payment_contents/checkout';
 import type { Product } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-react';

@@ -49,23 +49,19 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             >
                 {/* Bagian utama header */}
                 <div className="mx-auto flex h-16 w-full items-center px-4 md:max-w-7xl">
-                    {/* Mobile Menu Trigger & Content */}
                     <div className="lg:hidden">
                         <MobileNavSheet />
                     </div>
 
                     <Link href="/" className="flex items-center space-x-5">
                         {' '}
-                        {/* Link ke home, bukan dashboard */}
                         <AppLogoOnly className="size-10 fill-current text-[#303182]" />
                     </Link>
 
-                    {/* Desktop Navigation */}
                     <div className="mx-auto hidden h-full space-x-6 lg:flex lg:pl-36">
                         <DesktopNavMenu />
                     </div>
 
-                    {/* Right-aligned actions (Search, User Menu, etc.) */}
                     <HeaderActions />
                 </div>
 
