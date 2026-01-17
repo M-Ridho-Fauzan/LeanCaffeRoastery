@@ -1,64 +1,13 @@
+import { Article, ArticleIndexPageProps, PaginationLinks, PaginationMeta } from '@/types';
+
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { Head, Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ArrowRight, Play, X } from 'lucide-react'; // Tambah Play & ArrowRight
+import { ArrowRight, Play, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// --- 1. Tipe Data (TIDAK BERUBAH) ---
-interface Article {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    featured_image_url: string | null;
-    published_at: string | null;
-    status: 'draft' | 'published' | 'archived';
-    views_count: number;
-    created_at: string;
-    updated_at: string;
-    category: {
-        id: number;
-        name: string;
-        slug: string;
-    } | null;
-    author: {
-        id: number;
-        name: string;
-        email: string;
-    };
-    tags: {
-        id: number;
-        name: string;
-        slug: string;
-    }[];
-}
-
-interface PageProps {
-    articles: {
-        data: Article[];
-        links: {
-            first: string | null;
-            last: string | null;
-            prev: string | null;
-            next: string | null;
-        };
-        meta: {
-            current_page: number;
-            last_page: number;
-            per_page: number;
-            total: number;
-            from?: number;
-            to?: number;
-            path?: string;
-            first_page_url?: string;
-            last_page_url?: string;
-            next_page_url?: string | null;
-            prev_page_url?: string | null;
-        };
-    };
-}
-
 interface ArticleDetailModalProps {
+    // Menggunakan Article global
     article: Article | null;
     allArticles: Article[];
     onClose: () => void;
@@ -66,19 +15,14 @@ interface ArticleDetailModalProps {
 }
 
 interface PaginationProps {
-    links: {
-        first: string | null;
-        last: string | null;
-        prev: string | null;
-        next: string | null;
-    };
+    links: PaginationLinks;
     meta: {
-        current_page: number;
-        last_page: number;
+        current_page: PaginationMeta['current_page'];
+        last_page: PaginationMeta['last_page'];
     };
 }
 
-// --- COMPONENT: Pagination (Logic SAMA, Tampilan disesuaikan Gambar) ---
+// --- COMPONENT: Pagination ---
 function PaginationComponent({ links, meta }: PaginationProps) {
     const { current_page, last_page } = meta;
 
@@ -115,7 +59,6 @@ function PaginationComponent({ links, meta }: PaginationProps) {
     };
 
     return (
-        // Mengubah container agar tombol terpisah (gap-2) sesuai gambar, bukan menyatu
         <div className="flex items-center justify-center gap-3 py-10 pb-20">
             {/* Previous Button (Triangle Left) */}
             <Link
@@ -178,7 +121,7 @@ function PaginationComponent({ links, meta }: PaginationProps) {
     );
 }
 
-// --- ARTICLE DETAIL MODAL (TIDAK BERUBAH) ---
+// --- ARTICLE DETAIL MODAL (TIDAK BERUBAH LOGIC) ---
 function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: ArticleDetailModalProps) {
     if (!article) return null;
 
@@ -293,7 +236,8 @@ function ArticleDetailModal({ article, allArticles, onClose, onViewRelated }: Ar
 }
 
 // --- MAIN PAGE COMPONENT ---
-export default function Index({ articles }: PageProps) {
+// Menggunakan ArticleIndexPageProps yang diimpor dari index.d.ts
+export default function Index({ articles }: ArticleIndexPageProps) {
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
     useEffect(() => {
@@ -319,7 +263,7 @@ export default function Index({ articles }: PageProps) {
             </Head>
             <div className="min-h-screen bg-white font-sans">
                 <main className="bg-white text-[#303182]">
-                    {/* Hero Section (Tetap ada sesuai permintaan "tidak merubah yang sebelumnya") */}
+                    {/* Hero Section */}
                     <section
                         className="relative flex h-[300px] w-full flex-col items-center justify-center bg-cover bg-center p-4 text-white"
                         style={{
@@ -358,19 +302,17 @@ export default function Index({ articles }: PageProps) {
                         </div>
                     </section>
 
-                    {/* Articles Grid (BAGIAN INI YANG DIUBAH MENJADI CARD STYLE BARU) */}
+                    {/* Articles Grid */}
                     <div className="container mx-auto px-4 py-16">
                         {articles.data.length > 0 ? (
-                            // Ubah gap agar lebih lega seperti gambar
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                                 {articles.data.map((article) => (
                                     <div
                                         key={article.id}
-                                        // Ubah style card wrapper: Rounded lebih besar (rounded-[2rem]), shadow lebih soft
                                         className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-lg transition-all hover:shadow-xl"
                                     >
-                                        {/* Logic Gambar: Aspect ratio Portrait (3/4 atau 4/5) untuk vertikal */}
-                                        <div className="aspect-[3/4] overflow-hidden bg-gray-100">
+                                        {/* Logic Gambar */}
+                                        <div className="aspect-[3\4] overflow-hidden bg-gray-100">
                                             {article.featured_image_url ? (
                                                 <img
                                                     src={article.featured_image_url}
@@ -384,29 +326,29 @@ export default function Index({ articles }: PageProps) {
                                             )}
                                         </div>
 
-                                        {/* Content: Layout diubah total agar sesuai gambar */}
+                                        {/* Content */}
                                         <div className="flex flex-1 flex-col p-6">
-                                            {/* 1. Author Name (Kecil, Paling Atas) */}
+                                            {/* 1. Author Name */}
                                             <div className="mb-1 text-xs font-semibold text-gray-900">{article.author.name}</div>
 
-                                            {/* 2. Date (Kecil, di bawah Author) */}
+                                            {/* 2. Date */}
                                             <div className="mb-3 text-[10px] font-medium text-gray-500">
                                                 {article.published_at
                                                     ? format(new Date(article.published_at), 'MMM dd, yyyy')
                                                     : format(new Date(article.created_at), 'MMM dd, yyyy')}
                                             </div>
 
-                                            {/* 3. Title (Bold) */}
+                                            {/* 3. Title */}
                                             <h3 className="mb-2 line-clamp-2 text-lg font-extrabold text-[#1a1a1a]" title={article.title}>
                                                 {article.title}
                                             </h3>
 
-                                            {/* 4. Excerpt (Abu-abu, kecil) */}
+                                            {/* 4. Excerpt */}
                                             <p className="mb-5 line-clamp-3 text-xs leading-relaxed text-gray-600">
                                                 {article.excerpt || 'No description available.'}
                                             </p>
 
-                                            {/* 5. Action Button (Pill Shape / Bulat Lonjong, Solid Color) */}
+                                            {/* 5. Action Button */}
                                             <button
                                                 onClick={() => setSelectedArticle(article)}
                                                 className="mt-auto inline-flex w-fit items-center gap-2 rounded-full bg-[#303182] px-6 py-2.5 text-[10px] font-bold text-white transition-colors hover:bg-[#232360]"
