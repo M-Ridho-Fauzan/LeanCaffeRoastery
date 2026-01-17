@@ -678,7 +678,7 @@ const Checkout: React.FC<CheckoutProps> = ({ product, cartItems, onClose }) => {
 
             {/* Konten Utama - Checkout */}
             {currentStep === 'checkout' && (
-                <div className="m-0 max-h-[calc(100vh-180px)] flex-1 space-y-4 overflow-y-auto p-6">
+                <div className="m-0 max-h-[calc(90vh-170px)] flex-1 space-y-4 overflow-y-auto p-6">
                     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                         <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-800">
                             <ShoppingCart className="mr-2 h-5 w-5 text-gray-600" />

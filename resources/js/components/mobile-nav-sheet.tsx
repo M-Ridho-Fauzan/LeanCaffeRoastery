@@ -23,6 +23,7 @@ import AppLogoIcon from './app-logo-icon';
 import { footerNavItems as rightNavItems } from '@/config/navigation';
 import CollapsibleSidebarMenuItem from './collap-sidebar-menu-item';
 import { Icon } from './icon'; // Asumsi Icon component Anda
+import { SidebarProvider } from './ui/sidebar';
 
 export function MobileNavSheet() {
     const { visibleNavItems } = useNavigation();
@@ -47,7 +48,9 @@ export function MobileNavSheet() {
                     {visibleNavItems.map((item) => (
                         // CollapsibleSidebarMenuItem sudah menangani rendering ikon untuk semua level
                         // dan tidak menampilkan deskripsi, jadi tidak perlu perubahan di sini.
-                        <CollapsibleSidebarMenuItem key={item.href || item.title} item={item} currentUrl={url} level={0} />
+                        <SidebarProvider>
+                            <CollapsibleSidebarMenuItem key={item.href || item.title} item={item} currentUrl={url} level={0} />
+                        </SidebarProvider>
                     ))}
 
                     {rightNavItems.length > 0 && (
