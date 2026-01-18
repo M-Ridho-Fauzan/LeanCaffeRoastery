@@ -189,6 +189,20 @@ interface ZiggyProps {
     query?: { [key: string]: string | string[] };
 }
 
+// ======= Checkout/Ordering Interfaces =======
+
+export interface CartItem {
+    // ADDED/MOVED
+    name: string;
+    price: number;
+    qty: number;
+    primary_image_url?: string | null;
+}
+
+interface ProductResourceWrapper {
+    data: Product;
+}
+
 // ==========================================================
 // =============== ARTICLE / BLOG INTERFACES ================
 // ==========================================================
@@ -236,8 +250,9 @@ export type ArticleIndexPageProps = PageProps<{
 
 // Payment global props -- can't be fixed, can still be changed
 
-// Asumsi PaymentMethodType sudah didefinisikan sebelumnya, jika belum, tambahkan:
 export type PaymentMethodType = 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qr_code';
+
+export type CheckoutStep = 'checkout' | 'paymentDetails' | 'paymentSuccess' | 'trackOrder';
 
 // --- Tipe Data untuk VA ---
 export interface VaDetails {
@@ -250,12 +265,10 @@ export type VA_DATA_TYPE = {
 };
 
 // --- Interface Dasar untuk Semua Metode Pembayaran ---
-// Menggantikan kebutuhan untuk meneruskan semua state dari Checkout.tsx
 export interface BasePaymentProps {
     formattedTotalAmount: string;
-    totalAmount: number; // Jumlah angka (untuk fungsi copy)
+    totalAmount: number;
     isProcessingPayment: boolean;
-    // Handlers yang dibutuhkan
     handleCopy: (text: string) => void;
     handleGoBackToCheckout: () => void;
     handleFinalizePayment: () => void;
@@ -267,7 +280,7 @@ export interface VirtualAccountProps extends BasePaymentProps {
     setSelectedBank: (bankId: string | null) => void;
     showVADetails: boolean;
     setShowVADetails: (show: boolean) => void;
-    vaData: VA_DATA_TYPE; // Data yang dibutuhkan untuk merender VA
+    vaData: VA_DATA_TYPE;
 }
 
 // --- Interface Khusus untuk E-Wallet (mengelola QRIS state) ---
@@ -279,7 +292,6 @@ export interface EWalletProps extends BasePaymentProps {
 }
 
 // --- Interface untuk Dispatcher (payment_method/index.tsx) ---
-// Dispatcher perlu tahu metode mana yang aktif dan semua state terkait.
 export interface PaymentRendererProps {
     selectedPaymentMethod: string;
 
