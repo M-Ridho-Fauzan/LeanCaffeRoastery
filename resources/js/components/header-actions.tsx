@@ -14,7 +14,7 @@ import { Icon } from './icon';
 
 import { footerNavItems as rightNavItems } from '@/config/navigation';
 import { useInitials } from '@/hooks/use-initials';
-import Checkout from '@/pages/ordering/payment_contents/checkout';
+import Checkout from '@/pages/ordering/payments/checkout';
 import { OrderDetail, Product, SharedData } from '@/types';
 import AdminHeaderBadge from './admin-header-badge';
 
