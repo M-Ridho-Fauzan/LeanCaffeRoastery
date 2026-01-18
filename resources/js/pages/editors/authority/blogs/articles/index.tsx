@@ -115,7 +115,7 @@ export default function ArticleIndex({ articles, filters, categories, tags, stat
     const [isEditArticleOpen, setIsEditArticleOpen] = useState(false);
     const [articleToEdit, setArticleToEdit] = useState<Article | null>(null);
 
-    const { delete: inertiaDelete, processing, errors } = useForm();
+    const { delete: inertiaDelete, processing, errors } = useForm({});
 
     const throttledApplyFilters = useRef(
         throttle((s: string, c: string, st: string) => {

@@ -40,18 +40,11 @@ function ProductDetail({ product, closeModal, inModal, variant = 'detail' }: Pro
     const currentImage = useMemo(() => allImages[selectedImageIndex], [allImages, selectedImageIndex]);
     const currentImageUrl = useMemo(() => currentImage?.url || product.primary_image_url, [currentImage, product.primary_image_url]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const formattedPrice = useMemo(
-        () => (typeof product.price === 'number' ? product.price.toLocaleString('id-ID') : product.price),
-        [product.price],
-    );
-
-    // --- LOGIKA UTAMA: Menghitung Total Harga (Harga x Quantity) ---
+    // --- LOGIKA UTAMA: Menghitung Total Harga ---
     const totalPrice = useMemo(() => {
         const priceNum = typeof product.price === 'number' ? product.price : Number(product.price);
         return (priceNum * quantity).toLocaleString('id-ID');
     }, [product.price, quantity]);
-    // -------------------------------------------------------------
 
     const flavorTags = useMemo(() => {
         if (!product.flavor_notes) return [];
@@ -89,7 +82,8 @@ function ProductDetail({ product, closeModal, inModal, variant = 'detail' }: Pro
 
         const saved = localStorage.getItem('cart-storage');
         // eslint-disable-next-line prefer-const
-        let items = saved ? JSON.parse(saved) : [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, prefer-const
+        let items: any[] = saved ? JSON.parse(saved) : [];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existingIndex = items.findIndex((item: any) => item.id === product.id);
@@ -114,90 +108,86 @@ function ProductDetail({ product, closeModal, inModal, variant = 'detail' }: Pro
         }
     };
 
+    // Class untuk Modal Checkout agar konsisten responsive
+    const nestedModalClasses =
+        'm-0 flex h-[100dvh] w-full max-w-full flex-col overflow-y-auto rounded-none border-0 p-0 sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg sm:border md:max-w-3xl lg:max-w-4xl';
+
     // =====================================================================
     // TAMPILAN 1: MODE "QUICK ADD"
     // =====================================================================
     if (variant === 'quick-add') {
         return (
-            <div className="flex flex-col bg-white p-6 pb-8 font-sans sm:p-8">
-                {/* 1. GAMBAR */}
-                <div className="mb-8 flex justify-center">
-                    <div className="relative w-full rounded-[20px] border border-gray-100 bg-white p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] sm:w-[350px]">
-                        <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#2A2F5B]">
-                            {currentImageUrl ? (
-                                <img src={currentImageUrl} alt={product.product_name} className="h-full w-full object-cover" />
-                            ) : (
-                                <div className="flex h-full w-full items-center justify-center text-sm text-white/50">No Image</div>
-                            )}
+            // Menggunakan h-[100dvh] untuk memastikan tinggi pas di mobile
+            <div className="flex h-dvh w-full flex-col bg-white font-sans sm:h-auto sm:max-h-[90vh]">
+                {/* Scrollable Content Area (flex-1) */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+                    {/* Gambar */}
+                    <div className="mb-4 flex justify-center sm:mb-6">
+                        <div className="relative w-32 rounded-2xl border border-gray-100 bg-white p-2 shadow-sm sm:w-48 md:w-64">
+                            <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#2A2F5B]">
+                                {currentImageUrl ? (
+                                    <img src={currentImageUrl} alt={product.product_name} className="h-full w-full object-cover" />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-sm text-white/50">No Image</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Konten Teks */}
+                    <div className="flex flex-col">
+                        <div className="mb-2 text-left">
+                            <span className="inline-block rounded-full border border-[#2A2F5B] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#2A2F5B]">
+                                {product.type || 'House Blend'}
+                            </span>
+                        </div>
+                        <h2 className="mb-2 text-left text-lg font-extrabold text-[#2A2F5B] sm:text-2xl">{product.product_name}</h2>
+                        <p className="mb-4 text-left text-xs leading-relaxed text-gray-500 sm:text-sm">
+                            {product.flavor_notes || 'Our flagship blend with rich chocolate and caramel notes...'}
+                        </p>
+
+                        {/* Detail Info Ringkas */}
+                        <div className="space-y-1.5 rounded-lg bg-gray-50 p-3 text-xs sm:space-y-2 sm:text-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-400">Origin:</span>
+                                <span className="max-w-[150px] truncate text-right font-semibold text-[#2A2F5B]">
+                                    {product.origins?.map((o) => o.origin_name).join(', ') || '-'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. BADGE */}
-                <div className="mb-3 text-left">
-                    <span className="inline-block rounded-full border border-[#2A2F5B] bg-white px-3 py-1 text-xs font-semibold text-[#2A2F5B]">
-                        {product.type || 'House Blend'}
-                    </span>
-                </div>
-
-                {/* 3. JUDUL */}
-                <h2 className="mb-2 text-left text-2xl font-extrabold text-[#2A2F5B]">{product.product_name}</h2>
-
-                {/* 4. DESKRIPSI */}
-                <p className="mb-6 text-left text-sm leading-relaxed text-gray-500">
-                    {product.flavor_notes || 'Our flagship blend with rich chocolate and caramel notes...'}
-                </p>
-
-                {/* 5. DETAIL INFO */}
-                <div className="mb-6 space-y-3 pt-2 text-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-400">Origin:</span>
-                        <span className="font-semibold text-[#2A2F5B]">
-                            {product.origins && product.origins.length > 0
-                                ? product.origins.map((o) => o.origin_name).join(' & ')
-                                : 'Brazil & Colombia'}
-                        </span>
+                {/* Footer Fixed (flex-none) - SELALU TERLIHAT */}
+                <div className="pb-safe z-20 flex-none border-t bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:p-6">
+                    <div className="mb-3 flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-500">Total</span>
+                        <span className="text-xl font-extrabold text-[#2A2F5B] sm:text-2xl">Rp {totalPrice}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-400">Roast:</span>
-                        <span className="font-semibold text-[#2A2F5B]">Medium</span>
-                    </div>
-                </div>
-
-                {/* 6. HARGA TOTAL (DINAMIS & DI KANAN) */}
-                {/* Ubah text-left menjadi text-right dan gunakan totalPrice */}
-                <div className="mb-8 text-right">
-                    <span className="text-3xl font-extrabold text-[#2A2F5B]">Rp . {totalPrice}</span>
-                </div>
-
-                {/* 7. ACTIONS */}
-                <div className="flex items-center justify-between gap-6">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => handleQuantityChange('decrement')}
-                            disabled={quantity <= 1}
-                            className="flex h-12 w-12 items-center justify-center rounded-md bg-[#E4E4E4] text-[#2A2F5B] shadow-sm transition hover:bg-gray-300 disabled:opacity-50"
+                    <div className="flex gap-3">
+                        <div className="flex items-center rounded-lg bg-gray-100 p-1">
+                            <button
+                                onClick={() => handleQuantityChange('decrement')}
+                                disabled={quantity <= 1}
+                                className="flex h-9 w-9 items-center justify-center rounded-md bg-white shadow-sm disabled:opacity-50"
+                            >
+                                <Minus size={16} />
+                            </button>
+                            <span className="w-8 text-center text-base font-bold text-[#2A2F5B]">{quantity}</span>
+                            <button
+                                onClick={() => handleQuantityChange('increment')}
+                                className="flex h-9 w-9 items-center justify-center rounded-md bg-white shadow-sm"
+                            >
+                                <Plus size={16} />
+                            </button>
+                        </div>
+                        <Button
+                            onClick={handleAddToCart}
+                            className="h-11 flex-1 rounded-xl bg-[#2A2F5B] text-sm font-bold text-white hover:bg-[#1e2345]"
                         >
-                            <Minus size={24} strokeWidth={2} />
-                        </button>
-                        <span className="w-6 text-center text-xl font-bold text-[#2A2F5B]">{quantity}</span>
-                        <button
-                            onClick={() => handleQuantityChange('increment')}
-                            className="flex h-12 w-12 items-center justify-center rounded-md bg-[#E4E4E4] text-[#2A2F5B] shadow-sm transition hover:bg-gray-300"
-                        >
-                            <Plus size={24} strokeWidth={2} />
-                        </button>
+                            Add To Cart
+                        </Button>
                     </div>
-
-                    {/* Tombol Add To Cart (Bersih tanpa harga) */}
-                    <Button
-                        onClick={handleAddToCart}
-                        className="h-12 flex-1 rounded-full bg-[#2A2F5B] text-base font-bold text-white shadow-lg hover:bg-[#1e2345]"
-                    >
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Add To Cart
-                    </Button>
                 </div>
             </div>
         );
@@ -207,18 +197,20 @@ function ProductDetail({ product, closeModal, inModal, variant = 'detail' }: Pro
     // TAMPILAN 2: MODE "DETAIL"
     // =====================================================================
     return (
-        <div className={`flex flex-col overflow-hidden bg-white ${inModal ? '' : 'rounded-[30px] shadow-xl'} lg:flex-row`}>
+        // Container Utama: h-[100dvh] untuk mobile agar pas layar tanpa address bar mengganggu
+        <div
+            className={`flex h-[100dvh] w-full flex-col overflow-hidden bg-white sm:h-auto sm:max-h-[90vh] lg:flex-row ${
+                inModal ? '' : 'rounded-[30px] shadow-xl'
+            }`}
+        >
             {/* --- KOLOM KIRI: GAMBAR --- */}
-            <div className="relative p-6 lg:w-1/2 lg:p-8">
-                {/* Main Image & Thumbnails (Code sama seperti sebelumnya) */}
-                <div className="group relative overflow-hidden rounded-3xl bg-gray-100">
-                    <div className="aspect-square w-full">
+            {/* max-h-[40vh] di mobile: Membatasi tinggi area gambar agar sisa ruang untuk teks cukup */}
+            <div className="relative flex max-h-[40vh] flex-shrink-0 flex-col items-center justify-center bg-gray-50 p-4 sm:p-6 lg:h-full lg:max-h-none lg:w-1/2 lg:overflow-y-auto lg:p-10">
+                {/* Image Wrapper */}
+                <div className="group relative flex h-full w-full max-w-55 items-center justify-center lg:max-w-none">
+                    <div className="aspect-square h-full max-h-full w-auto overflow-hidden rounded-2xl border-4 border-white shadow-md lg:rounded-[2rem] lg:shadow-xl">
                         {currentImageUrl ? (
-                            <img
-                                src={currentImageUrl}
-                                alt={product.product_name}
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
+                            <img src={currentImageUrl} alt={product.product_name} className="h-full w-full object-cover" />
                         ) : (
                             <div className="flex h-full w-full items-center justify-center bg-gray-200 text-gray-400">
                                 {truncateText(product.product_name, 20)}
@@ -227,142 +219,185 @@ function ProductDetail({ product, closeModal, inModal, variant = 'detail' }: Pro
                     </div>
                 </div>
 
+                {/* Thumbnails - DILETAKKAN DI BAWAH GAMBAR */}
                 {allImages.length > 1 && (
-                    <div className="relative mt-4">
-                        <button
-                            onClick={() => scrollThumbnails('left')}
-                            className="absolute top-1/2 left-0 z-10 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white"
-                        >
-                            <ChevronLeft size={18} />
-                        </button>
-                        <div ref={thumbnailsContainerRef} className="scrollbar-hide flex space-x-3 overflow-x-auto px-6 py-1">
-                            {allImages.map((image, index) => (
-                                <button
-                                    key={image.id || index}
-                                    onClick={() => handleThumbnailClick(index)}
-                                    className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === selectedImageIndex ? 'border-[#2A2F5B]' : 'border-transparent opacity-70 hover:opacity-100'}`}
-                                >
-                                    <img src={image.url} alt="" className="h-full w-full object-cover" />
-                                </button>
-                            ))}
+                    <div className="relative mt-4 w-full px-2 lg:mt-8">
+                        <div className="flex items-center justify-center gap-2">
+                            {/* Tombol Scroll Kiri (Hanya muncul jika perlu/desktop) */}
+                            <button
+                                onClick={() => scrollThumbnails('left')}
+                                className="hidden items-center justify-center rounded-full bg-white p-1 shadow-sm hover:bg-gray-100 sm:flex"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+
+                            {/* Container Thumbnails */}
+                            <div ref={thumbnailsContainerRef} className="scrollbar-hide flex max-w-full space-x-2 overflow-x-auto py-1">
+                                {allImages.map((image, index) => (
+                                    <button
+                                        key={image.id || index}
+                                        onClick={() => handleThumbnailClick(index)}
+                                        className={`h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all lg:h-16 lg:w-16 ${
+                                            index === selectedImageIndex ? 'border-[#2A2F5B]' : 'border-transparent opacity-60'
+                                        }`}
+                                    >
+                                        <img src={image.url} alt="" className="h-full w-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Tombol Scroll Kanan */}
+                            <button
+                                onClick={() => scrollThumbnails('right')}
+                                className="hidden items-center justify-center rounded-full bg-white p-1 shadow-sm hover:bg-gray-100 sm:flex"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
                         </div>
-                        <button
-                            onClick={() => scrollThumbnails('right')}
-                            className="absolute top-1/2 right-0 z-10 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white"
-                        >
-                            <ChevronRight size={18} />
-                        </button>
                     </div>
                 )}
             </div>
 
             {/* --- KOLOM KANAN: INFORMASI --- */}
-            <div className="flex flex-col p-6 pt-0 lg:w-1/2 lg:p-10 lg:pl-0">
-                {/* Header */}
-                <div className="mb-4 flex items-start justify-between">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-[#2A2F5B] lg:text-4xl">{product.product_name}</h1>
+            {/* flex-1 dan min-h-0 sangat penting agar scroll container berfungsi di dalam flex parent */}
+            <div className="flex min-h-0 flex-1 flex-col bg-white lg:w-1/2">
+                {/* SCROLLABLE AREA: Header & Details */}
+                {/* flex-1 overflow-y-auto: Bagian ini akan scroll jika konten panjang */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-10">
+                    {/* Header Group */}
+                    <div className="mb-4 border-b border-gray-100 pb-3 sm:mb-6 sm:pb-6">
+                        <div className="mb-2 flex items-start justify-between">
+                            <h1 className="text-lg font-black text-[#2A2F5B] sm:text-3xl lg:text-4xl">{product.product_name}</h1>
+                        </div>
+
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center rounded-full bg-[#2A2F5B]/10 px-2 py-0.5 text-[10px] font-bold text-[#2A2F5B] sm:px-3 sm:py-1 sm:text-sm">
+                                {product.type || 'Blend'}
+                            </span>
+                            {product.is_specialty && (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 sm:px-3 sm:py-1 sm:text-sm">
+                                    Specialty
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="text-right">
+                            <span className="text-xl font-black text-[#2A2F5B] sm:text-3xl">Rp {totalPrice}</span>
+                        </div>
+                    </div>
+
+                    {/* Description & Details */}
+                    <div className="space-y-4 pb-4 sm:space-y-8">
+                        <p className="text-justify text-xs leading-5 text-gray-600 sm:text-left sm:text-base sm:leading-7">
+                            {product.description ||
+                                'Experience the rich, bold flavors of our premium selection. Carefully sourced and roasted to perfection, this coffee offers a unique tasting journey suited for your daily ritual.'}
+                        </p>
+
+                        {/* Grid Info Mobile Friendly */}
+                        <div className="grid grid-cols-2 gap-2 sm:gap-6">
+                            {product.origins && product.origins.length > 0 && (
+                                <div className="rounded-xl bg-gray-50 p-2 sm:bg-transparent sm:p-0">
+                                    <h3 className="mb-1 text-[9px] font-bold tracking-wider text-gray-400 uppercase sm:mb-2 sm:text-xs sm:text-[#2A2F5B]">
+                                        Origin
+                                    </h3>
+                                    <p className="line-clamp-2 text-[11px] font-bold text-[#2A2F5B] sm:text-sm sm:font-medium sm:text-gray-700">
+                                        {product.origins.map((o) => o.origin_name).join(', ')}
+                                    </p>
+                                </div>
+                            )}
+                            {product.processes && product.processes.length > 0 && (
+                                <div className="rounded-xl bg-gray-50 p-2 sm:bg-transparent sm:p-0">
+                                    <h3 className="mb-1 text-[9px] font-bold tracking-wider text-gray-400 uppercase sm:mb-2 sm:text-xs sm:text-[#2A2F5B]">
+                                        Process
+                                    </h3>
+                                    <div className="flex flex-wrap gap-1">
+                                        {product.processes.map((p) => (
+                                            <span
+                                                key={p.id}
+                                                className="text-[11px] font-bold text-[#2A2F5B] sm:text-sm sm:font-medium sm:text-gray-700"
+                                            >
+                                                {p.process_name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Tags */}
+                        {flavorTags.length > 0 && (
+                            <div>
+                                <h3 className="mb-2 text-[10px] font-bold tracking-wide text-[#2A2F5B] uppercase sm:mb-3 sm:text-xs">Flavor Notes</h3>
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                    {flavorTags.map((note, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-gray-600 sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-sm"
+                                        >
+                                            {note}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Brew Methods */}
+                        {product.brew_methods && product.brew_methods.length > 0 && (
+                            <div>
+                                <h3 className="mb-2 text-[10px] font-bold tracking-wide text-[#2A2F5B] uppercase sm:mb-3 sm:text-xs">Best For</h3>
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                    {product.brew_methods.map((bm) => (
+                                        <span
+                                            key={bm.id}
+                                            className="rounded-md bg-[#2A2F5B]/5 px-2 py-0.5 text-[10px] font-bold text-[#2A2F5B] sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-sm"
+                                        >
+                                            {bm.brew_name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Type */}
-                <div className="mb-4">
-                    <span className="inline-block rounded-full border border-[#2A2F5B] px-4 py-1 text-sm font-semibold text-[#2A2F5B]">
-                        {product.type || 'Espresso Based'}
-                    </span>
-                </div>
-
-                {/* Price (DINAMIS & DI KANAN) */}
-                {/* Menggunakan text-right dan totalPrice */}
-                <div className="mb-6 text-right">
-                    <span className="text-2xl font-bold text-[#2A2F5B]">Rp . {totalPrice}</span>
-                </div>
-
-                {/* Content */}
-                <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-grow space-y-6 overflow-y-auto pr-2">
-                    <p className="text-base leading-relaxed text-gray-600">
-                        Our flagship blend with rich chocolate and caramel notes. Perfect for daily espresso.
-                    </p>
-
-                    {product.origins && product.origins.length > 0 && (
-                        <div>
-                            <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Origin</h3>
-                            <p className="text-gray-600">{product.origins.map((o) => o.origin_name).join(' & ')}</p>
+                {/* FOOTER: Fixed / Sticky Bottom */}
+                {/* flex-none menjamin footer tidak akan mengecil atau hilang */}
+                {/* z-20 memastikan tombol di atas konten scroll jika overlap */}
+                <div className="pb-safe z-20 flex-none border-t border-gray-100 bg-white p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] sm:p-8">
+                    <div className="flex gap-3 sm:gap-4">
+                        {/* Quantity */}
+                        <div className="flex items-center justify-between rounded-xl bg-gray-100 p-1">
+                            <button
+                                onClick={() => handleQuantityChange('decrement')}
+                                disabled={quantity <= 1}
+                                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-gray-700 shadow-sm disabled:opacity-50 sm:h-12 sm:w-12"
+                            >
+                                <Minus size={16} strokeWidth={2.5} />
+                            </button>
+                            <span className="w-8 text-center text-base font-bold text-[#2A2F5B] sm:w-14 sm:text-xl">{quantity}</span>
+                            <button
+                                onClick={() => handleQuantityChange('increment')}
+                                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-gray-700 shadow-sm sm:h-12 sm:w-12"
+                            >
+                                <Plus size={16} strokeWidth={2.5} />
+                            </button>
                         </div>
-                    )}
-                    {product.processes && product.processes.length > 0 && (
-                        <div>
-                            <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Process</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {product.processes.map((p) => (
-                                    <span key={p.id} className="rounded-full bg-gray-200 px-4 py-1 text-sm font-medium text-gray-600">
-                                        {p.process_name}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
-                    {flavorTags.length > 0 && (
-                        <div>
-                            <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Flavor Notes</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {flavorTags.map((note, idx) => (
-                                    <span key={idx} className="rounded-full bg-gray-200 px-4 py-1 text-sm font-medium text-gray-600">
-                                        {note}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {product.brew_methods && product.brew_methods.length > 0 && (
-                        <div>
-                            <h3 className="mb-2 text-lg font-bold text-[#2A2F5B]">Recommended Brewing</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {product.brew_methods.map((bm) => (
-                                    <span key={bm.id} className="rounded-full bg-gray-200 px-4 py-1 text-sm font-medium text-gray-600">
-                                        {bm.brew_name}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer Actions */}
-                <div className="mt-8 flex items-center gap-4 border-t pt-6">
-                    <div className="flex items-center rounded-lg bg-gray-100 p-1">
-                        <button
-                            onClick={() => handleQuantityChange('decrement')}
-                            className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
-                            disabled={quantity <= 1}
+                        {/* Add to Cart */}
+                        <Button
+                            onClick={handleAddToCart}
+                            className="h-12 flex-1 rounded-xl bg-[#2A2F5B] text-sm font-bold text-white shadow-lg hover:bg-[#1e2345] sm:h-14 sm:text-lg"
                         >
-                            <Minus size={16} />
-                        </button>
-                        <span className="w-12 text-center text-lg font-bold text-[#2A2F5B]">{quantity}</span>
-                        <button
-                            onClick={() => handleQuantityChange('increment')}
-                            className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50"
-                        >
-                            <Plus size={16} />
-                        </button>
+                            <ShoppingCart className="mr-2 h-4 w-4 sm:mr-3 sm:h-5 sm:w-5" />
+                            Add To Cart
+                        </Button>
                     </div>
-
-                    {/* Tombol Add To Cart (Bersih tanpa harga) */}
-                    <Button
-                        onClick={handleAddToCart}
-                        className="h-12 flex-1 rounded-full bg-[#2A2F5B] text-base font-bold text-white hover:bg-[#1e2345]"
-                    >
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Add To Cart
-                    </Button>
                 </div>
             </div>
 
             {/* Modal Checkout */}
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-                <DialogContent className="m-0 flex h-[95vh] w-full max-w-full flex-col overflow-y-auto rounded-none border p-0 sm:mx-auto sm:my-auto sm:h-auto sm:max-h-[95vh] sm:max-w-2xl sm:rounded-lg md:max-w-3xl lg:max-w-4xl">
+                <DialogContent className={nestedModalClasses}>
                     <Checkout product={product} onClose={() => setIsCheckoutOpen(false)} />
                 </DialogContent>
             </Dialog>
