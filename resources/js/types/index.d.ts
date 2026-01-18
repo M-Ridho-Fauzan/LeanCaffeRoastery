@@ -213,6 +213,7 @@ interface ArticleTag {
 }
 
 export interface Article {
+    content: string;
     id: number;
     title: string;
     slug: string;
