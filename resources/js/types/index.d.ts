@@ -104,6 +104,7 @@ interface ProductImage {
 }
 
 interface Product {
+    description: string;
     id: number;
     slug: string;
     product_name: string;
