@@ -1,15 +1,3 @@
-/**
- * @description      :
- * @author           : Ridho Fauzan
- * @group            :
- * @created          : 23/08/2025 - 21:15:06
- *
- * MODIFICATION LOG
- * - Version         : 1.0.0
- * - Date            : 23/08/2025
- * - Author          : Ridho Fauzan
- * - Modification    :
- **/
 import { useEffect, useState } from 'react';
 
 // Helper hook generik untuk media query
